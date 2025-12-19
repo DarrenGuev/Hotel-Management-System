@@ -11,39 +11,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg sticky-top bg-body-tertiary shadow glass">
-        <div class="container ps-lg-0">
-            <a class="navbar-brand me-5 fw-bold fs-3" href="index.php">TravelMates</a>
-            <div class="d-flex d-lg-none align-items-center">
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#navbarNavAltMarkup" aria-controls="#navbarNavAltMarkup" aria-expanded="false"
-                    aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <button class="nav-link small text-body ms-3 me-2 border-0 bg-transparent" id="mode" type="button"
-                    onclick="changeMode()"><i class="bi bi-moon-fill"></i></button>
-            </div>
-            <button class="navbar-toggler d-none" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarNavAltMarkup" aria-controls="#navbarNavAltMarkup" aria-expanded="false"
-                aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                <div class="navbar-nav ms-auto">
-                    <a class="nav-link small text-body ms-3 pe-4 active" aria-current="page" href="#">Home</a>
-                    <a class="nav-link small text-body mx-3" href="rooms.php">Rooms</a>
-                    <a class="nav-link small text-body mx-3" href="#about">About</a>
-                    <button class="btn btn-outline-dark me-2" onclick="location.href='login.php'">Login</button><!--wala pang function-->
-                    <button class="nav-link small text-body ms-2 border-0 bg-transparent d-none d-lg-inline"
-                        id="mode-lg" type="button" onclick="changeMode()"><i class="bi bi-moon-fill"></i></button>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <?php include 'includes/navbar.php'; ?>
 
     <div id="home" class="position-relative d-flex align-items-center justify-content-center"
         style="min-height: 95vh; background: url('images/loginRegisterImg/img.jpg') center/cover no-repeat fixed;">
@@ -245,8 +217,8 @@
                     class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start text-center text-sm-start">
                     <div class="rounded-circle overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
                         style="width: 200px; height: 200px;">
-                        <img src="images/loginRegisterImg/img.jpg" alt="..." class="img-fluid object-fit-cover w-100 h-100"
-                            style="filter: grayscale(100%);">
+                        <img src="images/loginRegisterImg/img.jpg" alt="..."
+                            class="img-fluid object-fit-cover w-100 h-100" style="filter: grayscale(100%);">
                     </div>
                     <div class="ms-sm-4">
                         <h5 class="fw-bold text-uppercase text-secondary mb-3" style="letter-spacing: 2px;">Our
@@ -268,7 +240,7 @@
                 <div class="card h-100 bg-transparent border-0 rounded-3 align-items-center">
                     <div class="rounded-circle overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
                         style="width: 200px; height: 200px;">
-                        <img src="members-img/guevarra.jpg" alt="..." class="img-fluid object-fit-cover w-100 h-100">
+                        <img src="images/members-img/guevarra.jpg" alt="..." class="img-fluid object-fit-cover w-100 h-100">
                     </div>
                     <div class="card-body">
                         <h5 class="card-title">Guevarra, Marc Darren F.</h5>
@@ -279,7 +251,7 @@
                 <div class="card h-100 bg-transparent border-0 rounded-3 align-items-center">
                     <div class="rounded-circle overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
                         style="width: 200px; height: 200px;">
-                        <img src="members-img/gonzales.jpg" alt="..." class="img-fluid object-fit-cover w-100 h-100">
+                        <img src="images/members-img/gonzales.jpg" alt="..." class="img-fluid object-fit-cover w-100 h-100">
                     </div>
                     <div class="card-body">
                         <h5 class="card-title">Gonzales, Ken Cedrick L.</h5>
@@ -322,46 +294,7 @@
         </div>
     </div>
 
-    <div class="container-fluid text-light mt-5 border-top rounded-top-5" style="background-color: black;">
-        <div class="row">
-            <!-- About -->
-            <div class="col-lg-4 p-4">
-                <h3 class="h-font fw-bold fs-4 mb-3">TravelMates Hotel</h3>
-                <p>
-                    TravelMates Hotel is a project created for educational purposes.
-                    It simulates a real-world hotel management system for online booking and customer
-                    service.
-                </p>
-            </div>
-
-            <!-- Quick Links -->
-            <div class="col-lg-4 p-4">
-                <h5 class="mb-3">Quick Links</h5>
-                <a href="index.php" class="d-block text-decoration-none text-light mb-1">Home</a>
-                <a href="rooms.php" class="d-block text-decoration-none text-light mb-1">Rooms</a>
-                <a href="#" class="d-block text-decoration-none text-light mb-1">Facilities</a>
-                <a href="index.php#about" class="d-block text-decoration-none text-light mb-1">About</a>
-                <a href="#" class="d-block text-decoration-none text-light">Contact</a>
-            </div>
-
-            <!-- Contact Info / Socials -->
-            <div class="col-lg-4 p-4">
-                <h5 class="mb-3">Contact Us</h5>
-                <p><i class="bi bi-telephone-fill me-2"></i>+63 912 345 6789</p>
-                <p><i class="bi bi-envelope-fill me-2"></i>info@travelmates.com</p>
-                <p><i class="bi bi-geo-alt-fill me-2"></i>PUP Sto. Tomas, Batangas</p>
-                <div>
-                    <a href="#" class="text-light me-3"><i class="bi bi-facebook fs-4"></i></a>
-                    <a href="#" class="text-light me-3"><i class="bi bi-twitter fs-4"></i></a>
-                    <a href="#" class="text-light me-3"><i class="bi bi-instagram fs-4"></i></a>
-                </div>
-            </div>
-        </div>
-
-        <div class="text-center p-3 bg-secondary">
-            © 2025 TravelMates Hotel Project | For Educational Purposes Only
-        </div>
-    </div>
+    <?php include 'includes/footer.php'; ?>
 
     <script>
         function changeMode() {

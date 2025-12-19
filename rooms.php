@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
     <style>
         .room-card-img {
             width: 100%;
@@ -29,34 +29,7 @@
 </head>
 
 <body>
-
-    <nav class="navbar navbar-expand-lg sticky-top bg-body-tertiary shadow glass">
-        <div class="container ps-lg-0">
-            <a class="navbar-brand me-5 fw-bold fs-3" href="index.php">TravelMates</a>
-            <div class="d-flex d-lg-none align-items-center">
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#navbarNavAltMarkup" aria-controls="#navbarNavAltMarkup" aria-expanded="false"
-                    aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <button class="nav-link small text-body ms-3 me-2 border-0 bg-transparent" id="mode" type="button"
-                    onclick="changeMode()"><i class="bi bi-moon-fill"></i></button>
-            </div>
-            <button class="navbar-toggler d-none" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarNavAltMarkup" aria-controls="#navbarNavAltMarkup" aria-expanded="false"
-                aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                <div class="navbar-nav ms-auto">
-                    <a class="nav-link small text-body ms-3 pe-4 active" aria-current="page" href="index.php">Home</a>
-                    <a class="nav-link small text-body mx-3" href="rooms.php">Rooms</a>
-                    <button class="nav-link small text-body ms-2 border-0 bg-transparent d-none d-lg-inline"
-                        id="mode-lg" type="button" onclick="changeMode()"><i class="bi bi-moon-fill"></i></button>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <?php include 'includes/navbar.php'; ?>
 
     <!-- Main Content -->
     <div class="container-fluid">
@@ -155,32 +128,29 @@
                     </div>
                     <div class="row" id="basicRoomCards">
                         <!-- Basic Room Card -->
-                        <div class="col-12">
-                            <div class="card mb-4 border overflow-hidden">
-                                <div class="row g-0">
-                                    <div class="col-12 col-md-4">
-                                        <img src="images/rooms/basic.jpeg" alt="Basic Room" class="room-card-img">
+
+                        <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
+                            <div class="card h-100 bg-transparent shadow rounded-3">
+                                <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
+                                    <img src="images/rooms/basic.jpeg" class="card-img-top img-fluid" alt="Basic Room">
+                                </div>
+                                <div class="card-body p-4">
+                                    <h5 class="card-title fw-bold mb-1">Basic Room</h5>
+                                    <p class="text-secondary fst-italic small mb-2">Comfort Meets Simplicity</p>
+                                    <p class="fw-semibold mb-3">₱1,389 / night</p>
+                                    <div class="mb-2">
+                                        <span class="badge bg-dark me-1 mb-1">1 Room</span>
+                                        <span class="badge bg-dark me-1 mb-1">1 Bathroom</span>
+                                        <span class="badge bg-dark me-1 mb-1">Hot/Cold Shower</span>
                                     </div>
-                                    <div class="col-12 col-md-8">
-                                        <div class="card-body p-4">
-                                            <h5 class="card-title fw-bold mb-1">Basic Room</h5>
-                                            <p class="text-secondary fst-italic small mb-2">Comfort Meets Simplicity</p>
-                                            <p class="fw-semibold mb-3">₱1,389 / night</p>
-                                            <div class="mb-2">
-                                                <span class="badge bg-dark me-1 mb-1">1 Room</span>
-                                                <span class="badge bg-dark me-1 mb-1">1 Bathroom</span>
-                                                <span class="badge bg-dark me-1 mb-1">Hot/Cold Shower</span>
-                                            </div>
-                                            <div class="mb-3">
-                                                <span class="badge bg-dark me-1 mb-1">Wifi</span>
-                                                <span class="badge bg-dark me-1 mb-1">Air-conditioner</span>
-                                                <span class="badge bg-dark me-1 mb-1">Television</span>
-                                            </div>
-                                            <div class="d-flex gap-2 flex-wrap">
-                                                <button class="btn btn-warning">Book Now</button>
-                                                <button class="btn btn-outline-secondary">More Details</button>
-                                            </div>
-                                        </div>
+                                    <div class="mb-3">
+                                        <span class="badge bg-dark me-1 mb-1">Wifi</span>
+                                        <span class="badge bg-dark me-1 mb-1">Air-conditioner</span>
+                                        <span class="badge bg-dark me-1 mb-1">Television</span>
+                                    </div>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <button class="btn btn-warning">Book Now</button>
+                                        <button class="btn btn-outline-secondary">More Details</button>
                                     </div>
                                 </div>
                             </div>
@@ -198,32 +168,28 @@
                     </div>
                     <div class="row" id="twinRoomCards">
                         <!-- Basic Room Card -->
-                        <div class="col-12">
-                            <div class="card mb-4 border overflow-hidden">
-                                <div class="row g-0">
-                                    <div class="col-12 col-md-4">
-                                        <img src="images/rooms/basic.jpeg" alt="Basic Room" class="room-card-img">
+                        <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
+                            <div class="card h-100 bg-transparent shadow rounded-3">
+                                <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
+                                    <img src="images/rooms/basic.jpeg" class="card-img-top img-fluid" alt="Basic Room">
+                                </div>
+                                <div class="card-body p-4">
+                                    <h5 class="card-title fw-bold mb-1">Basic Room</h5>
+                                    <p class="text-secondary fst-italic small mb-2">Comfort Meets Simplicity</p>
+                                    <p class="fw-semibold mb-3">₱1,389 / night</p>
+                                    <div class="mb-2">
+                                        <span class="badge bg-dark me-1 mb-1">1 Room</span>
+                                        <span class="badge bg-dark me-1 mb-1">1 Bathroom</span>
+                                        <span class="badge bg-dark me-1 mb-1">Hot/Cold Shower</span>
                                     </div>
-                                    <div class="col-12 col-md-8">
-                                        <div class="card-body p-4">
-                                            <h5 class="card-title fw-bold mb-1">Basic Room</h5>
-                                            <p class="text-secondary fst-italic small mb-2">Comfort Meets Simplicity</p>
-                                            <p class="fw-semibold mb-3">₱1,389 / night</p>
-                                            <div class="mb-2">
-                                                <span class="badge bg-dark me-1 mb-1">1 Room</span>
-                                                <span class="badge bg-dark me-1 mb-1">1 Bathroom</span>
-                                                <span class="badge bg-dark me-1 mb-1">Hot/Cold Shower</span>
-                                            </div>
-                                            <div class="mb-3">
-                                                <span class="badge bg-dark me-1 mb-1">Wifi</span>
-                                                <span class="badge bg-dark me-1 mb-1">Air-conditioner</span>
-                                                <span class="badge bg-dark me-1 mb-1">Television</span>
-                                            </div>
-                                            <div class="d-flex gap-2 flex-wrap">
-                                                <button class="btn btn-warning">Book Now</button>
-                                                <button class="btn btn-outline-secondary">More Details</button>
-                                            </div>
-                                        </div>
+                                    <div class="mb-3">
+                                        <span class="badge bg-dark me-1 mb-1">Wifi</span>
+                                        <span class="badge bg-dark me-1 mb-1">Air-conditioner</span>
+                                        <span class="badge bg-dark me-1 mb-1">Television</span>
+                                    </div>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <button class="btn btn-warning">Book Now</button>
+                                        <button class="btn btn-outline-secondary">More Details</button>
                                     </div>
                                 </div>
                             </div>
@@ -240,32 +206,28 @@
                     </div>
                     <div class="row" id="deluxeRoomCards">
                         <!-- Deluxe Room Card -->
-                        <div class="col-12">
-                            <div class="card mb-4 border overflow-hidden">
-                                <div class="row g-0">
-                                    <div class="col-12 col-md-4">
-                                        <img src="images/rooms/basic.jpeg" alt="Basic Room" class="room-card-img">
+                        <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
+                            <div class="card h-100 bg-transparent shadow rounded-3">
+                                <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
+                                    <img src="images/rooms/basic.jpeg" class="card-img-top img-fluid" alt="Basic Room">
+                                </div>
+                                <div class="card-body p-4">
+                                    <h5 class="card-title fw-bold mb-1">Basic Room</h5>
+                                    <p class="text-secondary fst-italic small mb-2">Comfort Meets Simplicity</p>
+                                    <p class="fw-semibold mb-3">₱1,389 / night</p>
+                                    <div class="mb-2">
+                                        <span class="badge bg-dark me-1 mb-1">1 Room</span>
+                                        <span class="badge bg-dark me-1 mb-1">1 Bathroom</span>
+                                        <span class="badge bg-dark me-1 mb-1">Hot/Cold Shower</span>
                                     </div>
-                                    <div class="col-12 col-md-8">
-                                        <div class="card-body p-4">
-                                            <h5 class="card-title fw-bold mb-1">Basic Room</h5>
-                                            <p class="text-secondary fst-italic small mb-2">Comfort Meets Simplicity</p>
-                                            <p class="fw-semibold mb-3">₱1,389 / night</p>
-                                            <div class="mb-2">
-                                                <span class="badge bg-dark me-1 mb-1">1 Room</span>
-                                                <span class="badge bg-dark me-1 mb-1">1 Bathroom</span>
-                                                <span class="badge bg-dark me-1 mb-1">Hot/Cold Shower</span>
-                                            </div>
-                                            <div class="mb-3">
-                                                <span class="badge bg-dark me-1 mb-1">Wifi</span>
-                                                <span class="badge bg-dark me-1 mb-1">Air-conditioner</span>
-                                                <span class="badge bg-dark me-1 mb-1">Television</span>
-                                            </div>
-                                            <div class="d-flex gap-2 flex-wrap">
-                                                <button class="btn btn-warning">Book Now</button>
-                                                <button class="btn btn-outline-secondary">More Details</button>
-                                            </div>
-                                        </div>
+                                    <div class="mb-3">
+                                        <span class="badge bg-dark me-1 mb-1">Wifi</span>
+                                        <span class="badge bg-dark me-1 mb-1">Air-conditioner</span>
+                                        <span class="badge bg-dark me-1 mb-1">Television</span>
+                                    </div>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <button class="btn btn-warning">Book Now</button>
+                                        <button class="btn btn-outline-secondary">More Details</button>
                                     </div>
                                 </div>
                             </div>
@@ -283,32 +245,28 @@
                     </div>
                     <div class="row" id="singleRoomCards">
                         <!-- Single Room Card -->
-                        <div class="col-12">
-                            <div class="card mb-4 border overflow-hidden">
-                                <div class="row g-0">
-                                    <div class="col-12 col-md-4">
-                                        <img src="images/rooms/basic.jpeg" alt="Basic Room" class="room-card-img">
+                        <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
+                            <div class="card h-100 bg-transparent shadow rounded-3">
+                                <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
+                                    <img src="images/rooms/basic.jpeg" class="card-img-top img-fluid" alt="Basic Room">
+                                </div>
+                                <div class="card-body p-4">
+                                    <h5 class="card-title fw-bold mb-1">Basic Room</h5>
+                                    <p class="text-secondary fst-italic small mb-2">Comfort Meets Simplicity</p>
+                                    <p class="fw-semibold mb-3">₱1,389 / night</p>
+                                    <div class="mb-2">
+                                        <span class="badge bg-dark me-1 mb-1">1 Room</span>
+                                        <span class="badge bg-dark me-1 mb-1">1 Bathroom</span>
+                                        <span class="badge bg-dark me-1 mb-1">Hot/Cold Shower</span>
                                     </div>
-                                    <div class="col-12 col-md-8">
-                                        <div class="card-body p-4">
-                                            <h5 class="card-title fw-bold mb-1">Basic Room</h5>
-                                            <p class="text-secondary fst-italic small mb-2">Comfort Meets Simplicity</p>
-                                            <p class="fw-semibold mb-3">₱1,389 / night</p>
-                                            <div class="mb-2">
-                                                <span class="badge bg-dark me-1 mb-1">1 Room</span>
-                                                <span class="badge bg-dark me-1 mb-1">1 Bathroom</span>
-                                                <span class="badge bg-dark me-1 mb-1">Hot/Cold Shower</span>
-                                            </div>
-                                            <div class="mb-3">
-                                                <span class="badge bg-dark me-1 mb-1">Wifi</span>
-                                                <span class="badge bg-dark me-1 mb-1">Air-conditioner</span>
-                                                <span class="badge bg-dark me-1 mb-1">Television</span>
-                                            </div>
-                                            <div class="d-flex gap-2 flex-wrap">
-                                                <button class="btn btn-warning">Book Now</button>
-                                                <button class="btn btn-outline-secondary">More Details</button>
-                                            </div>
-                                        </div>
+                                    <div class="mb-3">
+                                        <span class="badge bg-dark me-1 mb-1">Wifi</span>
+                                        <span class="badge bg-dark me-1 mb-1">Air-conditioner</span>
+                                        <span class="badge bg-dark me-1 mb-1">Television</span>
+                                    </div>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <button class="btn btn-warning">Book Now</button>
+                                        <button class="btn btn-outline-secondary">More Details</button>
                                     </div>
                                 </div>
                             </div>
@@ -326,32 +284,28 @@
                     </div>
                     <div class="row" id="familyRoomCards">
                         <!-- Family Room Card -->
-                        <div class="col-12">
-                            <div class="card mb-4 border overflow-hidden">
-                                <div class="row g-0">
-                                    <div class="col-12 col-md-4">
-                                        <img src="images/rooms/basic.jpeg" alt="Basic Room" class="room-card-img">
+                        <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
+                            <div class="card h-100 bg-transparent shadow rounded-3">
+                                <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
+                                    <img src="images/rooms/basic.jpeg" class="card-img-top img-fluid" alt="Basic Room">
+                                </div>
+                                <div class="card-body p-4">
+                                    <h5 class="card-title fw-bold mb-1">Basic Room</h5>
+                                    <p class="text-secondary fst-italic small mb-2">Comfort Meets Simplicity</p>
+                                    <p class="fw-semibold mb-3">₱1,389 / night</p>
+                                    <div class="mb-2">
+                                        <span class="badge bg-dark me-1 mb-1">1 Room</span>
+                                        <span class="badge bg-dark me-1 mb-1">1 Bathroom</span>
+                                        <span class="badge bg-dark me-1 mb-1">Hot/Cold Shower</span>
                                     </div>
-                                    <div class="col-12 col-md-8">
-                                        <div class="card-body p-4">
-                                            <h5 class="card-title fw-bold mb-1">Basic Room</h5>
-                                            <p class="text-secondary fst-italic small mb-2">Comfort Meets Simplicity</p>
-                                            <p class="fw-semibold mb-3">₱1,389 / night</p>
-                                            <div class="mb-2">
-                                                <span class="badge bg-dark me-1 mb-1">1 Room</span>
-                                                <span class="badge bg-dark me-1 mb-1">1 Bathroom</span>
-                                                <span class="badge bg-dark me-1 mb-1">Hot/Cold Shower</span>
-                                            </div>
-                                            <div class="mb-3">
-                                                <span class="badge bg-dark me-1 mb-1">Wifi</span>
-                                                <span class="badge bg-dark me-1 mb-1">Air-conditioner</span>
-                                                <span class="badge bg-dark me-1 mb-1">Television</span>
-                                            </div>
-                                            <div class="d-flex gap-2 flex-wrap">
-                                                <button class="btn btn-warning">Book Now</button>
-                                                <button class="btn btn-outline-secondary">More Details</button>
-                                            </div>
-                                        </div>
+                                    <div class="mb-3">
+                                        <span class="badge bg-dark me-1 mb-1">Wifi</span>
+                                        <span class="badge bg-dark me-1 mb-1">Air-conditioner</span>
+                                        <span class="badge bg-dark me-1 mb-1">Television</span>
+                                    </div>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <button class="btn btn-warning">Book Now</button>
+                                        <button class="btn btn-outline-secondary">More Details</button>
                                     </div>
                                 </div>
                             </div>
@@ -362,47 +316,7 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <div class="container-fluid text-light mt-5 border-top rounded-top-5" style="background-color: black;">
-        <div class="row">
-            <!-- About -->
-            <div class="col-lg-4 p-4">
-                <h3 class="h-font fw-bold fs-4 mb-3">TravelMates Hotel</h3>
-                <p>
-                    TravelMates Hotel is a project created for educational purposes.
-                    It simulates a real-world hotel management system for online booking and customer
-                    service.
-                </p>
-            </div>
-
-            <!-- Quick Links -->
-            <div class="col-lg-4 p-4">
-                <h5 class="mb-3">Quick Links</h5>
-                <a href="index.php" class="d-block text-decoration-none text-light mb-1">Home</a>
-                <a href="rooms.php" class="d-block text-decoration-none text-light mb-1">Rooms</a>
-                <a href="#" class="d-block text-decoration-none text-light mb-1">Facilities</a>
-                <a href="index.php#about" class="d-block text-decoration-none text-light mb-1">About</a>
-                <a href="#" class="d-block text-decoration-none text-light">Contact</a>
-            </div>
-
-            <!-- Contact Info / Socials -->
-            <div class="col-lg-4 p-4">
-                <h5 class="mb-3">Contact Us</h5>
-                <p><i class="bi bi-telephone-fill me-2"></i>+63 912 345 6789</p>
-                <p><i class="bi bi-envelope-fill me-2"></i>info@travelmates.com</p>
-                <p><i class="bi bi-geo-alt-fill me-2"></i>PUP Sto. Tomas, Batangas</p>
-                <div>
-                    <a href="#" class="text-light me-3"><i class="bi bi-facebook fs-4"></i></a>
-                    <a href="#" class="text-light me-3"><i class="bi bi-twitter fs-4"></i></a>
-                    <a href="#" class="text-light me-3"><i class="bi bi-instagram fs-4"></i></a>
-                </div>
-            </div>
-        </div>
-
-        <div class="text-center p-3" style="background-color: #6c757d;">
-            © 2025 TravelMates Hotel Project | For Educational Purposes Only
-        </div>
-    </div>
+    <?php include 'includes/footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
