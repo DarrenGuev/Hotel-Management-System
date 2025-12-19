@@ -15,10 +15,9 @@
 </head>
 
 <body>
-
     <nav class="navbar navbar-expand-lg sticky-top bg-body-tertiary shadow glass">
         <div class="container ps-lg-0">
-            <a class="navbar-brand me-5 fw-bold fs-3" href="index.html">TravelMates</a>
+            <a class="navbar-brand me-5 fw-bold fs-3" href="index.php">TravelMates</a>
             <div class="d-flex d-lg-none align-items-center">
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarNavAltMarkup" aria-controls="#navbarNavAltMarkup" aria-expanded="false"
@@ -36,9 +35,9 @@
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav ms-auto">
                     <a class="nav-link small text-body ms-3 pe-4 active" aria-current="page" href="#">Home</a>
-                    <a class="nav-link small text-body mx-3" href="rooms.html">Rooms</a>
-                    <a class="nav-link small text-body mx-3" href="#">Reviews</a>
+                    <a class="nav-link small text-body mx-3" href="rooms.php">Rooms</a>
                     <a class="nav-link small text-body mx-3" href="#about">About</a>
+                    <button class="btn btn-outline-dark me-2" onclick="location.href='login.php'">Login</button><!--wala pang function-->
                     <button class="nav-link small text-body ms-2 border-0 bg-transparent d-none d-lg-inline"
                         id="mode-lg" type="button" onclick="changeMode()"><i class="bi bi-moon-fill"></i></button>
                 </div>
@@ -47,7 +46,7 @@
     </nav>
 
     <div id="home" class="position-relative d-flex align-items-center justify-content-center"
-        style="min-height: 95vh; background: url('images/rooms/basic.jpeg') center/cover no-repeat fixed;">
+        style="min-height: 95vh; background: url('images/loginRegisterImg/img.jpg') center/cover no-repeat fixed;">
         <div class="position-absolute top-0 start-0 w-100 h-100 bg-black opacity-50"></div>
         <div class="container position-relative">
             <div class="row justify-content-center">
@@ -61,7 +60,7 @@
                     <p class="lead fs-4 mb-5 opacity-75" style="color: white; text-shadow: 0 4px 15px rgba(0,0,0,0.9);">
                         travelmits // aayusin pa to
                     </p>
-                    <a href="rooms.html" class="btn btn-light btn-lg">Book Now</a>
+                    <a href="rooms.php" class="btn btn-warning btn-lg">Book Now</a>
                 </div>
             </div>
         </div>
@@ -124,7 +123,7 @@
         </div>
     </div>
     <div class="col-lg-12 text-center my-4">
-        <a href="rooms.html" class="btn btn-sm btn-outline-dark rounded-0 fw-bold shadow-none">More Rooms >>></a>
+        <a href="rooms.php" class="btn btn-sm btn-outline-dark rounded-0 fw-bold shadow-none">More Rooms >>></a>
     </div>
 
     <div class="container mb-5">
@@ -181,17 +180,45 @@
         </div>
     </div>
 
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h2 class="mt-5 pt-4 mb-2 text-center fw-bold h-font">CUSTOMER REVIEWS</h2>
+                <div class="mx-auto mt-3 mb-5" style="width: 80px; height: 4px; background-color: #FF9900;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold h-font">@juan@example.com</h5>
+                        <p class="card-text">This is a wider card with supporting text below as a natural lead-in to
+                            additional content. This content is a little bit longer.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-12 text-center my-4">
+        <button class="btn btn-dark shadow-none" data-bs-toggle="modal" data-bs-target="#addReviewModal">
+            <i class="bi bi-pencil-square me-2"></i>Add Your Review
+        </button>
+    </div>
+
     <div id="about" class="container">
         <div class="row">
             <div class="col">
                 <h2 class="mt-5 mb-2 text-center fw-bold h-font">ABOUT US</h2>
-                <div class="mx-auto mt-3 mb-5" style="width: 80px; height: 4px; background-color: #FF9900;"></div>
+                <div class="mx-auto mt-3 mb-5" style="width: 80px; height: 4px; background-color: #FF9900;">
+                </div>
             </div>
         </div>
     </div>
 
     <div id="about-section" class="container-fluid py-5"
-        style="background: linear-gradient(rgba(245, 240, 230, 0.85), rgba(245, 240, 230, 0.85)), url('images/rooms/basic.jpeg') center/cover no-repeat;">
+        style="background: linear-gradient(rgba(245, 240, 230, 0.85), rgba(245, 240, 230, 0.85)), url('images/loginRegisterImg/img.jpg') center/cover no-repeat;">
         <div class="row justify-content-center g-4">
             <div class="col-12 col-lg-5">
                 <div
@@ -202,10 +229,13 @@
                             style="filter: grayscale(100%);">
                     </div>
                     <div class="ms-sm-4">
-                        <h5 class="fw-bold text-uppercase text-secondary mb-3" style="letter-spacing: 2px;">A Little
+                        <h5 class="fw-bold text-uppercase text-secondary mb-3" style="letter-spacing: 2px;">A
+                            Little
                             About Us</h5>
-                        <p class="text-muted mb-0">Morbi leo risus, porta ac consectetur ac, vesti bulum at eros. Fusce
-                            dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo
+                        <p class="text-muted mb-0">Morbi leo risus, porta ac consectetur ac, vesti bulum at
+                            eros. Fusce
+                            dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum
+                            massa justo
                             sit amet risus. Lorem ipsum dolor sit amet, consectetur.</p>
                     </div>
                 </div>
@@ -215,14 +245,16 @@
                     class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start text-center text-sm-start">
                     <div class="rounded-circle overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
                         style="width: 200px; height: 200px;">
-                        <img src="images/rooms/basic.jpeg" alt="..." class="img-fluid object-fit-cover w-100 h-100"
+                        <img src="images/loginRegisterImg/img.jpg" alt="..." class="img-fluid object-fit-cover w-100 h-100"
                             style="filter: grayscale(100%);">
                     </div>
                     <div class="ms-sm-4">
                         <h5 class="fw-bold text-uppercase text-secondary mb-3" style="letter-spacing: 2px;">Our
                             Collaborator</h5>
-                        <p class="text-muted mb-0">Morbi leo risus, porta ac consectetur ac, vesti bulum at eros. Fusce
-                            dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo
+                        <p class="text-muted mb-0">Morbi leo risus, porta ac consectetur ac, vesti bulum at
+                            eros. Fusce
+                            dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum
+                            massa justo
                             sit amet risus. Lorem ipsum dolor sit amet, consectetur.</p>
                     </div>
                 </div>
@@ -290,7 +322,7 @@
         </div>
     </div>
 
-    <div class="container-fluid bg-dark text-light mt-5 border-top">
+    <div class="container-fluid text-light mt-5 border-top rounded-top-5" style="background-color: black;">
         <div class="row">
             <!-- About -->
             <div class="col-lg-4 p-4">
@@ -352,9 +384,9 @@
             const aboutSection = document.querySelector('#about-section');
             if (aboutSection) {
                 if (isDark) {
-                    aboutSection.style.background = "linear-gradient(rgba(245, 240, 230, 0.85), rgba(245, 240, 230, 0.85)), url('images/rooms/basic.jpeg') center/cover no-repeat";
+                    aboutSection.style.background = "linear-gradient(rgba(245, 240, 230, 0.85), rgba(245, 240, 230, 0.85)), url('images/loginRegisterImg/img.jpg') center/cover no-repeat";
                 } else {
-                    aboutSection.style.background = "linear-gradient(rgba(30, 30, 30, 0.9), rgba(30, 30, 30, 0.9)), url('images/rooms/basic.jpeg') center/cover no-repeat";
+                    aboutSection.style.background = "linear-gradient(rgba(30, 30, 30, 0.9), rgba(30, 30, 30, 0.9)), url('images/loginRegisterImg/img.jpg') center/cover no-repeat";
                 }
             }
         }

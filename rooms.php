@@ -32,7 +32,7 @@
 
     <nav class="navbar navbar-expand-lg sticky-top bg-body-tertiary shadow glass">
         <div class="container ps-lg-0">
-            <a class="navbar-brand me-5 fw-bold fs-3" href="index.html">TravelMates</a>
+            <a class="navbar-brand me-5 fw-bold fs-3" href="index.php">TravelMates</a>
             <div class="d-flex d-lg-none align-items-center">
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarNavAltMarkup" aria-controls="#navbarNavAltMarkup" aria-expanded="false"
@@ -49,8 +49,8 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav ms-auto">
-                    <a class="nav-link small text-body ms-3 pe-4 active" aria-current="page" href="index.html">Home</a>
-                    <a class="nav-link small text-body mx-3" href="rooms.html">Rooms</a>
+                    <a class="nav-link small text-body ms-3 pe-4 active" aria-current="page" href="index.php">Home</a>
+                    <a class="nav-link small text-body mx-3" href="rooms.php">Rooms</a>
                     <button class="nav-link small text-body ms-2 border-0 bg-transparent d-none d-lg-inline"
                         id="mode-lg" type="button" onclick="changeMode()"><i class="bi bi-moon-fill"></i></button>
                 </div>
@@ -363,7 +363,7 @@
     </div>
 
     <!-- Footer -->
-    <div class="container-fluid text-light mt-5 border-top" style="background-color: #212529;">
+    <div class="container-fluid text-light mt-5 border-top rounded-top-5" style="background-color: black;">
         <div class="row">
             <!-- About -->
             <div class="col-lg-4 p-4">
@@ -378,10 +378,10 @@
             <!-- Quick Links -->
             <div class="col-lg-4 p-4">
                 <h5 class="mb-3">Quick Links</h5>
-                <a href="index.html" class="d-block text-decoration-none text-light mb-1">Home</a>
-                <a href="rooms.html" class="d-block text-decoration-none text-light mb-1">Rooms</a>
+                <a href="index.php" class="d-block text-decoration-none text-light mb-1">Home</a>
+                <a href="rooms.php" class="d-block text-decoration-none text-light mb-1">Rooms</a>
                 <a href="#" class="d-block text-decoration-none text-light mb-1">Facilities</a>
-                <a href="index.html#about" class="d-block text-decoration-none text-light mb-1">About</a>
+                <a href="index.php#about" class="d-block text-decoration-none text-light mb-1">About</a>
                 <a href="#" class="d-block text-decoration-none text-light">Contact</a>
             </div>
 
