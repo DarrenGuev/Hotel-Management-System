@@ -36,9 +36,9 @@
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav ms-auto">
                     <a class="nav-link small text-body ms-3 pe-4 active" aria-current="page" href="#">Home</a>
-                    <a class="nav-link small text-body mx-3" href="#">About</a>
-                    <a class="nav-link small text-body mx-3" href="#">Reviews</a>
                     <a class="nav-link small text-body mx-3" href="rooms.html">Rooms</a>
+                    <a class="nav-link small text-body mx-3" href="#">Reviews</a>
+                    <a class="nav-link small text-body mx-3" href="#about">About</a>
                     <button class="nav-link small text-body ms-2 border-0 bg-transparent d-none d-lg-inline"
                         id="mode-lg" type="button" onclick="changeMode()"><i class="bi bi-moon-fill"></i></button>
                 </div>
@@ -61,7 +61,7 @@
                     <p class="lead fs-4 mb-5 opacity-75" style="color: white; text-shadow: 0 4px 15px rgba(0,0,0,0.9);">
                         travelmits // aayusin pa to
                     </p>
-                    <a href="#crew" class="btn btn-light btn-lg">Book Now</a>
+                    <a href="rooms.html" class="btn btn-light btn-lg">Book Now</a>
                 </div>
             </div>
         </div>
@@ -85,7 +85,6 @@
                     <div class="card-body">
                         <h5 class="card-title">Basic Room</h5>
                         <p class="card-text">Comfort Meets Simplicity. ₱1,389 per night.</p>
-                        <a href="#" class="btn btn-primary">Book Now</a>
                     </div>
                 </div>
             </div>
@@ -97,7 +96,6 @@
                     <div class="card-body">
                         <h5 class="card-title">Basic Room</h5>
                         <p class="card-text">Comfort Meets Simplicity. ₱1,389 per night.</p>
-                        <a href="#" class="btn btn-primary">Book Now</a>
                     </div>
                 </div>
             </div>
@@ -109,7 +107,6 @@
                     <div class="card-body">
                         <h5 class="card-title">Basic Room</h5>
                         <p class="card-text">Comfort Meets Simplicity. ₱1,389 per night.</p>
-                        <a href="#" class="btn btn-primary">Book Now</a>
                     </div>
                 </div>
             </div>
@@ -121,73 +118,70 @@
                     <div class="card-body">
                         <h5 class="card-title">Basic Room</h5>
                         <p class="card-text">Comfort Meets Simplicity. ₱1,389 per night.</p>
-                        <a href="#" class="btn btn-primary">Book Now</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <div class="col-lg-12 text-center my-4">
-        <a href="rooms.php" class="btn btn-sm btn-outline-dark rounded-0 fw-bold shadow-none">More Rooms >>></a>
+        <a href="rooms.html" class="btn btn-sm btn-outline-dark rounded-0 fw-bold shadow-none">More Rooms >>></a>
     </div>
 
-    <div id="highlights" style="min-height: 150vh;">
-        <div class="container">
-            <div class="row align-items-center py-2">
-                <div class="col-12 text-black text-md-start">
-                    <h2 class="mt-5 pt-4 mb-2 text-center fw-bold h-font">GALLERY</h2>
-                    <div class="mx-auto mt-3 mb-5" style="width: 80px; height: 4px; background-color: #FF9900;"></div>
+    <div class="container mb-5">
+        <div class="row align-items-center py-2">
+            <div class="col-12 text-black text-md-start">
+                <h2 class="mt-5 pt-4 mb-2 text-center fw-bold h-font">GALLERY</h2>
+                <div class="mx-auto mt-3 mb-5" style="width: 80px; height: 4px; background-color: #FF9900;"></div>
+            </div>
+        </div>
+
+        <!--bento box-->
+        <div class="container-fluid px-0">
+            <div class="row g-3">
+                <!--left large-->
+                <div class="col-12 col-md-8">
+                    <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
+                        <img src="images/rooms/basic.jpeg" alt="Gallery 1" class="img-fluid object-fit-cover">
+                    </div>
+                </div>
+                <!--right column with 2 stacked images-->
+                <div class="col-12 col-md-4">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
+                                <img src="images/rooms/basic.jpeg" alt="Gallery 2" class="img-fluid object-fit-cover">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
+                                <img src="images/rooms/basic.jpeg" alt="Gallery 3" class="img-fluid object-fit-cover">
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <!--bento box-->
-            <div class="container-fluid px-0">
-                <div class="row g-3">
-                    <!--left large-->
-                    <div class="col-12 col-md-8">
-                        <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
-                            <img src="images/rooms/basic.jpeg" alt="Gallery 1" class="img-fluid object-fit-cover">
-                        </div>
-                    </div>
-                    <!--right column with 2 stacked images-->
-                    <div class="col-12 col-md-4">
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
-                                    <img src="images/rooms/basic.jpeg" alt="Gallery 2" class="img-fluid object-fit-cover">
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
-                                    <img src="images/rooms/basic.jpeg" alt="Gallery 3" class="img-fluid object-fit-cover">
-                                </div>
-                            </div>
-                        </div>
+            <!--bottom row with 3 images-->
+            <div class="row g-3 mt-0">
+                <div class="col-12 col-md-4">
+                    <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
+                        <img src="images/rooms/basic.jpeg" alt="Gallery 4" class="img-fluid object-fit-cover">
                     </div>
                 </div>
-                <!--bottom row with 3 images-->
-                <div class="row g-3 mt-0">
-                    <div class="col-12 col-md-4">
-                        <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
-                            <img src="images/rooms/basic.jpeg" alt="Gallery 4" class="img-fluid object-fit-cover">
-                        </div>
+                <div class="col-12 col-md-4">
+                    <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
+                        <img src="images/rooms/basic.jpeg" alt="Gallery 5" class="img-fluid object-fit-cover">
                     </div>
-                    <div class="col-12 col-md-4">
-                        <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
-                            <img src="images/rooms/basic.jpeg" alt="Gallery 5" class="img-fluid object-fit-cover">
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-4">
-                        <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
-                            <img src="images/rooms/basic.jpeg" alt="Gallery 6" class="img-fluid object-fit-cover">
-                        </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
+                        <img src="images/rooms/basic.jpeg" alt="Gallery 6" class="img-fluid object-fit-cover">
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="container">
+    <div id="about" class="container">
         <div class="row">
             <div class="col">
                 <h2 class="mt-5 mb-2 text-center fw-bold h-font">ABOUT US</h2>
@@ -238,50 +232,55 @@
 
     <div class="container mt-5">
         <div class="row">
-            <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
-                <div class="card h-100 bg-transparent shadow rounded-3">
-                    <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
-                        <img src="images/rooms/basic.jpeg" alt="..." class="img-fluid">
+            <div class="col-12 col-sm-6 col-md-4 col-lg pb-4 text-center">
+                <div class="card h-100 bg-transparent border-0 rounded-3 align-items-center">
+                    <div class="rounded-circle overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
+                        style="width: 200px; height: 200px;">
+                        <img src="members-img/guevarra.jpg" alt="..." class="img-fluid object-fit-cover w-100 h-100">
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Guevarra, Marc Darren F.</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-md-4 col-lg pb-4 text-center">
+                <div class="card h-100 bg-transparent border-0 rounded-3 align-items-center">
+                    <div class="rounded-circle overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
+                        style="width: 200px; height: 200px;">
+                        <img src="members-img/gonzales.jpg" alt="..." class="img-fluid object-fit-cover w-100 h-100">
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Gonzales, Ken Cedrick L.</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-md-4 col-lg pb-4 text-center">
+                <div class="card h-100 bg-transparent border-0 rounded-3 align-items-center">
+                    <div class="rounded-circle overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
+                        style="width: 200px; height: 200px;">
+                        <img src="images/rooms/basic.jpeg" alt="..." class="img-fluid object-fit-cover w-100 h-100">
                     </div>
                     <div class="card-body">
                         <h5 class="card-title">lagay niyo name niyo</h5>
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
-                <div class="card h-100 bg-transparent shadow rounded-3">
-                    <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
-                        <img src="images/rooms/basic.jpeg" class="card-img-top" alt="..." class="img-fluid">
+            <div class="col-12 col-sm-6 col-md-4 col-lg pb-4 text-center">
+                <div class="card h-100 bg-transparent border-0 rounded-3 align-items-center">
+                    <div class="rounded-circle overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
+                        style="width: 200px; height: 200px;">
+                        <img src="images/rooms/basic.jpeg" alt="..." class="img-fluid object-fit-cover w-100 h-100">
                     </div>
                     <div class="card-body">
                         <h5 class="card-title">lagay niyo name niyo</h5>
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
-                <div class="card h-100 bg-transparent shadow rounded-3">
-                    <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
-                        <img src="images/rooms/basic.jpeg" class="card-img-top" alt="..." class="img-fluid">
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">lagay niyo name niyo</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
-                <div class="card h-100 bg-transparent shadow rounded-3">
-                    <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
-                        <img src="images/rooms/basic.jpeg" alt="..." class="img-fluid">
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">lagay niyo name niyo</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
-                <div class="card h-100 bg-transparent shadow rounded-3">
-                    <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
-                        <img src="images/rooms/basic.jpeg" alt="..." class="img-fluid">
+            <div class="col-12 col-sm-6 col-md-4 col-lg pb-4 text-center">
+                <div class="card h-100 bg-transparent border-0 rounded-3 align-items-center">
+                    <div class="rounded-circle overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
+                        style="width: 200px; height: 200px;">
+                        <img src="images/rooms/basic.jpeg" alt="..." class="img-fluid object-fit-cover w-100 h-100">
                     </div>
                     <div class="card-body">
                         <h5 class="card-title">lagay niyo name niyo</h5>
@@ -333,35 +332,6 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const navbar = document.querySelector('.navbar');
-            if (!navbar) return;
-
-            const startEl = document.getElementById('start');
-            const header = document.getElementById('header');
-
-            function setScrolled(state) {
-                if (state) navbar.classList.add('navbar-scrolled');
-                else navbar.classList.remove('navbar-scrolled');
-            }
-
-            function check() {
-                const navHeight = navbar.offsetHeight || 0;
-                if (startEl) {
-                    const rect = startEl.getBoundingClientRect();
-                    setScrolled(rect.top <= navHeight);
-                } else if (header) {
-                    setScrolled(window.scrollY > (header.offsetHeight - navHeight - 10));
-                } else {
-                    setScrolled(window.scrollY > navHeight + 10);
-                }
-            }
-
-            window.addEventListener('scroll', check, { passive: true });
-            window.addEventListener('resize', check);
-            check();
-        });
-
         function changeMode() {
             const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
             document.documentElement.setAttribute('data-bs-theme', isDark ? 'light' : 'dark');
