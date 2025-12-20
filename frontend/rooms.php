@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/HOTEL-MANAGEMENT-SYSTEM/css/style.css">
     <style>
         .room-card-img {
             width: 100%;
@@ -469,6 +469,11 @@
             document.querySelectorAll('.bg-dark, .bg-secondary').forEach(element => {
                 element.classList.toggle('bg-dark');
                 element.classList.toggle('bg-secondary');
+            });
+
+            document.querySelectorAll('.btn-outline-dark, .btn-outline-light').forEach(element => {
+                element.classList.toggle('btn-outline-dark');
+                element.classList.toggle('btn-outline-light');
             });
         }
     </script>
