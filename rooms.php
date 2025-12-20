@@ -149,8 +149,10 @@
                                         <span class="badge bg-dark me-1 mb-1">Television</span>
                                     </div>
                                     <div class="d-flex gap-2 flex-wrap">
-                                        <button class="btn btn-warning">Book Now</button>
-                                        <button class="btn btn-outline-secondary">More Details</button>
+                                        <button class="btn btn-warning" data-bs-toggle="modal"
+                                            data-bs-target="#bookingModal">Book Now</button>
+                                        <button class="btn btn-outline-secondary" data-bs-toggle="modal"
+                                            data-bs-target="#basicRoomModal">More Details</button>
                                     </div>
                                 </div>
                             </div>
@@ -316,25 +318,147 @@
         </div>
     </div>
 
-    <?php include 'includes/footer.php'; ?>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-        crossorigin="anonymous"></script>
-    <script>
-        function changeMode() {
-            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-            document.documentElement.setAttribute('data-bs-theme', isDark ? 'light' : 'dark');
-            document.querySelectorAll('#mode i, #mode-lg i').forEach(icon => {
-                icon.className = isDark ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
-            });
+    <div class="modal fade" id="basicRoomModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
 
-            document.querySelectorAll('.bg-dark, .bg-secondary').forEach(element => {
-                element.classList.toggle('bg-dark');
-                element.classList.toggle('bg-secondary');
-            });
-        }
-    </script>
+                <div class="modal-header">
+                    <h5 class="modal-title">Basic Room</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12 justify-content-center text-center">
+                            <img src="images/rooms/basic.jpeg" alt="Basic room" class="img-fluid rounded-3 mb-3">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-8 text-center fw-semibold" style="font-size: 12px;">
+                            For couples or lone travelers, our Basic Room provides a warm and pleasant setting.
+                            It has a comfortable office, a well-designed bathroom with hot and cold shower choices,
+                            and a queen-sized bed with luxurious bedding. For your convenience, the room has a 32-inch
+                            flat-screen TV with cable channels, high-speed WiFi, and personal air conditioning controls.
+                            Your apartment will stay clean for the duration of your stay thanks to daily housekeeping.
+                        </div>
+                        <div class="col-4 align-items-center d-flex">
+                            <div class="mb-2 justify-content-evenly">
+                                <span class="badge bg-dark me-1 mb-1">1 Room</span>
+                                <span class="badge bg-dark me-1 mb-1">1 Bathroom</span>
+                                <span class="badge bg-dark me-1 mb-1">Hot/Cold Shower</span>
+                                <span class="badge bg-dark me-1 mb-1">Air-conditioner</span>
+                                <span class="badge bg-dark me-1 mb-1">Television</span>
+                                <span class="badge bg-dark me-1 mb-1">Wifi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-warning">Book Now</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="bookingModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Basic Room</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12 col-md-7 justify-content-center text-center">
+                            <img src="images/rooms/basic.jpeg" alt="Basic room" class="img-fluid rounded-3 mb-3">
+                            <div class="col-12 text-start mx-3 fw-regular" style="font-size: 12px;">
+                                For couples or lone travelers, our Basic Room provides a warm and pleasant setting.
+                                It has a comfortable office, a well-designed bathroom with hot and cold shower choices,
+                                and a queen-sized bed with luxurious bedding. For your convenience, the room has a 32-inch
+                                flat-screen TV with cable channels, high-speed WiFi, and personal air conditioning controls.
+                                Your apartment will stay clean for the duration of your stay thanks to daily housekeeping.
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-5">
+                            <div class="row">
+                                <div class="col-12">
+                                    <p class="text-start fw-bold mb-1">Guest information</p>
+                                    <label for="fullName" class="form-label mb-0">Full Name</label>
+                                    <input type="text" id="fullName" class="form-control mb-1">
+                                    <label for="email" class="form-label mb-0">Email Address</label>
+                                    <input type="email" id="email" class="form-control mb-1">
+                                    <label for="phoneNumber" class="form-label mb-0">Phone Number</label>
+                                    <input type="tel" id="phoneNumber" class="form-control mb-1">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <p class="text-start fw-bold mt-1 mb-1">Booking details</p>
+                                <div class="col-5">
+                                    <label for="checkIn" class="form-label mb-0">Check-in</label>
+                                    <input type="date" id="checkIn" class="form-control mb-1">
+                                </div>
+                                <div class="col-5">
+                                    <label for="checkOut" class="form-label mb-0">Check-out</label>
+                                    <input type="date" id="checkOut" class="form-control mb-1">
+                                </div>
+                                <div class="col-2">
+                                    <label for="guests" class="form-label mb-0">Guests</label>
+                                    <input type="number" id="guests" class="form-control mb-1" min="1" value="1">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12 m-2">
+                                    <p class="text-start text-sm text-secondary fw-bold m-1">Booking Summary</p>
+                                    <div class="row">
+                                        <div class="col-6 ms-2 text-start">
+                                            <p class="mb-1"><strong>Room:</strong> <span id="summaryRoom">-</span></p> <!--dine lalabas mga info via backend (span)-->
+                                            <p class="mb-1"><strong>Dates:</strong> <span id="summaryDates">-</span></p>
+                                            <p class="mb-1"><strong>Duration:</strong> <span id="summaryNights">-</span></p>
+                                            <p class="mb-1"><strong>Guests:</strong> <span id="summaryGuests">-</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary">Cancel</button>
+                        <button class="btn btn-warning">Book Now</button>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <?php include 'includes/footer.php'; ?>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+            crossorigin="anonymous"></script>
+        <script>
+            function changeMode() {
+                const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                document.documentElement.setAttribute('data-bs-theme', isDark ? 'light' : 'dark');
+                document.querySelectorAll('#mode i, #mode-lg i').forEach(icon => {
+                    icon.className = isDark ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+                });
+
+                document.querySelectorAll('.bg-dark, .bg-secondary').forEach(element => {
+                    element.classList.toggle('bg-dark');
+                    element.classList.toggle('bg-secondary');
+                });
+            }
+        </script>
 </body>
 
 </html>
