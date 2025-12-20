@@ -15,7 +15,7 @@
 </head>
 
 <body>
-    <?php include 'includes/navbar.php'; ?>
+    <?php include '../HOTEL-MANAGEMENT-SYSTEM/frontend/includes/navbar.php'; ?>
 
     <div id="home" class="position-relative d-flex align-items-center justify-content-center"
         style="min-height: 95vh; background: url('images/loginRegisterImg/img.jpg') center/cover no-repeat fixed;">
@@ -32,7 +32,7 @@
                     <p class="lead fs-4 mb-5 opacity-75" style="color: white; text-shadow: 0 4px 15px rgba(0,0,0,0.9);">
                         travelmits // aayusin pa to
                     </p>
-                    <a href="rooms.php" class="btn btn-warning btn-lg">Book Now</a>
+                    <a href="frontend/rooms.php" class="btn btn-warning btn-lg">Book Now</a>
                 </div>
             </div>
         </div>
@@ -95,7 +95,7 @@
         </div>
     </div>
     <div class="col-lg-12 text-center my-4">
-        <a href="rooms.php" class="btn btn-sm btn-outline-dark rounded-0 fw-bold shadow-none">More Rooms >>></a>
+        <a href="frontend/rooms.php" class="btn btn-sm btn-outline-dark rounded-0 fw-bold shadow-none">More Rooms >>></a>
     </div>
 
     <div class="container mb-5">
@@ -262,10 +262,10 @@
                 <div class="card h-100 bg-transparent border-0 rounded-3 align-items-center">
                     <div class="rounded-circle overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
                         style="width: 200px; height: 200px;">
-                        <img src="images/rooms/basic.jpeg" alt="..." class="img-fluid object-fit-cover w-100 h-100">
+                        <img src="images/members-img/JohnEduard.jpg" alt="..." class="img-fluid object-fit-cover w-100 h-100">
                     </div>
                     <div class="card-body">
-                        <h5 class="card-title">lagay niyo name niyo</h5>
+                        <h5 class="card-title">Madriaga John Eduard A.</h5>
                     </div>
                 </div>
             </div>
@@ -294,7 +294,7 @@
         </div>
     </div>
 
-    <?php include 'includes/footer.php'; ?>
+    <?php include '../HOTEL-MANAGEMENT-SYSTEM/frontend/includes/footer.php'; ?>
 
     <script>
         function changeMode() {

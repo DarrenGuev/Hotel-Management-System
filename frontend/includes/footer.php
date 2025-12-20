@@ -13,10 +13,10 @@
             <!-- Quick Links -->
             <div class="col-lg-4 p-4">
                 <h5 class="mb-3">Quick Links</h5>
-                <a href="index.php" class="d-block text-decoration-none text-light mb-1">Home</a>
-                <a href="frontend/rooms.php" class="d-block text-decoration-none text-light mb-1">Rooms</a>
+                <a href="/HOTEL-MANAGEMENT-SYSTEM/index.php" class="d-block text-decoration-none text-light mb-1">Home</a>
+                <a href="/HOTEL-MANAGEMENT-SYSTEM/frontend/rooms.php" class="d-block text-decoration-none text-light mb-1">Rooms</a>
                 <a href="#" class="d-block text-decoration-none text-light mb-1">Facilities</a>
-                <a href="index.php#about" class="d-block text-decoration-none text-light mb-1">About</a>
+                <a href="/HOTEL-MANAGEMENT-SYSTEM/index.php#about" class="d-block text-decoration-none text-light mb-1">About</a>
                 <a href="#" class="d-block text-decoration-none text-light">Contact</a>
             </div>
 
