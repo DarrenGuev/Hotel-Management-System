@@ -15,7 +15,7 @@
 </head>
 
 <body>
-    <?php include 'includes/navbar.php'; ?>
+    <?php include '../HOTEL-MANAGEMENT-SYSTEM/frontend/includes/navbar.php'; ?>
 
     <div id="home" class="position-relative d-flex align-items-center justify-content-center"
         style="min-height: 95vh; background: url('images/loginRegisterImg/img.jpg') center/cover no-repeat fixed;">
@@ -294,7 +294,7 @@
         </div>
     </div>
 
-    <?php include 'includes/footer.php'; ?>
+    <?php include '../HOTEL-MANAGEMENT-SYSTEM/frontend/includes/footer.php'; ?>
 
     <script>
         function changeMode() {

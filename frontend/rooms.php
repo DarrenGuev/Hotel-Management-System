@@ -132,7 +132,8 @@
                         <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
                             <div class="card h-100 bg-transparent shadow rounded-3">
                                 <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
-                                    <img src="images/rooms/basic.jpeg" class="card-img-top img-fluid" alt="Basic Room">
+                                    <img src="/HOTEL-MANAGEMENT-SYSTEM/images/rooms/basic.jpeg"
+                                        class="card-img-top img-fluid" alt="Basic Room">
                                 </div>
                                 <div class="card-body p-4">
                                     <h5 class="card-title fw-bold mb-1">Basic Room</h5>
@@ -173,7 +174,8 @@
                         <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
                             <div class="card h-100 bg-transparent shadow rounded-3">
                                 <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
-                                    <img src="images/rooms/basic.jpeg" class="card-img-top img-fluid" alt="Basic Room">
+                                    <img src="/HOTEL-MANAGEMENT-SYSTEM/images/rooms/basic.jpeg"
+                                        class="card-img-top img-fluid" alt="Basic Room">
                                 </div>
                                 <div class="card-body p-4">
                                     <h5 class="card-title fw-bold mb-1">Basic Room</h5>
@@ -211,7 +213,8 @@
                         <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
                             <div class="card h-100 bg-transparent shadow rounded-3">
                                 <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
-                                    <img src="images/rooms/basic.jpeg" class="card-img-top img-fluid" alt="Basic Room">
+                                    <img src="/HOTEL-MANAGEMENT-SYSTEM/images/rooms/basic.jpeg"
+                                        class="card-img-top img-fluid" alt="Basic Room">
                                 </div>
                                 <div class="card-body p-4">
                                     <h5 class="card-title fw-bold mb-1">Basic Room</h5>
@@ -250,7 +253,8 @@
                         <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
                             <div class="card h-100 bg-transparent shadow rounded-3">
                                 <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
-                                    <img src="images/rooms/basic.jpeg" class="card-img-top img-fluid" alt="Basic Room">
+                                    <img src="/HOTEL-MANAGEMENT-SYSTEM/images/rooms/basic.jpeg"
+                                        class="card-img-top img-fluid" alt="Basic Room">
                                 </div>
                                 <div class="card-body p-4">
                                     <h5 class="card-title fw-bold mb-1">Basic Room</h5>
@@ -289,7 +293,8 @@
                         <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
                             <div class="card h-100 bg-transparent shadow rounded-3">
                                 <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
-                                    <img src="images/rooms/basic.jpeg" class="card-img-top img-fluid" alt="Basic Room">
+                                    <img src="/HOTEL-MANAGEMENT-SYSTEM/images/rooms/basic.jpeg"
+                                        class="card-img-top img-fluid" alt="Basic Room">
                                 </div>
                                 <div class="card-body p-4">
                                     <h5 class="card-title fw-bold mb-1">Basic Room</h5>
@@ -331,7 +336,8 @@
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-12 justify-content-center text-center">
-                            <img src="images/rooms/basic.jpeg" alt="Basic room" class="img-fluid rounded-3 mb-3">
+                            <img src="/HOTEL-MANAGEMENT-SYSTEM/images/rooms/basic.jpeg" alt="Basic room"
+                                class="img-fluid rounded-3 mb-3">
                         </div>
                     </div>
 
@@ -376,13 +382,17 @@
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-12 col-md-7 justify-content-center text-center">
-                            <img src="images/rooms/basic.jpeg" alt="Basic room" class="img-fluid rounded-3 mb-3">
+                            <img src="/HOTEL-MANAGEMENT-SYSTEM/images/rooms/basic.jpeg" alt="Basic room"
+                                class="img-fluid rounded-3 mb-3">
                             <div class="col-12 text-start mx-3 fw-regular" style="font-size: 12px;">
                                 For couples or lone travelers, our Basic Room provides a warm and pleasant setting.
                                 It has a comfortable office, a well-designed bathroom with hot and cold shower choices,
-                                and a queen-sized bed with luxurious bedding. For your convenience, the room has a 32-inch
-                                flat-screen TV with cable channels, high-speed WiFi, and personal air conditioning controls.
-                                Your apartment will stay clean for the duration of your stay thanks to daily housekeeping.
+                                and a queen-sized bed with luxurious bedding. For your convenience, the room has a
+                                32-inch
+                                flat-screen TV with cable channels, high-speed WiFi, and personal air conditioning
+                                controls.
+                                Your apartment will stay clean for the duration of your stay thanks to daily
+                                housekeeping.
                             </div>
                         </div>
                         <div class="col-12 col-md-5">
@@ -419,46 +429,49 @@
                                     <p class="text-start text-sm text-secondary fw-bold m-1">Booking Summary</p>
                                     <div class="row">
                                         <div class="col-6 ms-2 text-start">
-                                            <p class="mb-1"><strong>Room:</strong> <span id="summaryRoom">-</span></p> <!--dine lalabas mga info via backend (span)-->
+                                            <p class="mb-1"><strong>Room:</strong> <span id="summaryRoom">-</span></p>
+                                            <!--dine lalabas mga info via backend (span)-->
                                             <p class="mb-1"><strong>Dates:</strong> <span id="summaryDates">-</span></p>
-                                            <p class="mb-1"><strong>Duration:</strong> <span id="summaryNights">-</span></p>
-                                            <p class="mb-1"><strong>Guests:</strong> <span id="summaryGuests">-</span></p>
+                                            <p class="mb-1"><strong>Duration:</strong> <span id="summaryNights">-</span>
+                                            </p>
+                                            <p class="mb-1"><strong>Guests:</strong> <span id="summaryGuests">-</span>
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary">Cancel</button>
-                        <button class="btn btn-warning">Book Now</button>
-                    </div>
-
                 </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary">Cancel</button>
+                    <button class="btn btn-warning">Book Now</button>
+                </div>
+
 
             </div>
         </div>
+    </div>
 
-        <?php include 'includes/footer.php'; ?>
+    <?php include 'includes/footer.php'; ?>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-            crossorigin="anonymous"></script>
-        <script>
-            function changeMode() {
-                const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-                document.documentElement.setAttribute('data-bs-theme', isDark ? 'light' : 'dark');
-                document.querySelectorAll('#mode i, #mode-lg i').forEach(icon => {
-                    icon.className = isDark ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
-                });
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+    <script>
+        function changeMode() {
+            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+            document.documentElement.setAttribute('data-bs-theme', isDark ? 'light' : 'dark');
+            document.querySelectorAll('#mode i, #mode-lg i').forEach(icon => {
+                icon.className = isDark ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+            });
 
-                document.querySelectorAll('.bg-dark, .bg-secondary').forEach(element => {
-                    element.classList.toggle('bg-dark');
-                    element.classList.toggle('bg-secondary');
-                });
-            }
-        </script>
+            document.querySelectorAll('.bg-dark, .bg-secondary').forEach(element => {
+                element.classList.toggle('bg-dark');
+                element.classList.toggle('bg-secondary');
+            });
+        }
+    </script>
 </body>
 
 </html>
