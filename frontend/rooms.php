@@ -35,81 +35,173 @@
     <div class="container-fluid">
         <div class="row">
             <!-- Filter Sidebar -->
-            <div class="col-12 col-lg-3 col-xl-2 bg-body-tertiary min-vh-100 border-end p-4">
-                <h5 class="fw-bold mb-4">Filter Rooms</h5>
+            <div class="col-12 col-lg-3 col-xl-2">
+                <div class="sticky-top" style="top:70px; z-index: 10;">
+                    <div class="bg-body-tertiary border-end p-4">
+                        <div class="d-lg-none">
+                            <div class="accordion" id="filterAccordion">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFilter" aria-expanded="false" aria-controls="collapseFilter">
+                                            Filter Rooms
+                                        </button>
+                                    </h2>
+                                    <div id="collapseFilter" class="accordion-collapse collapse">
+                                        <div class="accordion-body">
+                                            <!-- Room Type -->
+                                            <div class="border-bottom pb-3 mb-3">
+                                                <h6 class="fw-semibold mb-3 text-secondary">Room Type</h6>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" value="basic" id="typeBasic">
+                                                    <label class="form-check-label small" for="typeBasic">Basic</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" value="twin" id="typeTwin">
+                                                    <label class="form-check-label small" for="typeTwin">Twin</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" value="deluxe" id="typeDeluxe">
+                                                    <label class="form-check-label small" for="typeDeluxe">Deluxe</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" value="single" id="typeSingle">
+                                                    <label class="form-check-label small" for="typeSingle">Single</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" value="family" id="typeFamily">
+                                                    <label class="form-check-label small" for="typeFamily">Family</label>
+                                                </div>
+                                            </div>
 
-                <!-- Room Type -->
-                <div class="border-bottom pb-3 mb-3">
-                    <h6 class="fw-semibold mb-3 text-secondary">Room Type</h6>
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" value="basic" id="typeBasic">
-                        <label class="form-check-label small" for="typeBasic">Basic</label>
-                    </div>
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" value="twin" id="typeTwin">
-                        <label class="form-check-label small" for="typeTwin">Twin</label>
-                    </div>
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" value="deluxe" id="typeDeluxe">
-                        <label class="form-check-label small" for="typeDeluxe">Deluxe</label>
-                    </div>
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" value="single" id="typeSingle">
-                        <label class="form-check-label small" for="typeSingle">Single</label>
-                    </div>
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" value="family" id="typeFamily">
-                        <label class="form-check-label small" for="typeFamily">Family</label>
-                    </div>
-                </div>
+                                            <!-- Price Range -->
+                                            <div class="border-bottom pb-3 mb-3">
+                                                <h6 class="fw-semibold mb-3 text-secondary">Price Range (₱)</h6>
+                                                <input type="range" class="form-range" min="1000" max="6000" step="100" id="priceRange" value="3500">
+                                                <div class="d-flex justify-content-between small text-muted">
+                                                    <span>₱1,000</span>
+                                                    <span>₱6,000</span>
+                                                </div>
+                                            </div>
 
-                <!-- Price Range -->
-                <div class="border-bottom pb-3 mb-3">
-                    <h6 class="fw-semibold mb-3 text-secondary">Price Range (₱)</h6>
-                    <input type="range" class="form-range" min="1000" max="6000" step="100" id="priceRange"
-                        value="3500">
-                    <div class="d-flex justify-content-between small text-muted">
-                        <span>₱1,000</span>
-                        <span>₱6,000</span>
-                    </div>
-                </div>
+                                            <!-- Facilities -->
+                                            <div class="border-bottom pb-3 mb-3">
+                                                <h6 class="fw-semibold mb-3 text-secondary">Facilities</h6>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" value="wifi" id="facilityWifi">
+                                                    <label class="form-check-label small" for="facilityWifi">WiFi</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" value="aircon" id="facilityAircon">
+                                                    <label class="form-check-label small" for="facilityAircon">Air-conditioner</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" value="tv" id="facilityTv">
+                                                    <label class="form-check-label small" for="facilityTv">Television</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" value="kitchen" id="facilityKitchen">
+                                                    <label class="form-check-label small" for="facilityKitchen">Kitchen</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" value="parking" id="facilityParking">
+                                                    <label class="form-check-label small" for="facilityParking">Parking</label>
+                                                </div>
+                                            </div>
 
-                <!-- Facilities -->
-                <div class="border-bottom pb-3 mb-3">
-                    <h6 class="fw-semibold mb-3 text-secondary">Facilities</h6>
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" value="wifi" id="facilityWifi">
-                        <label class="form-check-label small" for="facilityWifi">WiFi</label>
-                    </div>
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" value="aircon" id="facilityAircon">
-                        <label class="form-check-label small" for="facilityAircon">Air-conditioner</label>
-                    </div>
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" value="tv" id="facilityTv">
-                        <label class="form-check-label small" for="facilityTv">Television</label>
-                    </div>
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" value="kitchen" id="facilityKitchen">
-                        <label class="form-check-label small" for="facilityKitchen">Kitchen</label>
-                    </div>
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" value="parking" id="facilityParking">
-                        <label class="form-check-label small" for="facilityParking">Parking</label>
-                    </div>
-                </div>
+                                            <!-- Guest Capacity -->
+                                            <div class="pb-3 mb-3">
+                                                <h6 class="fw-semibold mb-3 text-secondary">Guest Capacity</h6>
+                                                <select class="form-select" id="guestCapacity">
+                                                    <option value="">Any</option>
+                                                    <option value="1">1 Guest</option>
+                                                    <option value="2">2 Guests</option>
+                                                    <option value="3">3 Guests</option>
+                                                    <option value="4">4 Guests</option>
+                                                    <option value="5">5+ Guests</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                <!-- Guest Capacity -->
-                <div class="pb-3 mb-3">
-                    <h6 class="fw-semibold mb-3 text-secondary">Guest Capacity</h6>
-                    <select class="form-select" id="guestCapacity">
-                        <option value="">Any</option>
-                        <option value="1">1 Guest</option>
-                        <option value="2">2 Guests</option>
-                        <option value="3">3 Guests</option>
-                        <option value="4">4 Guests</option>
-                        <option value="5">5+ Guests</option>
-                    </select>
+                        <div class="d-none d-lg-block">
+                            <h5 class="fw-bold mb-4">Filter Rooms</h5>
+                            <!-- Room Type -->
+                            <div class="border-bottom pb-3 mb-3">
+                                <h6 class="fw-semibold mb-3 text-secondary">Room Type</h6>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" value="basic" id="typeBasic">
+                                    <label class="form-check-label small" for="typeBasic">Basic</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" value="twin" id="typeTwin">
+                                    <label class="form-check-label small" for="typeTwin">Twin</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" value="deluxe" id="typeDeluxe">
+                                    <label class="form-check-label small" for="typeDeluxe">Deluxe</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" value="single" id="typeSingle">
+                                    <label class="form-check-label small" for="typeSingle">Single</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" value="family" id="typeFamily">
+                                    <label class="form-check-label small" for="typeFamily">Family</label>
+                                </div>
+                            </div>
+
+                            <!-- Price Range -->
+                            <div class="border-bottom pb-3 mb-3">
+                                <h6 class="fw-semibold mb-3 text-secondary">Price Range (₱)</h6>
+                                <input type="range" class="form-range" min="1000" max="6000" step="100" id="priceRange" value="3500">
+                                <div class="d-flex justify-content-between small text-muted">
+                                    <span>₱1,000</span>
+                                    <span>₱6,000</span>
+                                </div>
+                            </div>
+
+                            <!-- Facilities -->
+                            <div class="border-bottom pb-3 mb-3">
+                                <h6 class="fw-semibold mb-3 text-secondary">Facilities</h6>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" value="wifi" id="facilityWifi">
+                                    <label class="form-check-label small" for="facilityWifi">WiFi</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" value="aircon" id="facilityAircon">
+                                    <label class="form-check-label small" for="facilityAircon">Air-conditioner</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" value="tv" id="facilityTv">
+                                    <label class="form-check-label small" for="facilityTv">Television</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" value="kitchen" id="facilityKitchen">
+                                    <label class="form-check-label small" for="facilityKitchen">Kitchen</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" value="parking" id="facilityParking">
+                                    <label class="form-check-label small" for="facilityParking">Parking</label>
+                                </div>
+                            </div>
+
+                            <!-- Guest Capacity -->
+                            <div class="pb-3 mb-3">
+                                <h6 class="fw-semibold mb-3 text-secondary">Guest Capacity</h6>
+                                <select class="form-select" id="guestCapacity">
+                                    <option value="">Any</option>
+                                    <option value="1">1 Guest</option>
+                                    <option value="2">2 Guests</option>
+                                    <option value="3">3 Guests</option>
+                                    <option value="4">4 Guests</option>
+                                    <option value="5">5+ Guests</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

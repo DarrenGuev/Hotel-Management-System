@@ -19,6 +19,7 @@
             position: relative;
             overflow: hidden;
         }
+
         .login-page::before {
             content: '';
             position: absolute;
@@ -29,26 +30,34 @@
             filter: blur(5px);
             z-index: 0;
         }
+
         .glass-card {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
         }
+
         .divider-vertical {
             width: 5px;
             background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.3), transparent);
         }
+
         .form-control-glass {
             background: rgba(255, 255, 255, 0.1) !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
             color: #fff !important;
         }
-        .form-control-glass::placeholder { color: rgba(255, 255, 255, 0.5); }
+
+        .form-control-glass::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
         .form-control-glass:focus {
             background: rgba(255, 255, 255, 0.15) !important;
             border-color: rgba(255, 153, 0, 0.5) !important;
             box-shadow: 0 0 15px rgba(255, 153, 0, 0.2) !important;
         }
+
         .btn-glass {
             background: linear-gradient(135deg, #ff9900 0%, #ff6600 100%);
         }
@@ -69,8 +78,8 @@
                                     <h1 class="display-4 fw-bold text-white mb-2">Welcome</h1>
                                     <h1 class="display-4 fw-bold text-white mb-4">Back!</h1>
                                     <p class="text-white-50 fs-6">
-                                        Experience comfort and luxury at TravelMates Hotel. 
-                                        Your perfect getaway awaits. Book your stay and create 
+                                        Experience comfort and luxury at TravelMates Hotel.
+                                        Your perfect getaway awaits. Book your stay and create
                                         unforgettable memories with us.
                                     </p>
                                 </div>
@@ -88,14 +97,14 @@
                             <div class="col-12 col-md-5">
                                 <div class="d-flex flex-column h-100 justify-content-center">
                                     <h2 class="fs-3 fw-semibold text-white text-center mb-4">Login</h2>
-                                    
+
                                     <form action="php/login_process.php" method="POST">
                                         <div class="mb-3">
-                                            <input type="text" class="form-control form-control-lg form-control-glass rounded-3 py-3" 
+                                            <input type="text" class="form-control form-control-lg form-control-glass rounded-3 py-3"
                                                 name="username" placeholder="Username" required>
                                         </div>
                                         <div class="mb-4 position-relative">
-                                            <input type="password" class="form-control form-control-lg form-control-glass rounded-3 py-3" 
+                                            <input type="password" class="form-control form-control-lg form-control-glass rounded-3 py-3"
                                                 name="password" placeholder="Password" required id="password" style="padding-right: 2.5rem;">
                                             <i class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-3 text-white" id="togglePassword" style="cursor: pointer;"></i>
                                         </div>
@@ -106,7 +115,7 @@
                                     </form>
 
                                     <p class="text-center text-white-50 small mb-0">
-                                        Don't have an account? 
+                                        Don't have an account?
                                         <a href="/HOTEL-MANAGEMENT-SYSTEM/frontend/register.php" class="text-warning text-decoration-none fw-semibold">Register</a>
                                     </p>
                                 </div>
@@ -125,7 +134,7 @@
         const togglePassword = document.querySelector('#togglePassword');
         const password = document.querySelector('#password');
 
-        togglePassword.addEventListener('click', function (e) {
+        togglePassword.addEventListener('click', function(e) {
             const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
             password.setAttribute('type', type);
             this.classList.toggle('bi-eye');
