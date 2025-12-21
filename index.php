@@ -47,55 +47,13 @@
         </div>
     </div>
     <div class="container">
-        <div class="row">
-            <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
-                <div class="card h-100 bg-transparent shadow rounded-3">
-                    <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
-                        <img src="images/rooms/basic.jpeg" alt="..." class="img-fluid">
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">Basic Room</h5>
-                        <p class="card-text">Comfort Meets Simplicity. ₱1,389 per night.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
-                <div class="card h-100 bg-transparent shadow rounded-3">
-                    <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
-                        <img src="images/rooms/basic.jpeg" class="card-img-top" alt="..." class="img-fluid">
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">Basic Room</h5>
-                        <p class="card-text">Comfort Meets Simplicity. ₱1,389 per night.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
-                <div class="card h-100 bg-transparent shadow rounded-3">
-                    <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
-                        <img src="images/rooms/basic.jpeg" class="card-img-top" alt="..." class="img-fluid">
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">Basic Room</h5>
-                        <p class="card-text">Comfort Meets Simplicity. ₱1,389 per night.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
-                <div class="card h-100 bg-transparent shadow rounded-3">
-                    <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
-                        <img src="images/rooms/basic.jpeg" alt="..." class="img-fluid">
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">Basic Room</h5>
-                        <p class="card-text">Comfort Meets Simplicity. ₱1,389 per night.</p>
-                    </div>
-                </div>
-            </div>
+        <div class="row" id="ourRoomsContainer">
+
         </div>
     </div>
     <div class="col-lg-12 text-center my-4">
-        <a href="frontend/rooms.php" class="btn btn-sm btn-outline-dark rounded-0 fw-bold shadow-none">More Rooms >>></a>
+        <a href="frontend/rooms.php" class="btn btn-sm btn-outline-dark rounded-0 fw-bold shadow-none">More Rooms
+            >>></a>
     </div>
 
     <div class="container mb-5">
@@ -235,68 +193,52 @@
     </div>
 
     <div class="container mt-5">
-        <div class="row">
-            <div class="col-12 col-sm-6 col-md-4 col-lg pb-4 text-center">
-                <div class="card h-100 bg-transparent border-0 rounded-3 align-items-center">
-                    <div class="rounded-circle overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
-                        style="width: 200px; height: 200px;">
-                        <img src="images/members-img/guevarra.jpg" alt="..." class="img-fluid object-fit-cover w-100 h-100">
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">Guevarra, Marc Darren F.</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-md-4 col-lg pb-4 text-center">
-                <div class="card h-100 bg-transparent border-0 rounded-3 align-items-center">
-                    <div class="rounded-circle overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
-                        style="width: 200px; height: 200px;">
-                        <img src="images/members-img/gonzales.jpg" alt="..." class="img-fluid object-fit-cover w-100 h-100">
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">Gonzales, Ken Cedrick L.</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-md-4 col-lg pb-4 text-center">
-                <div class="card h-100 bg-transparent border-0 rounded-3 align-items-center">
-                    <div class="rounded-circle overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
-                        style="width: 200px; height: 200px;">
-                        <img src="images/members-img/JohnEduard.jpg" alt="..." class="img-fluid object-fit-cover w-100 h-100">
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">Madriaga John Eduard A.</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-md-4 col-lg pb-4 text-center">
-                <div class="card h-100 bg-transparent border-0 rounded-3 align-items-center">
-                    <div class="rounded-circle overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
-                        style="width: 200px; height: 200px;">
-                        <img src="images/rooms/basic.jpeg" alt="..." class="img-fluid object-fit-cover w-100 h-100">
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">lagay niyo name niyo</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-md-4 col-lg pb-4 text-center">
-                <div class="card h-100 bg-transparent border-0 rounded-3 align-items-center">
-                    <div class="rounded-circle overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
-                        style="width: 200px; height: 200px;">
-                        <img src="images/rooms/basic.jpeg" alt="..." class="img-fluid object-fit-cover w-100 h-100">
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">lagay niyo name niyo</h5>
-                    </div>
-                </div>
-            </div>
+        <div class="row" id="membersContainer">
+
         </div>
     </div>
 
     <?php include '../HOTEL-MANAGEMENT-SYSTEM/frontend/includes/footer.php'; ?>
 
+    <script src="js/ourRooms.js"></script>
+    <script src="js/members.js"></script>
     <script>
+
+        var ourRoomsContainer = document.getElementById("ourRoomsContainer");
+        for (var i = 0; i < ourRooms.length; i++) {
+            ourRoomsContainer.innerHTML += `
+            <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
+                <div class="card h-100 bg-transparent shadow rounded-3">
+                    <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
+                        <img src="images/rooms/`+ ourRooms[i].images + `" alt="..." class="img-fluid">
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">` + ourRooms[i].name + `</h5>
+                        <p class="card-text">` + ourRooms[i].description + `</p>
+                    </div>
+                </div>
+            </div>
+      `;
+        }
+
+        var memberContainer = document.getElementById("membersContainer");
+        for (var i = 0; i < members.length; i++) {
+            memberContainer.innerHTML += `
+            <div class="col-12 col-sm-6 col-md-4 col-lg pb-4 text-center">
+                <div class="card h-100 bg-transparent border-0 rounded-3 align-items-center">
+                    <div class="rounded-circle overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
+                        style="width: 200px; height: 200px;">
+                        <img src="images/members-img/`+ members[i].images + `" alt="..."
+                            class="img-fluid object-fit-cover w-100 h-100">
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">` + members[i].name + `</h5>
+                    </div>
+                </div>
+            </div>
+      `;
+        }
+
         function changeMode() {
             const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
             document.documentElement.setAttribute('data-bs-theme', isDark ? 'light' : 'dark');
