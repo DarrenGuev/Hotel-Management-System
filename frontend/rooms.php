@@ -35,9 +35,9 @@
     <div class="container-fluid">
         <div class="row">
             <!-- Filter Sidebar -->
-            <div class="col-12 col-lg-3 col-xl-2">
+            <div class="col-12 col-lg-3 col-xl-2 px-0">
                 <div class="sticky-top" style="top:70px; z-index: 10;">
-                    <div class="bg-body-tertiary border-end p-4">
+                    <div class="bg-body-tertiary border p-4">
                         <div class="d-lg-none">
                             <div class="accordion" id="filterAccordion">
                                 <div class="accordion-item">

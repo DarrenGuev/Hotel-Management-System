@@ -4,14 +4,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TravelMates - Login</title>
+    <title>TravelMates - Register</title>
     <link rel="icon" type="image/png" href="images/flag.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/HOTEL-MANAGEMENT-SYSTEM/css/style.css">
     <style>
         .login-page {
             min-height: 100vh;
@@ -31,11 +31,6 @@
             z-index: 0;
         }
 
-        .glass-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-        }
 
         .divider-vertical {
             width: 5px;
@@ -69,7 +64,7 @@
         <div class="container position-relative" style="z-index: 1;">
             <div class="row justify-content-center">
                 <div class="col-12 col-xl-10">
-                    <div class="glass-card border border-secondary border-opacity-25 rounded-4 shadow-lg p-4 p-lg-5">
+                    <div class="glass border border-secondary border-opacity-25 rounded-4 shadow-lg p-4 p-lg-5">
                         <div class="row align-items-stretch" style="min-height: 500px;">
                             <!-- left Side-->
                             <div
@@ -99,45 +94,45 @@
                                 <div class="d-flex flex-column h-100 justify-content-center">
                                     <h2 class="fs-3 fw-semibold text-white text-center mb-4">Register</h2>
 
-                                    <form action="php/register_process.php" method="POST">
+                                    <form action="php/register_process.php" method="POST" class="needs-validation" novalidate>
                                         <div class="row">
                                             <div class="col-12 col-sm-6 mb-3">
-                                                <input type="text"
-                                                    class="form-control form-control-lg form-control-glass rounded-3"
-                                                    name="firstname" placeholder="First Name" required>
+                                                <input id="firstname" name="firstname" type="text"
+                                                    class="form-control form-control-lg form-control-glass rounded-3" placeholder="First Name" required>
+                                                <div class="invalid-feedback">Please provide your first name.</div>
                                             </div>
                                             <div class="col-12 col-sm-6 mb-3">
-                                                <input type="text"
-                                                    class="form-control form-control-lg form-control-glass rounded-3"
-                                                    name="lastname" placeholder="Last Name" required>
+                                                <input id="lastname" name="lastname" type="text"
+                                                    class="form-control form-control-lg form-control-glass rounded-3" placeholder="Last Name" required>
+                                                <div class="invalid-feedback">Please provide your last name.</div>
                                             </div>
                                         </div>
                                         <div class="mb-3">
-                                            <input type="email"
-                                                class="form-control form-control-lg form-control-glass rounded-3"
-                                                name="email" placeholder="Email Address" required>
+                                            <input id="email" name="email" type="email"
+                                                class="form-control form-control-lg form-control-glass rounded-3" placeholder="Email Address" required>
+                                            <div class="invalid-feedback">Please enter a valid email address.</div>
                                         </div>
                                         <div class="mb-3">
-                                            <input type="text"
-                                                class="form-control form-control-lg form-control-glass rounded-3"
-                                                name="username" placeholder="Username" required>
+                                            <input id="username" name="username" type="text"
+                                                class="form-control form-control-lg form-control-glass rounded-3" placeholder="Username (3-15 letters, numbers, or _ )" pattern="[A-Za-z0-9_]{3,15}" title="3-15 letters, numbers or underscore" required>
+                                            <div class="invalid-feedback">Please choose a username (3-15 letters, numbers, or _).</div>
                                         </div>
                                         <div class="mb-3">
-                                            <input type="tel"
-                                                class="form-control form-control-lg form-control-glass rounded-3"
-                                                name="phone" placeholder="Phone Number" required>
+                                            <input id="phone" name="phone" type="tel"
+                                                class="form-control form-control-lg form-control-glass rounded-3" placeholder="Phone Number (7-15 digits)" pattern="[0-9]{7,15}" title="Enter 7 to 15 digits" required>
+                                            <div class="invalid-feedback">Please enter a valid phone number (7-15 digits).</div>
                                         </div>
                                         <div class="mb-3 position-relative">
-                                            <input type="password"
-                                                class="form-control form-control-lg form-control-glass rounded-3"
-                                                name="password" placeholder="Password" required id="password" style="padding-right: 2.5rem;">
+                                            <input id="password" name="password" type="password"
+                                                class="form-control form-control-lg form-control-glass rounded-3" placeholder="Password (min 8 chars)" minlength="8" pattern=".{8,}" title="Minimum 8 characters" required style="padding-right: 2.5rem;">
                                             <i class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-3 text-white" id="togglePassword" style="cursor: pointer;"></i>
+                                            <div class="invalid-feedback">Please provide a password (minimum 8 characters).</div>
                                         </div>
                                         <div class="mb-4 position-relative">
-                                            <input type="password"
-                                                class="form-control form-control-lg form-control-glass rounded-3"
-                                                name="confirm_password" placeholder="Confirm Password" required id="confirmPassword" style="padding-right: 2.5rem;">
+                                            <input id="confirmPassword" name="confirm_password" type="password"
+                                                class="form-control form-control-lg form-control-glass rounded-3" placeholder="Confirm Password" minlength="8" required style="padding-right: 2.5rem;">
                                             <i class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-3 text-white" id="toggleConfirmPassword" style="cursor: pointer;"></i>
+                                            <div class="invalid-feedback" id="confirmFeedback">Passwords must match.</div>
                                         </div>
 
                                         <div class="d-grid mb-4">
@@ -164,25 +159,58 @@
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
     <script>
-        const togglePassword = document.querySelector('#togglePassword');
-        const password = document.querySelector('#password');
+        (function () {
+            'use strict'
 
-        togglePassword.addEventListener('click', function(e) {
-            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-            password.setAttribute('type', type);
-            this.classList.toggle('bi-eye');
-            this.classList.toggle('bi-eye-slash');
-        });
+            // Password toggle handlers (guard against missing elements)
+            const togglePassword = document.querySelector('#togglePassword');
+            const toggleConfirmPassword = document.querySelector('#toggleConfirmPassword');
+            const password = document.querySelector('#password');
+            const confirmPassword = document.querySelector('#confirmPassword');
 
-        const toggleConfirmPassword = document.querySelector('#toggleConfirmPassword');
-        const confirmPassword = document.querySelector('#confirmPassword');
+            if (togglePassword && password) {
+                togglePassword.addEventListener('click', function () {
+                    const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                    password.setAttribute('type', type);
+                    this.classList.toggle('bi-eye');
+                    this.classList.toggle('bi-eye-slash');
+                });
+            }
 
-        toggleConfirmPassword.addEventListener('click', function(e) {
-            const type = confirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
-            confirmPassword.setAttribute('type', type);
-            this.classList.toggle('bi-eye');
-            this.classList.toggle('bi-eye-slash');
-        });
+            if (toggleConfirmPassword && confirmPassword) {
+                toggleConfirmPassword.addEventListener('click', function () {
+                    const type = confirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+                    confirmPassword.setAttribute('type', type);
+                    this.classList.toggle('bi-eye');
+                    this.classList.toggle('bi-eye-slash');
+                });
+            }
+
+            // Bootstrap validation: check validity and password match
+            var forms = document.querySelectorAll('.needs-validation');
+            Array.prototype.slice.call(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    // ensure password match before checking validity
+                    if (password && confirmPassword) {
+                        if (password.value !== confirmPassword.value) {
+                            confirmPassword.setCustomValidity('Passwords do not match');
+                            // make sure the invalid feedback is shown
+                            document.getElementById('confirmFeedback').textContent = 'Passwords do not match.';
+                        } else {
+                            confirmPassword.setCustomValidity('');
+                            document.getElementById('confirmFeedback').textContent = 'Passwords must match.';
+                        }
+                    }
+
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        })();
     </script>
 </body>
 

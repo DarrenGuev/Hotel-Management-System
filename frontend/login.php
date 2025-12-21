@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/HOTEL-MANAGEMENT-SYSTEM/css/style.css">
     <style>
         .login-page {
             min-height: 100vh;
@@ -31,19 +31,13 @@
             z-index: 0;
         }
 
-        .glass-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-        }
-
         .divider-vertical {
             width: 5px;
             background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.3), transparent);
         }
 
         .form-control-glass {
-            background: rgba(255, 255, 255, 0.1) !important;
+            background: rgba(226, 226, 226, 0.1) !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
             color: #fff !important;
         }
@@ -69,7 +63,7 @@
         <div class="container position-relative" style="z-index: 1;">
             <div class="row justify-content-center">
                 <div class="col-12 col-xl-10">
-                    <div class="glass-card border border-secondary border-opacity-25 rounded-4 shadow-lg p-4 p-lg-5">
+                    <div class="glass border border-secondary border-opacity-25 rounded-4 shadow-lg p-4 p-lg-5">
                         <div class="row align-items-stretch" style="min-height: 500px;">
                             <!-- left Side-->
                             <div class="col-12 col-md-6 d-flex flex-column justify-content-between mb-4 mb-md-0 pe-md-5">
