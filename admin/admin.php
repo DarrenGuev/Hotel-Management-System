@@ -19,7 +19,8 @@
         <div class="row">
 
             <div class="col-3" id="reservationPage">
-                <div class="card text-bg-primary mb-3 card-select" style="max-width: 18rem; cursor: pointer;" data-table="reservations" onclick="switchTable('reservations')">
+                <div class="card text-bg-primary mb-3 card-select" style="max-width: 18rem; cursor: pointer;" 
+                    data-table="reservations" onclick="switchTable('reservations')">
                     <div class="card-body">
                         <h5 class="card-title p-4">Reservations</h5>
                     </div>
@@ -28,7 +29,8 @@
             </div>
 
             <div class="col-3" id="customersPage">
-                <div class="card text-bg-warning mb-3 card-select" style="max-width: 18rem; cursor: pointer;" data-table="customers" onclick="switchTable('customers')">
+                <div class="card text-bg-warning mb-3 card-select" style="max-width: 18rem; cursor: pointer;" 
+                    data-table="customers" onclick="switchTable('customers')">
                     <div class="card-body">
                         <h5 class="card-title p-4">Customers</h5>
                     </div>
@@ -37,7 +39,8 @@
             </div>
 
             <div class="col-3" id="confirmedBookingsPage">
-                <div class="card text-bg-success mb-3 card-select" style="max-width: 18rem; cursor: pointer;" data-table="confirmed" onclick="switchTable('confirmed')">
+                <div class="card text-bg-success mb-3 card-select" style="max-width: 18rem; cursor: pointer;" 
+                    data-table="confirmed" onclick="switchTable('confirmed')">
                     <div class="card-body">
                         <h5 class="card-title p-4">Confirmed Bookings</h5>
                     </div>
@@ -46,7 +49,8 @@
             </div>
 
             <div class="col-3" id="pendingReservationsPage">
-                <div class="card text-bg-danger mb-3 card-select" style="max-width: 18rem; cursor: pointer;" data-table="pending" onclick="switchTable('pending')">
+                <div class="card text-bg-danger mb-3 card-select" style="max-width: 18rem; cursor: pointer;" 
+                    data-table="pending" onclick="switchTable('pending')">
                     <div class="card-body">
                         <h5 class="card-title p-4">Pending Reservations</h5>
                     </div>
@@ -62,22 +66,26 @@
         <!-- Nav Tabs -->
         <ul class="nav nav-tabs mb-3" id="adminTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="tab-reservations" data-table="reservations" type="button" role="tab" onclick="switchTable('reservations')">
+                <button class="nav-link active" id="tab-reservations" data-table="reservations" 
+                        type="button" role="tab" onclick="switchTable('reservations')">
                     <i class="bi bi-calendar-check me-1"></i>Reservations
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab-customers" data-table="customers" type="button" role="tab" onclick="switchTable('customers')">
+                <button class="nav-link" id="tab-customers" data-table="customers" 
+                        type="button" role="tab" onclick="switchTable('customers')">
                     <i class="bi bi-people me-1"></i>Customers
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab-confirmed" data-table="confirmed" type="button" role="tab" onclick="switchTable('confirmed')">
+                <button class="nav-link" id="tab-confirmed" data-table="confirmed" 
+                        type="button" role="tab" onclick="switchTable('confirmed')">
                     <i class="bi bi-check-circle me-1"></i>Confirmed
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab-pending" data-table="pending" type="button" role="tab" onclick="switchTable('pending')">
+                <button class="nav-link" id="tab-pending" data-table="pending" 
+                        type="button" role="tab" onclick="switchTable('pending')">
                     <i class="bi bi-clock me-1"></i>Pending
                 </button>
             </li>
