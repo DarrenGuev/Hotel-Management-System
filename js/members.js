@@ -12,7 +12,7 @@ var members = [
         "name": "Madriaga, John Eduard S.",
     },
     {
-        "images": "talatala.jpg",
+        "images": "dale.jpg",
         "name": "Talatala, John Dale",
     },
     {
