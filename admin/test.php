@@ -1,23 +1,23 @@
 <?php
-// include("connect.php");
+include("connect.php");
 
-// if (isset($_POST['fname'])) {
-//     $fname = $_POST['fname'];
-//     $lname = $_POST['lname'];
+if (isset($_POST['fname'])) {
+    $fname = $_POST['fname'];
+    $lname = $_POST['lname'];
 
-//     $postQuery = "INSERT INTO `students`(`firstName`, `lastName`) VALUES ('$fname','$lname')";
-//     executeQuery($postQuery);
-// }
+    $postQuery = "INSERT INTO `students`(`firstName`, `lastName`) VALUES ('$fname','$lname')";
+    executeQuery($postQuery);
+}
 
-// if (isset($_POST['deleteID'])) {
-//     $deleteID = $_POST['deleteID'];
-//     $deleteQuery = "DELETE FROM students WHERE studentID = '$deleteID'";
+if (isset($_POST['deleteID'])) {
+    $deleteID = $_POST['deleteID'];
+    $deleteQuery = "DELETE FROM students WHERE studentID = '$deleteID'";
 
-//     executeQuery($deleteQuery);
-// }
+    executeQuery($deleteQuery);
+}
 
-// $getQuery = "SELECT * FROM students LEFT JOIN locations ON students.locationID = locations.locationID;";
-// $result = executeQuery($getQuery);
+$getQuery = "SELECT * FROM students LEFT JOIN locations ON students.locationID = locations.locationID;";
+$result = executeQuery($getQuery);
 ?>
 
 <!doctype html>

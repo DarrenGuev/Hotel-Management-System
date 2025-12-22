@@ -3,7 +3,7 @@
             <div class="container-fluid">
                 <a class="navbar-brand text-white p-2" href="#">Travel Mates</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas"
-                    data-bs-target="#offcanvasNavbar" style="background-color: gray;" aria-controls="offcanvasNavbar"
+                    data-bs-target="#offcanvasNavbar" style="background-color: orange;" aria-controls="offcanvasNavbar"
                     aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
