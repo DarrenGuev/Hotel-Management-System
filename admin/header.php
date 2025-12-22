@@ -27,8 +27,7 @@
                                     Admin Profile
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="#">Action</a></li>
-                                    <li><a class="dropdown-item" href="#">Another action</a></li>
+                                    <li><a class="dropdown-item" href="/HOTEL-MANAGEMENT-SYSTEM/index.php">Go to user website</a></li>
                                     <li>
                                         <hr class="dropdown-divider">
                                     </li>
