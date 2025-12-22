@@ -1,3 +1,9 @@
+<?php
+  include "php/connect.php";
+//   $getQuery = "SELECT * FROM students";
+//   $result = executeQuery($getQuery);
+?>
+
 <!doctype html>
 <html lang="en">
 
@@ -15,7 +21,7 @@
 </head>
 
 <body>
-    <?php include '../HOTEL-MANAGEMENT-SYSTEM/frontend/includes/navbar.php'; ?>
+    <?php include 'frontend/includes/navbar.php'; ?>
 
     <div id="home" class="position-relative d-flex align-items-center justify-content-center"
         style="min-height: 95vh; background: url('images/loginRegisterImg/img.jpg') center/cover no-repeat fixed;">
@@ -110,6 +116,23 @@
         </div>
     </div>
 
+    <div class="container" id="eventsContainer">
+        <div class="row">
+            <div class="col">
+                <h2 class="mt-5 pt-4 mb-2 text-center fw-bold h-font">EVENTS</h2>
+                <div class="mx-auto mt-3 mb-5" style="width: 80px; height: 4px; background-color: #FF9900;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col">
+            <!-- API para sa events nina jana dito ilalagay -->
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <div class="row">
             <div class="col">
@@ -118,26 +141,36 @@
             </div>
         </div>
     </div>
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-3 mb-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title fw-bold h-font">@juan@example.com</h5>
-                        <p class="card-text">This is a wider card with supporting text below as a natural lead-in to
-                            additional content. This content is a little bit longer.</p>
-                    </div>
+<?php /* ?> <!--remove nalang yung line nato pag may database na-->
+
+<div class="container mt-5">
+    <div class="row">
+        <?php while($row = mysqli_fetch_assoc($result)) { ?>
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold h-font">
+                        <?php echo $row['username'] ?>
+                    </h5>
+                    <p class="card-text">
+                        <?php echo $row['userReview'] ?>
+                    </p>
                 </div>
             </div>
         </div>
+        <?php } ?>
     </div>
+</div>
+
+<?php */ ?> <!--remove nalang yung line nato pag may database na-->
+
     <div class="col-lg-12 text-center my-4">
         <button class="btn btn-dark shadow-none" data-bs-toggle="modal" data-bs-target="#addReviewModal">
             <i class="bi bi-pencil-square me-2"></i>Add Your Review
         </button>
     </div>
 
-    <div id="about" class="container">
+    <div class="container" id="about">
         <div class="row">
             <div class="col">
                 <h2 class="mt-5 mb-2 text-center fw-bold h-font">ABOUT US</h2>
@@ -198,7 +231,7 @@
         </div>
     </div>
 
-    <?php include '../HOTEL-MANAGEMENT-SYSTEM/frontend/includes/footer.php'; ?>
+    <?php include 'frontend/includes/footer.php'; ?>
 
     <script src="js/ourRooms.js"></script>
     <script src="js/members.js"></script>
@@ -266,7 +299,6 @@
             }
         }
     </script>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>

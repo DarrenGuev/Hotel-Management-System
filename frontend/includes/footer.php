@@ -1,4 +1,4 @@
-<div class="container-fluid text-light mt-5 border-top rounded-top-5" style="background-color: black;">
+<div class="container-fluid text-light mt-5 rounded-top-5 glass" style="background-color: black;">
         <div class="row">
             <!-- About -->
             <div class="col-lg-4 p-4">

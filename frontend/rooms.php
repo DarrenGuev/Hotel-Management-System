@@ -210,6 +210,8 @@
                 <h2 class="text-center fw-bold mb-4 fst-italic mt-5">Recommended Rooms</h2>
                 <div class="mx-auto mt-3 mb-5" style="width: 80px; height: 4px; background-color: #FF9900;"></div>
 
+            <?php /* ?> <!--remove nalang yung line nato pag may database na-->
+
                 <div class="container">
                     <div class="row mt-5">
                         <div class="col">
@@ -220,26 +222,25 @@
                     </div>
                     <div class="row" id="basicRoomCards">
                         <!-- Basic Room Card -->
-
+                        <?php while($row = mysqli_fetch_assoc($result)) { ?>
                         <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
                             <div class="card h-100 bg-transparent shadow rounded-3">
                                 <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
-                                    <img src="/HOTEL-MANAGEMENT-SYSTEM/images/rooms/basic.jpeg"
-                                        class="card-img-top img-fluid" alt="Basic Room">
+                                    <img src="/HOTEL-MANAGEMENT-SYSTEM/images/rooms/<?php echo $row['roomImage'] ?>"
+                                        class="card-img-top img-fluid" alt="...">
                                 </div>
                                 <div class="card-body p-4">
-                                    <h5 class="card-title fw-bold mb-1">Basic Room</h5>
-                                    <p class="text-secondary fst-italic small mb-2">Comfort Meets Simplicity</p>
-                                    <p class="fw-semibold mb-3">₱1,389 / night</p>
+                                    <h5 class="card-title fw-bold mb-1"><?php echo $row['roomName'] ?></h5>
+                                    <p class="text-secondary fst-italic small mb-2"><?php echo $row['roomDescription'] ?></p>
+                                    <p class="fw-semibold mb-3"><?php echo $row['roomPrice'] ?> / night</p>
                                     <div class="mb-2">
-                                        <span class="badge bg-dark me-1 mb-1">1 Room</span>
-                                        <span class="badge bg-dark me-1 mb-1">1 Bathroom</span>
-                                        <span class="badge bg-dark me-1 mb-1">Hot/Cold Shower</span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['roomCount'] ?></span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['bathroomCount'] ?></span>
                                     </div>
                                     <div class="mb-3">
-                                        <span class="badge bg-dark me-1 mb-1">Wifi</span>
-                                        <span class="badge bg-dark me-1 mb-1">Air-conditioner</span>
-                                        <span class="badge bg-dark me-1 mb-1">Television</span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['isWifi'] ?></span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['isAirConditioner'] ?></span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['isTelevision'] ?></span>
                                     </div>
                                     <div class="d-flex gap-2 flex-wrap">
                                         <button class="btn btn-warning" data-bs-toggle="modal"
@@ -250,6 +251,7 @@
                                 </div>
                             </div>
                         </div>
+                        <?php } ?>
                     </div>
                 </div>
 
@@ -263,33 +265,36 @@
                     </div>
                     <div class="row" id="twinRoomCards">
                         <!-- Basic Room Card -->
+                        <?php while($row = mysqli_fetch_assoc($result)) { ?>
                         <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
                             <div class="card h-100 bg-transparent shadow rounded-3">
                                 <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
-                                    <img src="/HOTEL-MANAGEMENT-SYSTEM/images/rooms/basic.jpeg"
-                                        class="card-img-top img-fluid" alt="Basic Room">
+                                    <img src="/HOTEL-MANAGEMENT-SYSTEM/images/rooms/<?php echo $row['roomImage'] ?>"
+                                        class="card-img-top img-fluid" alt="...">
                                 </div>
                                 <div class="card-body p-4">
-                                    <h5 class="card-title fw-bold mb-1">Basic Room</h5>
-                                    <p class="text-secondary fst-italic small mb-2">Comfort Meets Simplicity</p>
-                                    <p class="fw-semibold mb-3">₱1,389 / night</p>
+                                    <h5 class="card-title fw-bold mb-1"><?php echo $row['roomName'] ?></h5>
+                                    <p class="text-secondary fst-italic small mb-2"><?php echo $row['roomDescription'] ?></p>
+                                    <p class="fw-semibold mb-3"><?php echo $row['roomPrice'] ?> / night</p>
                                     <div class="mb-2">
-                                        <span class="badge bg-dark me-1 mb-1">1 Room</span>
-                                        <span class="badge bg-dark me-1 mb-1">1 Bathroom</span>
-                                        <span class="badge bg-dark me-1 mb-1">Hot/Cold Shower</span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['roomCount'] ?></span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['bathroomCount'] ?></span>
                                     </div>
                                     <div class="mb-3">
-                                        <span class="badge bg-dark me-1 mb-1">Wifi</span>
-                                        <span class="badge bg-dark me-1 mb-1">Air-conditioner</span>
-                                        <span class="badge bg-dark me-1 mb-1">Television</span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['isWifi'] ?></span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['isAirConditioner'] ?></span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['isTelevision'] ?></span>
                                     </div>
                                     <div class="d-flex gap-2 flex-wrap">
-                                        <button class="btn btn-warning">Book Now</button>
-                                        <button class="btn btn-outline-secondary">More Details</button>
+                                        <button class="btn btn-warning" data-bs-toggle="modal"
+                                            data-bs-target="#bookingModal">Book Now</button>
+                                        <button class="btn btn-outline-secondary" data-bs-toggle="modal"
+                                            data-bs-target="#basicRoomModal">More Details</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        <?php } ?>
                     </div>
                 </div>
                 <div class="container">
@@ -302,33 +307,36 @@
                     </div>
                     <div class="row" id="deluxeRoomCards">
                         <!-- Deluxe Room Card -->
+                        <?php while($row = mysqli_fetch_assoc($result)) { ?>
                         <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
                             <div class="card h-100 bg-transparent shadow rounded-3">
                                 <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
-                                    <img src="/HOTEL-MANAGEMENT-SYSTEM/images/rooms/basic.jpeg"
-                                        class="card-img-top img-fluid" alt="Basic Room">
+                                    <img src="/HOTEL-MANAGEMENT-SYSTEM/images/rooms/<?php echo $row['roomImage'] ?>"
+                                        class="card-img-top img-fluid" alt="...">
                                 </div>
                                 <div class="card-body p-4">
-                                    <h5 class="card-title fw-bold mb-1">Basic Room</h5>
-                                    <p class="text-secondary fst-italic small mb-2">Comfort Meets Simplicity</p>
-                                    <p class="fw-semibold mb-3">₱1,389 / night</p>
+                                    <h5 class="card-title fw-bold mb-1"><?php echo $row['roomName'] ?></h5>
+                                    <p class="text-secondary fst-italic small mb-2"><?php echo $row['roomDescription'] ?></p>
+                                    <p class="fw-semibold mb-3"><?php echo $row['roomPrice'] ?> / night</p>
                                     <div class="mb-2">
-                                        <span class="badge bg-dark me-1 mb-1">1 Room</span>
-                                        <span class="badge bg-dark me-1 mb-1">1 Bathroom</span>
-                                        <span class="badge bg-dark me-1 mb-1">Hot/Cold Shower</span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['roomCount'] ?></span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['bathroomCount'] ?></span>
                                     </div>
                                     <div class="mb-3">
-                                        <span class="badge bg-dark me-1 mb-1">Wifi</span>
-                                        <span class="badge bg-dark me-1 mb-1">Air-conditioner</span>
-                                        <span class="badge bg-dark me-1 mb-1">Television</span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['isWifi'] ?></span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['isAirConditioner'] ?></span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['isTelevision'] ?></span>
                                     </div>
                                     <div class="d-flex gap-2 flex-wrap">
-                                        <button class="btn btn-warning">Book Now</button>
-                                        <button class="btn btn-outline-secondary">More Details</button>
+                                        <button class="btn btn-warning" data-bs-toggle="modal"
+                                            data-bs-target="#bookingModal">Book Now</button>
+                                        <button class="btn btn-outline-secondary" data-bs-toggle="modal"
+                                            data-bs-target="#basicRoomModal">More Details</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        <?php } ?>
                     </div>
                 </div>
 
@@ -342,33 +350,36 @@
                     </div>
                     <div class="row" id="singleRoomCards">
                         <!-- Single Room Card -->
+                        <?php while($row = mysqli_fetch_assoc($result)) { ?>
                         <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
                             <div class="card h-100 bg-transparent shadow rounded-3">
                                 <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
-                                    <img src="/HOTEL-MANAGEMENT-SYSTEM/images/rooms/basic.jpeg"
-                                        class="card-img-top img-fluid" alt="Basic Room">
+                                    <img src="/HOTEL-MANAGEMENT-SYSTEM/images/rooms/<?php echo $row['roomImage'] ?>"
+                                        class="card-img-top img-fluid" alt="...">
                                 </div>
                                 <div class="card-body p-4">
-                                    <h5 class="card-title fw-bold mb-1">Basic Room</h5>
-                                    <p class="text-secondary fst-italic small mb-2">Comfort Meets Simplicity</p>
-                                    <p class="fw-semibold mb-3">₱1,389 / night</p>
+                                    <h5 class="card-title fw-bold mb-1"><?php echo $row['roomName'] ?></h5>
+                                    <p class="text-secondary fst-italic small mb-2"><?php echo $row['roomDescription'] ?></p>
+                                    <p class="fw-semibold mb-3"><?php echo $row['roomPrice'] ?> / night</p>
                                     <div class="mb-2">
-                                        <span class="badge bg-dark me-1 mb-1">1 Room</span>
-                                        <span class="badge bg-dark me-1 mb-1">1 Bathroom</span>
-                                        <span class="badge bg-dark me-1 mb-1">Hot/Cold Shower</span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['roomCount'] ?></span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['bathroomCount'] ?></span>
                                     </div>
                                     <div class="mb-3">
-                                        <span class="badge bg-dark me-1 mb-1">Wifi</span>
-                                        <span class="badge bg-dark me-1 mb-1">Air-conditioner</span>
-                                        <span class="badge bg-dark me-1 mb-1">Television</span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['isWifi'] ?></span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['isAirConditioner'] ?></span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['isTelevision'] ?></span>
                                     </div>
                                     <div class="d-flex gap-2 flex-wrap">
-                                        <button class="btn btn-warning">Book Now</button>
-                                        <button class="btn btn-outline-secondary">More Details</button>
+                                        <button class="btn btn-warning" data-bs-toggle="modal"
+                                            data-bs-target="#bookingModal">Book Now</button>
+                                        <button class="btn btn-outline-secondary" data-bs-toggle="modal"
+                                            data-bs-target="#basicRoomModal">More Details</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        <?php } ?>
                     </div>
                 </div>
 
@@ -382,35 +393,41 @@
                     </div>
                     <div class="row" id="familyRoomCards">
                         <!-- Family Room Card -->
+                        <?php while($row = mysqli_fetch_assoc($result)) { ?>
                         <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
                             <div class="card h-100 bg-transparent shadow rounded-3">
                                 <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
-                                    <img src="/HOTEL-MANAGEMENT-SYSTEM/images/rooms/basic.jpeg"
-                                        class="card-img-top img-fluid" alt="Basic Room">
+                                    <img src="/HOTEL-MANAGEMENT-SYSTEM/images/rooms/<?php echo $row['roomImage'] ?>"
+                                        class="card-img-top img-fluid" alt="...">
                                 </div>
                                 <div class="card-body p-4">
-                                    <h5 class="card-title fw-bold mb-1">Basic Room</h5>
-                                    <p class="text-secondary fst-italic small mb-2">Comfort Meets Simplicity</p>
-                                    <p class="fw-semibold mb-3">₱1,389 / night</p>
+                                    <h5 class="card-title fw-bold mb-1"><?php echo $row['roomName'] ?></h5>
+                                    <p class="text-secondary fst-italic small mb-2"><?php echo $row['roomDescription'] ?></p>
+                                    <p class="fw-semibold mb-3"><?php echo $row['roomPrice'] ?> / night</p>
                                     <div class="mb-2">
-                                        <span class="badge bg-dark me-1 mb-1">1 Room</span>
-                                        <span class="badge bg-dark me-1 mb-1">1 Bathroom</span>
-                                        <span class="badge bg-dark me-1 mb-1">Hot/Cold Shower</span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['roomCount'] ?></span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['bathroomCount'] ?></span>
                                     </div>
                                     <div class="mb-3">
-                                        <span class="badge bg-dark me-1 mb-1">Wifi</span>
-                                        <span class="badge bg-dark me-1 mb-1">Air-conditioner</span>
-                                        <span class="badge bg-dark me-1 mb-1">Television</span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['isWifi'] ?></span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['isAirConditioner'] ?></span>
+                                        <span class="badge bg-dark me-1 mb-1"><?php echo $row['isTelevision'] ?></span>
                                     </div>
                                     <div class="d-flex gap-2 flex-wrap">
-                                        <button class="btn btn-warning">Book Now</button>
-                                        <button class="btn btn-outline-secondary">More Details</button>
+                                        <button class="btn btn-warning" data-bs-toggle="modal"
+                                            data-bs-target="#bookingModal">Book Now</button>
+                                        <button class="btn btn-outline-secondary" data-bs-toggle="modal"
+                                            data-bs-target="#basicRoomModal">More Details</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        <?php } ?>
                     </div>
                 </div>
+
+            <?php */ ?> <!--remove nalang yung line nato pag may database na-->
+
             </div>
         </div>
     </div>
@@ -445,7 +462,6 @@
                             <div class="mb-2 justify-content-evenly">
                                 <span class="badge bg-dark me-1 mb-1">1 Room</span>
                                 <span class="badge bg-dark me-1 mb-1">1 Bathroom</span>
-                                <span class="badge bg-dark me-1 mb-1">Hot/Cold Shower</span>
                                 <span class="badge bg-dark me-1 mb-1">Air-conditioner</span>
                                 <span class="badge bg-dark me-1 mb-1">Television</span>
                                 <span class="badge bg-dark me-1 mb-1">Wifi</span>
