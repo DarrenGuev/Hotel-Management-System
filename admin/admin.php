@@ -22,7 +22,7 @@
                 <div class="card text-bg-primary mb-3 card-select" style="max-width: 18rem; cursor: pointer;" 
                     data-table="reservations" onclick="switchTable('reservations')">
                     <div class="card-body">
-                        <h5 class="card-title p-4">Reservations</h5>
+                        <h6 class="card-title p-4">Reservations</h6>
                     </div>
                     <div class="card-footer">View Details</div>
                 </div>
@@ -32,7 +32,7 @@
                 <div class="card text-bg-warning mb-3 card-select" style="max-width: 18rem; cursor: pointer;" 
                     data-table="customers" onclick="switchTable('customers')">
                     <div class="card-body">
-                        <h5 class="card-title p-4">Customers</h5>
+                        <h6 class="card-title p-4">Customers</h6>
                     </div>
                     <div class="card-footer">View Details</div>
                 </div>
@@ -42,7 +42,7 @@
                 <div class="card text-bg-success mb-3 card-select" style="max-width: 18rem; cursor: pointer;" 
                     data-table="confirmed" onclick="switchTable('confirmed')">
                     <div class="card-body">
-                        <h5 class="card-title p-4">Confirmed Bookings</h5>
+                        <h6 class="card-title p-4">Confirmed Bookings</h6>
                     </div>
                     <div class="card-footer">View Bookings</div>
                 </div>
@@ -52,7 +52,7 @@
                 <div class="card text-bg-danger mb-3 card-select" style="max-width: 18rem; cursor: pointer;" 
                     data-table="pending" onclick="switchTable('pending')">
                     <div class="card-body">
-                        <h5 class="card-title p-4">Pending Reservations</h5>
+                        <h6 class="card-title p-4">Pending Reservations</h6>
                     </div>
                     <div class="card-footer">View Details</div>
                 </div>
