@@ -8,28 +8,23 @@ if (isset($_POST['add_room'])) {
     $quantity = $_POST['quantity'];
     $base_price = $_POST['base_price'];
 
-    // Basic validation
-    if (!empty($roomName) && !empty($roomTypeId) && is_numeric($capacity) && is_numeric($quantity) && is_numeric($base_price)) {
-        $postQuery = "INSERT INTO `rooms`(`roomName`, `roomTypeId`, `capacity`, `quantity`, `base_price`) 
-                    VALUES ('$roomName', '$roomTypeId', '$capacity', '$quantity', '$base_price')";
+    // Image Handling for Add
+    $fileName = isset($_FILES['roomImage']) && $_FILES['roomImage']['error'] === UPLOAD_ERR_OK ? $_FILES['roomImage']['name'] : '';
+    $tempName = isset($_FILES['roomImage']) && $_FILES['roomImage']['error'] === UPLOAD_ERR_OK ? $_FILES['roomImage']['tmpName'] : '';
+    $folder = "assets/" . $fileName; 
+
+    if (!empty($roomName) && !empty($roomTypeId)) {
+        // Move file first
+        move_uploaded_file($tempName, $folder);
+
+        $postQuery = "INSERT INTO `rooms`(`roomName`, `roomTypeId`, `capacity`, `quantity`, `base_price`, `imagePath`) 
+                    VALUES ('$roomName', '$roomTypeId', '$capacity', '$quantity', '$base_price', '$fileName')";
+        
         if (executeQuery($postQuery)) {
-            echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3"
-                role="alert"
-                style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                Room added successfully.
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>';
-        } else {
-            echo '<div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3"
-                role="alert"
-                style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                Error adding room.
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>';
+            echo '<div class="alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 9999;">Room Added!</div>';
         }
     }
 }
-
 
 
 if (isset($_POST['deleteID'])) {
@@ -47,25 +42,41 @@ if (isset($_POST['update_room'])) {
     $quantity = $_POST['editQuantity'];
     $base_price = $_POST['editBasePrice'];
 
+    // 1. Get Image Data - Check if file was uploaded first
+    $fileName = isset($_FILES['roomImage']) && $_FILES['roomImage']['error'] === UPLOAD_ERR_OK ? $_FILES['roomImage']['name'] : '';
+    $tempName = isset($_FILES['roomImage']) && $_FILES['roomImage']['error'] === UPLOAD_ERR_OK ? $_FILES['roomImage']['tmp_name'] : '';
+    $folder = "assets/" . $fileName;
+
     if (!empty($roomID) && !empty($roomName) && !empty($roomTypeId) && is_numeric($capacity) && is_numeric($quantity) && is_numeric($base_price)) {
+
+        // 2. Start building the query
         $updateQuery = "UPDATE `rooms` SET 
                         `roomName`='$roomName', 
                         `roomTypeId`='$roomTypeId', 
                         `capacity`='$capacity', 
                         `quantity`='$quantity', 
-                        `base_price`='$base_price'
-                        WHERE `roomID`='$roomID'";
+                        `base_price`='$base_price'";
+
+        // 3. Logic: Only update the image if a new file was selected
+        if (!empty($fileName)) {
+            if (move_uploaded_file($tempName, $folder)) {
+                // Add the image_path to the SQL query if upload is successful
+                $updateQuery .= ", `imagePath`='$fileName'";
+            }
+        }
+
+        // 4. Finalize the query with the WHERE clause
+        $updateQuery .= " WHERE `roomID`='$roomID'";
+
         if (executeQuery($updateQuery)) {
             echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3"
-                role="alert"
-                style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
+                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
                 Room updated successfully.
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>';
         } else {
             echo '<div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3"
-                role="alert"
-                style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
+                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
                 Error updating room.
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>';
@@ -94,7 +105,6 @@ $roomTypes = executeQuery($getRoomTypes);
 
 <body>
     <?php include 'header.php'; ?>
-
     <div class="container p-5 mt-5">
         <div class="row">
             <div class="col-12">
@@ -135,6 +145,7 @@ $roomTypes = executeQuery($getRoomTypes);
                             <th scope="col">Max Occupancy</th>
                             <th scope="col">Price</th>
                             <th scope="col">Quantity</th>
+                            <th scope="col">Room Image</th>
                             <th scope="col"></th>
                         </tr>
                     </thead>
@@ -147,6 +158,7 @@ $roomTypes = executeQuery($getRoomTypes);
                                 <td scope="col"><?php echo $row['capacity'] ?></td>
                                 <td scope="col">₱<?php echo ($row['base_price']) ?></td>
                                 <td scope="col"><?php echo $row['quantity'] ?></td>
+                                <td scope="col"><?php echo '<img src="assets/' . $row['imagePath'] . '" style="width:200px;">'; ?></td>
                                 <td scope="col" class="text-center">
                                     <form method="POST" style="display: inline-block;">
                                         <input type="hidden" value="<?php echo $row['roomID'] ?>" name="deleteID">
@@ -165,7 +177,7 @@ $roomTypes = executeQuery($getRoomTypes);
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
                                                 <div class="modal-body text-start">
-                                                    <form method="POST">
+                                                    <form method="POST" enctype="multipart/form-data">
                                                         <input type="hidden" name="roomID" value="<?php echo $row['roomID']; ?>">
                                                         <div class="mb-3">
                                                             <label for="editRoomName<?php echo $row['roomID']; ?>" class="form-label">Room Name</label>
@@ -193,9 +205,15 @@ $roomTypes = executeQuery($getRoomTypes);
                                                                 <input id="editQuantity<?php echo $row['roomID']; ?>" class="form-control" type="number" name="editQuantity" value="<?php echo $row['quantity']; ?>" required>
                                                             </div>
                                                         </div>
-                                                        <div class="mb-3">
+                                                        <div class="row">
+                                                            <div class="col-md-6 mb-3">
                                                             <label for="editBasePrice<?php echo $row['roomID']; ?>" class="form-label">Price (₱)</label>
                                                             <input id="editBasePrice<?php echo $row['roomID']; ?>" class="form-control" type="number" step="0.01" name="editBasePrice" value="<?php echo $row['base_price']; ?>" required>
+                                                        </div>
+                                                        <div class="col-md-6 mb-3">
+                                                            <label for="editRoomImage<?php echo $row['roomID']; ?>" class="form-label">Room Image</label>
+                                                            <input id="editRoomImage<?php echo $row['roomID']; ?>" class="form-control" type="file" name="roomImage" accept="image/*">
+                                                        </div>
                                                         </div>
                                                         <div class="modal-footer">
                                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -232,7 +250,7 @@ $roomTypes = executeQuery($getRoomTypes);
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <form method="POST">
+                                <form method="POST" enctype="multipart/form-data">
                                     <div class="mb-3">
                                         <label for="roomName" class="form-label">Room Name</label>
                                         <input id="roomName" class="form-control" type="text" name="roomName" placeholder="e.g., Deluxe Suite" required>
@@ -242,7 +260,6 @@ $roomTypes = executeQuery($getRoomTypes);
                                         <select id="roomTypeId" class="form-select" name="roomTypeId" required>
                                             <option value="" selected disabled>-- Select Room Type --</option>
                                             <?php
-                                            // Reset pointer and loop through room types for the dropdown
                                             mysqli_data_seek($roomTypes, 0);
                                             while ($type = mysqli_fetch_assoc($roomTypes)) {
                                             ?>
@@ -260,9 +277,15 @@ $roomTypes = executeQuery($getRoomTypes);
                                             <input id="quantity" class="form-control" type="number" name="quantity" placeholder="number of rooms" required>
                                         </div>
                                     </div>
-                                    <div class="mb-3">
-                                        <label for="base_price" class="form-label">Price (₱)</label>
-                                        <input id="base_price" class="form-control" type="number" step="0.01" name="base_price" placeholder="e.g., 1500.00" required>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="base_price" class="form-label">Price (₱)</label>
+                                            <input id="base_price" class="form-control" type="number" step="0.01" name="base_price" placeholder="e.g., 1500.00" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="roomImage" class="form-label">Room Image</label>
+                                            <input id="roomImage" class="form-control" type="file" name="roomImage" accept="image/*">
+                                        </div>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
