@@ -7,10 +7,11 @@ if (isset($_POST['add_room'])) {
     $capacity = $_POST['capacity'];
     $quantity = $_POST['quantity'];
     $base_price = $_POST['base_price'];
+    $selectedFeatures = isset($_POST['features']) ? $_POST['features'] : [];
 
     // Image Handling for Add
     $fileName = isset($_FILES['roomImage']) && $_FILES['roomImage']['error'] === UPLOAD_ERR_OK ? $_FILES['roomImage']['name'] : '';
-    $tempName = isset($_FILES['roomImage']) && $_FILES['roomImage']['error'] === UPLOAD_ERR_OK ? $_FILES['roomImage']['tmpName'] : '';
+    $tempName = isset($_FILES['roomImage']) && $_FILES['roomImage']['error'] === UPLOAD_ERR_OK ? $_FILES['roomImage']['tmp_name'] : '';
     $folder = "assets/" . $fileName; 
 
     if (!empty($roomName) && !empty($roomTypeId)) {
@@ -21,6 +22,15 @@ if (isset($_POST['add_room'])) {
                     VALUES ('$roomName', '$roomTypeId', '$capacity', '$quantity', '$base_price', '$fileName')";
         
         if (executeQuery($postQuery)) {
+            $newRoomID = mysqli_insert_id($conn);
+            
+            // Insert selected features into roomfeatures
+            foreach ($selectedFeatures as $featureId) {
+                $featureId = (int)$featureId;
+                $insertFeatureQuery = "INSERT INTO `roomfeatures`(`roomID`, `featureID`) VALUES ('$newRoomID', '$featureId')";
+                executeQuery($insertFeatureQuery);
+            }
+            
             echo '<div class="alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 9999;">Room Added!</div>';
         }
     }
@@ -41,34 +51,38 @@ if (isset($_POST['update_room'])) {
     $capacity = $_POST['editCapacity'];
     $quantity = $_POST['editQuantity'];
     $base_price = $_POST['editBasePrice'];
-
-    // 1. Get Image Data - Check if file was uploaded first
+    $selectedFeatures = isset($_POST['editFeatures']) ? $_POST['editFeatures'] : [];
     $fileName = isset($_FILES['roomImage']) && $_FILES['roomImage']['error'] === UPLOAD_ERR_OK ? $_FILES['roomImage']['name'] : '';
     $tempName = isset($_FILES['roomImage']) && $_FILES['roomImage']['error'] === UPLOAD_ERR_OK ? $_FILES['roomImage']['tmp_name'] : '';
     $folder = "assets/" . $fileName;
 
     if (!empty($roomID) && !empty($roomName) && !empty($roomTypeId) && is_numeric($capacity) && is_numeric($quantity) && is_numeric($base_price)) {
-
-        // 2. Start building the query
         $updateQuery = "UPDATE `rooms` SET 
                         `roomName`='$roomName', 
                         `roomTypeId`='$roomTypeId', 
                         `capacity`='$capacity', 
                         `quantity`='$quantity', 
                         `base_price`='$base_price'";
-
-        // 3. Logic: Only update the image if a new file was selected
         if (!empty($fileName)) {
             if (move_uploaded_file($tempName, $folder)) {
-                // Add the image_path to the SQL query if upload is successful
                 $updateQuery .= ", `imagePath`='$fileName'";
             }
         }
 
-        // 4. Finalize the query with the WHERE clause
         $updateQuery .= " WHERE `roomID`='$roomID'";
 
         if (executeQuery($updateQuery)) {
+            // Delete existing features for this room
+            $deleteFeatures = "DELETE FROM `roomfeatures` WHERE `roomID`='$roomID'";
+            executeQuery($deleteFeatures);
+            
+            // Insert new selected features
+            foreach ($selectedFeatures as $featureId) {
+                $featureId = (int)$featureId;
+                $insertFeatureQuery = "INSERT INTO `roomfeatures`(`roomID`, `featureID`) VALUES ('$roomID', '$featureId')";
+                executeQuery($insertFeatureQuery);
+            }
+            
             echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3"
                 role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
                 Room updated successfully.
@@ -90,6 +104,9 @@ $rooms = executeQuery($getRooms);
 $getRoomTypes = "SELECT * FROM roomtypes";
 $roomTypes = executeQuery($getRoomTypes);
 
+$getFeatures = "SELECT * FROM features ORDER BY featureId";
+$features = executeQuery($getFeatures);
+
 ?>
 
 <!doctype html>
@@ -105,7 +122,7 @@ $roomTypes = executeQuery($getRoomTypes);
 
 <body>
     <?php include 'header.php'; ?>
-    <div class="container p-5 mt-5">
+    <div class="container-fluid p-5 mt-5">
         <div class="row">
             <div class="col-12">
                 <ul class="nav nav-tabs mb-3" id="roomTabs" role="tablist">
@@ -143,6 +160,7 @@ $roomTypes = executeQuery($getRoomTypes);
                             <th scope="col">Room Type</th>
                             <th scope="col">Room Name</th>
                             <th scope="col">Max Occupancy</th>
+                            <th scope="col">Features</th>
                             <th scope="col">Price</th>
                             <th scope="col">Quantity</th>
                             <th scope="col">Room Image</th>
@@ -150,12 +168,39 @@ $roomTypes = executeQuery($getRoomTypes);
                         </tr>
                     </thead>
                     <tbody id="roomsTableBody">
-                        <?php while ($row = mysqli_fetch_assoc($rooms)) { ?>
+                        <?php while ($row = mysqli_fetch_assoc($rooms)) { 
+                            // Get features for this room
+                            $roomFeaturesQuery = "SELECT f.featureName FROM features f 
+                                                  INNER JOIN roomfeatures rf ON f.featureId = rf.featureID 
+                                                  WHERE rf.roomID = " . (int)$row['roomID'];
+                            $roomFeaturesResult = executeQuery($roomFeaturesQuery);
+                            $roomFeatures = [];
+                            while ($feature = mysqli_fetch_assoc($roomFeaturesResult)) {
+                                $roomFeatures[] = $feature['featureName'];
+                            }
+                            
+                            // Get feature IDs for this room (for edit modal)
+                            $roomFeatureIdsQuery = "SELECT featureID FROM roomfeatures WHERE roomID = " . (int)$row['roomID'];
+                            $roomFeatureIdsResult = executeQuery($roomFeatureIdsQuery);
+                            $roomFeatureIds = [];
+                            while ($fid = mysqli_fetch_assoc($roomFeatureIdsResult)) {
+                                $roomFeatureIds[] = $fid['featureID'];
+                            }
+                        ?>
                             <tr data-room-type="<?php echo htmlspecialchars($row['roomTypeName'], ENT_QUOTES); ?>">
                                 <td scope="col"><?php echo $row['roomID'] ?></td>
                                 <td scope="col"><?php echo $row['roomTypeName'] ?></td>
                                 <td scope="col"><?php echo $row['roomName'] ?></td>
                                 <td scope="col"><?php echo $row['capacity'] ?></td>
+                                <td scope="col">
+                                    <?php if (!empty($roomFeatures)) { 
+                                        foreach ($roomFeatures as $featureName) { ?>
+                                            <span class="badge bg-secondary me-1 mb-1"><?php echo htmlspecialchars($featureName); ?></span>
+                                        <?php }
+                                    } else { ?>
+                                        <span class="text-muted">No features</span>
+                                    <?php } ?>
+                                </td>
                                 <td scope="col">₱<?php echo ($row['base_price']) ?></td>
                                 <td scope="col"><?php echo $row['quantity'] ?></td>
                                 <td scope="col"><?php echo '<img src="assets/' . $row['imagePath'] . '" style="width:200px;">'; ?></td>
@@ -215,6 +260,25 @@ $roomTypes = executeQuery($getRoomTypes);
                                                             <input id="editRoomImage<?php echo $row['roomID']; ?>" class="form-control" type="file" name="roomImage" accept="image/*">
                                                         </div>
                                                         </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Room Features</label>
+                                                            <div class="row">
+                                                                <?php
+                                                                mysqli_data_seek($features, 0);
+                                                                while ($feature = mysqli_fetch_assoc($features)) {
+                                                                    $checked = in_array($feature['featureId'], $roomFeatureIds) ? 'checked' : '';
+                                                                ?>
+                                                                    <div class="col-6">
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input" type="checkbox" name="editFeatures[]" value="<?php echo $feature['featureId']; ?>" id="editFeature<?php echo $row['roomID'] . '_' . $feature['featureId']; ?>" <?php echo $checked; ?>>
+                                                                            <label class="form-check-label" for="editFeature<?php echo $row['roomID'] . '_' . $feature['featureId']; ?>">
+                                                                                <?php echo htmlspecialchars($feature['featureName']); ?>
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                <?php } ?>
+                                                            </div>
+                                                        </div>
                                                         <div class="modal-footer">
                                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                                             <button type="submit" name="update_room" class="btn btn-primary">Save Changes</button>
@@ -237,7 +301,7 @@ $roomTypes = executeQuery($getRoomTypes);
         <div class="row">
             <div class="col justify-content-center text-center">
                 <!-- Button trigger modal -->
-                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                <button type="button" class="btn btn-warning mb-4" data-bs-toggle="modal" data-bs-target="#exampleModal">
                     Click to add more rooms
                 </button>
 
@@ -285,6 +349,24 @@ $roomTypes = executeQuery($getRoomTypes);
                                         <div class="col-md-6 mb-3">
                                             <label for="roomImage" class="form-label">Room Image</label>
                                             <input id="roomImage" class="form-control" type="file" name="roomImage" accept="image/*">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Room Features</label>
+                                        <div class="row">
+                                            <?php
+                                            mysqli_data_seek($features, 0);
+                                            while ($feature = mysqli_fetch_assoc($features)) {
+                                            ?>
+                                                <div class="col-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" name="features[]" value="<?php echo $feature['featureId']; ?>" id="feature<?php echo $feature['featureId']; ?>">
+                                                        <label class="form-check-label" for="feature<?php echo $feature['featureId']; ?>">
+                                                            <?php echo htmlspecialchars($feature['featureName']); ?>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            <?php } ?>
                                         </div>
                                     </div>
                                     <div class="modal-footer">
