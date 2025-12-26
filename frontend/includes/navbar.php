@@ -1,3 +1,10 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$isLoggedIn = isset($_SESSION['userID']);
+$username = $isLoggedIn ? $_SESSION['username'] : '';
+?>
 <nav class="navbar navbar-expand-lg sticky-top glass bg-body-tertiary shadow animate-nav">
     <div class="container-fluid px-3 mx-3 px-md-5">
         <a class="navbar-brand fw-bold fs-3" href="/HOTEL-MANAGEMENT-SYSTEM/index.php"><img id="site-logo"
