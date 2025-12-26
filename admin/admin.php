@@ -9,6 +9,47 @@ $customersData = [];
 while ($user = mysqli_fetch_assoc($usersResult)) {
     $customersData[] = $user;
 }
+
+// Fetch all bookings for reservations tab
+$getAllBookings = "SELECT bookings.*, rooms.roomName, users.email AS userEmail 
+                   FROM bookings 
+                   INNER JOIN rooms ON bookings.roomID = rooms.roomID 
+                   INNER JOIN users ON bookings.userID = users.userID 
+                   ORDER BY bookings.createdAt DESC";
+$allBookingsResult = executeQuery($getAllBookings);
+
+$allBookingsData = [];
+while ($booking = mysqli_fetch_assoc($allBookingsResult)) {
+    $allBookingsData[] = $booking;
+}
+
+// Fetch confirmed bookings
+$getConfirmedBookings = "SELECT bookings.*, rooms.roomName, users.email AS userEmail 
+                         FROM bookings 
+                         INNER JOIN rooms ON bookings.roomID = rooms.roomID 
+                         INNER JOIN users ON bookings.userID = users.userID 
+                         WHERE bookings.bookingStatus = 'confirmed' 
+                         ORDER BY bookings.createdAt DESC";
+$confirmedBookingsResult = executeQuery($getConfirmedBookings);
+
+$confirmedBookingsData = [];
+while ($booking = mysqli_fetch_assoc($confirmedBookingsResult)) {
+    $confirmedBookingsData[] = $booking;
+}
+
+// Fetch pending bookings
+$getPendingBookings = "SELECT bookings.*, rooms.roomName, users.email AS userEmail 
+                       FROM bookings 
+                       INNER JOIN rooms ON bookings.roomID = rooms.roomID 
+                       INNER JOIN users ON bookings.userID = users.userID 
+                       WHERE bookings.bookingStatus = 'pending' 
+                       ORDER BY bookings.createdAt DESC";
+$pendingBookingsResult = executeQuery($getPendingBookings);
+
+$pendingBookingsData = [];
+while ($booking = mysqli_fetch_assoc($pendingBookingsResult)) {
+    $pendingBookingsData[] = $booking;
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -25,6 +66,24 @@ while ($user = mysqli_fetch_assoc($usersResult)) {
 
 <body>
     <?php include 'header.php'; ?>    
+
+    <?php if (isset($_GET['success'])): ?>
+        <div class="container mt-3">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <?php echo htmlspecialchars($_GET['success']); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($_GET['error'])): ?>
+        <div class="container mt-3">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <?php echo htmlspecialchars($_GET['error']); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    <?php endif; ?>
 
     <!-- cards -->
     <div class="container mt-5 p-5">
@@ -113,6 +172,7 @@ while ($user = mysqli_fetch_assoc($usersResult)) {
                     <th scope="col">Room Type</th>
                     <th scope="col">Time-Stamp</th>
                     <th scope="col">Status</th>
+                    <th scope="col">Payment</th>
                     <th scope="col">Notes</th>
                 </tr>
             </thead>
@@ -125,6 +185,7 @@ while ($user = mysqli_fetch_assoc($usersResult)) {
                     <td>Deluxe Room</td>
                     <td>2025-07-01 10:00:00</td>
                     <td>Confirmed</td>
+                    <td>Paid</td>
                     <td>None</td>
                 </tr>
                 <tr>
@@ -135,6 +196,7 @@ while ($user = mysqli_fetch_assoc($usersResult)) {
                     <td>Deluxe Room</td>
                     <td>2025-07-01 10:00:00</td>
                     <td>Confirmed</td>
+                    <td>Paid</td>
                     <td>None</td>
                 </tr>
                 <tr>
@@ -145,6 +207,7 @@ while ($user = mysqli_fetch_assoc($usersResult)) {
                     <td>Deluxe Room</td>
                     <td>2025-07-01 10:00:00</td>
                     <td>Confirmed</td>
+                    <td>Paid</td>
                     <td>None</td>
                 </tr>
             </tbody>
@@ -203,22 +266,98 @@ while ($user = mysqli_fetch_assoc($usersResult)) {
         </div>
     </div>
 
+    <!-- Update Booking Status Modal -->
+    <div class="modal fade" id="updateBookingModal" tabindex="-1" aria-labelledby="updateBookingModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="updateBookingModalLabel">Update Booking Status</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="updateBookingForm" action="php/update_booking.php" method="POST">
+                    <div class="modal-body">
+                        <input type="hidden" name="bookingID" id="updateBookingID">
+                        <p>Booking #<strong id="updateBookingNumber"></strong></p>
+                        <p>Guest: <strong id="updateBookingGuest"></strong></p>
+                        <div class="mb-3">
+                            <label for="newBookingStatus" class="form-label">Booking Status</label>
+                            <select class="form-select" name="bookingStatus" id="newBookingStatus" required>
+                                <option value="pending">Pending</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="cancelled">Cancelled</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPaymentStatus" class="form-label">Payment Status</label>
+                            <select class="form-select" name="paymentStatus" id="newPaymentStatus" required>
+                                <option value="pending">Pending</option>
+                                <option value="paid">Paid</option>
+                                <option value="refunded">Refunded</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bookingNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" name="notes" id="bookingNotes" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Status</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
 
     <script>
-        // Customer data from database
+        // Data from database
         const customersFromDb = <?php echo json_encode($customersData); ?>;
+        const allBookingsFromDb = <?php echo json_encode($allBookingsData); ?>;
+        const confirmedBookingsFromDb = <?php echo json_encode($confirmedBookingsData); ?>;
+        const pendingBookingsFromDb = <?php echo json_encode($pendingBookingsData); ?>;
+
+        // Helper function to format booking rows
+        function formatBookingRow(booking, index) {
+            const statusBadge = {
+                'pending': '<span class="badge bg-warning text-dark">Pending</span>',
+                'confirmed': '<span class="badge bg-success">Confirmed</span>',
+                'cancelled': '<span class="badge bg-danger">Cancelled</span>',
+                'completed': '<span class="badge bg-info">Completed</span>'
+            };
+            
+            const paymentBadge = {
+                'pending': '<span class="badge bg-warning text-dark">Pending</span>',
+                'paid': '<span class="badge bg-success">Paid</span>',
+                'refunded': '<span class="badge bg-secondary">Refunded</span>'
+            };
+            
+            return [
+                (index + 1).toString(),
+                booking.userEmail,
+                booking.checkInDate,
+                booking.checkOutDate,
+                booking.roomName,
+                booking.createdAt,
+                statusBadge[booking.bookingStatus] || booking.bookingStatus,
+                paymentBadge[booking.paymentStatus] || booking.paymentStatus,
+                booking.notes || 'None',
+                `<button class="btn btn-sm btn-primary" onclick="openUpdateBookingModal(${booking.bookingID}, '${booking.fullName}', '${booking.bookingStatus}', '${booking.paymentStatus}', '${booking.notes || ''}')">
+                    <i class="bi bi-pencil-square"></i> Update
+                </button>`
+            ];
+        }
 
         const tableData = {
             reservations: {
-                headers: ['#', 'Email', 'Check-In', 'Check-Out', 'Room Type', 'Time-Stamp', 'Status', 'Notes'],
-                rows: [
-                    ['1', 'mark@email.com', '07/18/2025', '08/19/2025', 'Deluxe Room', '2025-07-01 10:00:00', 'Pending', 'Awaiting confirmation'],
-                    ['2', 'sarah@email.com', '07/20/2025', '07/25/2025', 'Basic Room', '2025-07-02 14:30:00', 'Pending', 'Early check-in requested'],
-                    ['3', 'mike@email.com', '08/01/2025', '08/05/2025', 'Family Room', '2025-07-03 09:15:00', 'Pending', 'None']
-                ]
+                headers: ['#', 'Email', 'Check-In', 'Check-Out', 'Room', 'Booked On', 'Status', 'Payment', 'Notes', 'Actions'],
+                rows: allBookingsFromDb.length > 0 
+                    ? allBookingsFromDb.map((booking, index) => formatBookingRow(booking, index))
+                    : [['', 'No reservations found', '', '', '', '', '', '', '', '']]
             },
             customers: {
                 headers: ['#', 'Name', 'Email', 'Username', 'Phone', 'Member Since', 'Role', 'Actions'],
@@ -241,22 +380,29 @@ while ($user = mysqli_fetch_assoc($usersResult)) {
                     : [['', 'No customers found', '', '', '', '', '', '']]
             },
             confirmed: {
-                headers: ['#', 'Email', 'Check-In', 'Check-Out', 'Room Type', 'Time-Stamp', 'Status', 'Notes'],
-                rows: [
-                    ['1', 'john@email.com', '07/10/2025', '07/15/2025', 'Twin Room', '2025-06-28 11:00:00', 'Confirmed', 'Paid in full'],
-                    ['2', 'anna@email.com', '07/12/2025', '07/14/2025', 'Single Room', '2025-06-29 16:45:00', 'Confirmed', 'None'],
-                    ['3', 'peter@email.com', '07/18/2025', '07/22/2025', 'Deluxe Room', '2025-07-01 08:30:00', 'Confirmed', 'Airport pickup']
-                ]
+                headers: ['#', 'Email', 'Check-In', 'Check-Out', 'Room', 'Booked On', 'Status', 'Payment', 'Notes', 'Actions'],
+                rows: confirmedBookingsFromDb.length > 0 
+                    ? confirmedBookingsFromDb.map((booking, index) => formatBookingRow(booking, index))
+                    : [['', 'No confirmed bookings', '', '', '', '', '', '', '', '']]
             },
             pending: {
-                headers: ['#', 'Email', 'Check-In', 'Check-Out', 'Room Type', 'Time-Stamp', 'Status', 'Action Required'],
-                rows: [
-                    ['1', 'guest1@email.com', '07/25/2025', '07/28/2025', 'Basic Room', '2025-07-04 10:00:00', 'Pending', 'Awaiting payment'],
-                    ['2', 'guest2@email.com', '08/01/2025', '08/03/2025', 'Twin Room', '2025-07-04 12:30:00', 'Pending', 'ID verification needed'],
-                    ['3', 'guest3@email.com', '08/05/2025', '08/10/2025', 'Family Room', '2025-07-04 15:00:00', 'Pending', 'Awaiting confirmation']
-                ]
+                headers: ['#', 'Email', 'Check-In', 'Check-Out', 'Room', 'Booked On', 'Status', 'Payment', 'Notes', 'Actions'],
+                rows: pendingBookingsFromDb.length > 0 
+                    ? pendingBookingsFromDb.map((booking, index) => formatBookingRow(booking, index))
+                    : [['', 'No pending bookings', '', '', '', '', '', '', '', '']]
             }
         };
+
+        // Open Update Booking Modal
+        function openUpdateBookingModal(bookingID, guestName, bookingStatus, paymentStatus, notes) {
+            document.getElementById('updateBookingID').value = bookingID;
+            document.getElementById('updateBookingNumber').textContent = bookingID;
+            document.getElementById('updateBookingGuest').textContent = guestName;
+            document.getElementById('newBookingStatus').value = bookingStatus;
+            document.getElementById('newPaymentStatus').value = paymentStatus;
+            document.getElementById('bookingNotes').value = notes;
+            new bootstrap.Modal(document.getElementById('updateBookingModal')).show();
+        }
 
         // Open Edit Role Modal
         function openEditRoleModal(userID, userName, currentRole) {
@@ -279,29 +425,16 @@ while ($user = mysqli_fetch_assoc($usersResult)) {
 
             // Update table headers
             const thead = document.querySelector('#tableSection table thead tr');
-            thead.innerHTML = data.headers.map((header, index) => 
-                index === 0 ? `<th scope="col">${header}</th>` : `<th scope="col">${header}</th>`
-            ).join('');
+            thead.innerHTML = data.headers.map(header => `<th scope="col">${header}</th>`).join('');
 
-            // Update table body - use innerHTML for action buttons
+            // Update table body
             const tbody = document.querySelector('#tableSection table tbody');
-            if (tableType === 'customers') {
-                tbody.innerHTML = data.rows.map(row => `
-                    <tr>
-                        <th scope="row">${row[0]}</th>
-                        ${row.slice(1).map((cell, idx) => 
-                            idx === row.length - 2 ? `<td>${cell}</td>` : `<td>${cell}</td>`
-                        ).join('')}
-                    </tr>
-                `).join('');
-            } else {
-                tbody.innerHTML = data.rows.map(row => `
-                    <tr>
-                        <th scope="row">${row[0]}</th>
-                        ${row.slice(1).map(cell => `<td>${cell}</td>`).join('')}
-                    </tr>
-                `).join('');
-            }
+            tbody.innerHTML = data.rows.map(row => `
+                <tr>
+                    <th scope="row">${row[0]}</th>
+                    ${row.slice(1).map(cell => `<td>${cell}</td>`).join('')}
+                </tr>
+            `).join('');
 
             // Update active card styling
             document.querySelectorAll('.card-select').forEach(card => {

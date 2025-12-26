@@ -8,8 +8,8 @@ $roomTypesResult = executeQuery($getRoomTypes);
 // Function to get features for a room
 function getRoomFeatures($roomID) {
     $query = "SELECT f.featureName FROM features f 
-            INNER JOIN roomfeatures rf ON f.featureId = rf.featureID 
-            WHERE rf.roomID = " . (int)$roomID;
+              INNER JOIN roomfeatures rf ON f.featureId = rf.featureID 
+              WHERE rf.roomID = " . (int)$roomID;
     return executeQuery($query);
 }
 ?>
@@ -229,10 +229,9 @@ function getRoomFeatures($roomID) {
                 // Loop through each room type
                 while ($roomType = mysqli_fetch_assoc($roomTypesResult)) { 
                     // Get rooms for this room type
-                    $getRooms = "SELECT rooms.*, roomtypes.roomType AS roomTypeName 
-                                 FROM rooms 
-                                 INNER JOIN roomtypes ON rooms.roomTypeId = roomtypes.roomTypeID 
-                                 WHERE rooms.roomTypeId = " . (int)$roomType['roomTypeID'];
+                    $getRooms = "SELECT rooms.*, roomtypes.roomType AS roomTypeName FROM rooms 
+                                INNER JOIN roomtypes ON rooms.roomTypeId = roomtypes.roomTypeID 
+                                WHERE rooms.roomTypeId = " . (int)$roomType['roomTypeID'];
                     $roomsResult = executeQuery($getRooms);
                     
                     // Only show section if there are rooms of this type
