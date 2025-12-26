@@ -151,6 +151,58 @@ while ($user = mysqli_fetch_assoc($usersResult)) {
         </table>
     </div>
 
+    <!-- Edit Role Modal -->
+    <div class="modal fade" id="editRoleModal" tabindex="-1" aria-labelledby="editRoleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editRoleModalLabel">Edit User Role</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="editRoleForm" action="php/update_role.php" method="POST">
+                    <div class="modal-body">
+                        <input type="hidden" name="userID" id="editUserID">
+                        <p>User: <strong id="editUserName"></strong></p>
+                        <div class="mb-3">
+                            <label for="newRole" class="form-label">Select Role</label>
+                            <select class="form-select" name="role" id="newRole" required>
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete User Modal -->
+    <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteUserModalLabel">Confirm Delete</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="deleteUserForm" action="php/delete_user.php" method="POST">
+                    <div class="modal-body">
+                        <input type="hidden" name="userID" id="deleteUserID">
+                        <p>Are you sure you want to delete user <strong id="deleteUserName"></strong>?</p>
+                        <p class="text-danger"><i class="bi bi-exclamation-triangle me-1"></i>This action cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Delete User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
@@ -169,7 +221,7 @@ while ($user = mysqli_fetch_assoc($usersResult)) {
                 ]
             },
             customers: {
-                headers: ['#', 'Name', 'Email', 'Username', 'Phone', 'Member Since', 'Role'],
+                headers: ['#', 'Name', 'Email', 'Username', 'Phone', 'Member Since', 'Role', 'Actions'],
                 rows: customersFromDb.length > 0 
                     ? customersFromDb.map((user, index) => [
                         (index + 1).toString(),
@@ -178,9 +230,15 @@ while ($user = mysqli_fetch_assoc($usersResult)) {
                         user.username,
                         user.phoneNumber || 'N/A',
                         user.created_at,
-                        user.role
+                        user.role,
+                        `<button class="btn btn-sm btn-warning me-1" onclick="openEditRoleModal(${user.userID}, '${user.firstName} ${user.lastName}', '${user.role}')">
+                            <i class="bi bi-pencil-square"></i> Edit Role
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="openDeleteModal(${user.userID}, '${user.firstName} ${user.lastName}')">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>`
                     ])
-                    : [['', 'No customers found', '', '', '', '', '']]
+                    : [['', 'No customers found', '', '', '', '', '', '']]
             },
             confirmed: {
                 headers: ['#', 'Email', 'Check-In', 'Check-Out', 'Room Type', 'Time-Stamp', 'Status', 'Notes'],
@@ -200,6 +258,21 @@ while ($user = mysqli_fetch_assoc($usersResult)) {
             }
         };
 
+        // Open Edit Role Modal
+        function openEditRoleModal(userID, userName, currentRole) {
+            document.getElementById('editUserID').value = userID;
+            document.getElementById('editUserName').textContent = userName;
+            document.getElementById('newRole').value = currentRole;
+            new bootstrap.Modal(document.getElementById('editRoleModal')).show();
+        }
+
+        // Open Delete Confirmation Modal
+        function openDeleteModal(userID, userName) {
+            document.getElementById('deleteUserID').value = userID;
+            document.getElementById('deleteUserName').textContent = userName;
+            new bootstrap.Modal(document.getElementById('deleteUserModal')).show();
+        }
+
         function switchTable(tableType) {
             const data = tableData[tableType];
             if (!data) return;
@@ -210,14 +283,25 @@ while ($user = mysqli_fetch_assoc($usersResult)) {
                 index === 0 ? `<th scope="col">${header}</th>` : `<th scope="col">${header}</th>`
             ).join('');
 
-            // Update table body
+            // Update table body - use innerHTML for action buttons
             const tbody = document.querySelector('#tableSection table tbody');
-            tbody.innerHTML = data.rows.map(row => `
-                <tr>
-                    <th scope="row">${row[0]}</th>
-                    ${row.slice(1).map(cell => `<td>${cell}</td>`).join('')}
-                </tr>
-            `).join('');
+            if (tableType === 'customers') {
+                tbody.innerHTML = data.rows.map(row => `
+                    <tr>
+                        <th scope="row">${row[0]}</th>
+                        ${row.slice(1).map((cell, idx) => 
+                            idx === row.length - 2 ? `<td>${cell}</td>` : `<td>${cell}</td>`
+                        ).join('')}
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = data.rows.map(row => `
+                    <tr>
+                        <th scope="row">${row[0]}</th>
+                        ${row.slice(1).map(cell => `<td>${cell}</td>`).join('')}
+                    </tr>
+                `).join('');
+            }
 
             // Update active card styling
             document.querySelectorAll('.card-select').forEach(card => {
