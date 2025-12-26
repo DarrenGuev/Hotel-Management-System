@@ -202,12 +202,12 @@ $features = executeQuery($getFeatures);
                                 <td scope="col">₱<?php echo ($row['base_price']) ?></td>
                                 <td scope="col"><?php echo $row['quantity'] ?></td>
                                 <td scope="col"><?php echo '<img src="assets/' . $row['imagePath'] . '" style="width:200px;">'; ?></td>
-                                <td scope="col" class="text-center">
+                                <td scope="col" class="text-center align-middle">
                                     <form method="POST" style="display: inline-block;">
                                         <input type="hidden" value="<?php echo $row['roomID'] ?>" name="deleteID">
-                                        <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+                                        <button class="btn btn-outline-danger btn-sm m-2" type="submit">Delete</button>
                                     </form>
-                                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal<?php echo $row['roomID']; ?>">
+                                    <button type="button" class="btn btn-outline-primary btn-sm m-2" data-bs-toggle="modal" data-bs-target="#editModal<?php echo $row['roomID']; ?>">
                                         Edit
                                     </button>
 

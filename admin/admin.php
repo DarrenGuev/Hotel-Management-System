@@ -11,11 +11,8 @@ while ($user = mysqli_fetch_assoc($usersResult)) {
 }
 
 // Fetch all bookings for reservations tab
-$getAllBookings = "SELECT bookings.*, rooms.roomName, users.email AS userEmail 
-                   FROM bookings 
-                   INNER JOIN rooms ON bookings.roomID = rooms.roomID 
-                   INNER JOIN users ON bookings.userID = users.userID 
-                   ORDER BY bookings.createdAt DESC";
+$getAllBookings = "SELECT bookings.*, rooms.roomName, users.email AS userEmail FROM bookings INNER JOIN rooms ON bookings.roomID = rooms.roomID 
+                    INNER JOIN users ON bookings.userID = users.userID ORDER BY bookings.createdAt DESC";
 $allBookingsResult = executeQuery($getAllBookings);
 
 $allBookingsData = [];
@@ -24,12 +21,8 @@ while ($booking = mysqli_fetch_assoc($allBookingsResult)) {
 }
 
 // Fetch confirmed bookings
-$getConfirmedBookings = "SELECT bookings.*, rooms.roomName, users.email AS userEmail 
-                         FROM bookings 
-                         INNER JOIN rooms ON bookings.roomID = rooms.roomID 
-                         INNER JOIN users ON bookings.userID = users.userID 
-                         WHERE bookings.bookingStatus = 'confirmed' 
-                         ORDER BY bookings.createdAt DESC";
+$getConfirmedBookings = "SELECT bookings.*, rooms.roomName, users.email AS userEmail FROM bookings INNER JOIN rooms ON bookings.roomID = rooms.roomID 
+                        INNER JOIN users ON bookings.userID = users.userID WHERE bookings.bookingStatus = 'confirmed' ORDER BY bookings.createdAt DESC";
 $confirmedBookingsResult = executeQuery($getConfirmedBookings);
 
 $confirmedBookingsData = [];
@@ -38,12 +31,8 @@ while ($booking = mysqli_fetch_assoc($confirmedBookingsResult)) {
 }
 
 // Fetch pending bookings
-$getPendingBookings = "SELECT bookings.*, rooms.roomName, users.email AS userEmail 
-                       FROM bookings 
-                       INNER JOIN rooms ON bookings.roomID = rooms.roomID 
-                       INNER JOIN users ON bookings.userID = users.userID 
-                       WHERE bookings.bookingStatus = 'pending' 
-                       ORDER BY bookings.createdAt DESC";
+$getPendingBookings = "SELECT bookings.*, rooms.roomName, users.email AS userEmail FROM bookings INNER JOIN rooms ON bookings.roomID = rooms.roomID 
+                        INNER JOIN users ON bookings.userID = users.userID WHERE bookings.bookingStatus = 'pending' ORDER BY bookings.createdAt DESC";
 $pendingBookingsResult = executeQuery($getPendingBookings);
 
 $pendingBookingsData = [];
