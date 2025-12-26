@@ -21,6 +21,7 @@
 </head>
 
 <body>
+    <?php include 'integrations/chatbot/chatbotUI.html'; ?>
     <?php include 'frontend/includes/navbar.php'; ?>
 
     <div id="home" class="position-relative d-flex align-items-center justify-content-center"
