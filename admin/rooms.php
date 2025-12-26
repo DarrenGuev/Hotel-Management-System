@@ -170,9 +170,7 @@ $features = executeQuery($getFeatures);
                     <tbody id="roomsTableBody">
                         <?php while ($row = mysqli_fetch_assoc($rooms)) { 
                             // Get features for this room
-                            $roomFeaturesQuery = "SELECT f.featureName FROM features f 
-                                                  INNER JOIN roomfeatures rf ON f.featureId = rf.featureID 
-                                                  WHERE rf.roomID = " . (int)$row['roomID'];
+                            $roomFeaturesQuery = "SELECT f.featureName FROM features f INNER JOIN roomfeatures rf ON f.featureId = rf.featureID  WHERE rf.roomID = " . (int)$row['roomID'];
                             $roomFeaturesResult = executeQuery($roomFeaturesQuery);
                             $roomFeatures = [];
                             while ($feature = mysqli_fetch_assoc($roomFeaturesResult)) {

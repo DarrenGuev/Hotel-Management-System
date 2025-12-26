@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <!doctype html>
 <html lang="en">
 
@@ -91,6 +94,20 @@
                             <div class="col-12 col-md-5">
                                 <div class="d-flex flex-column h-100 justify-content-center">
                                     <h2 class="fs-3 fw-semibold text-white text-center mb-4">Login</h2>
+
+                                    <?php if (isset($_GET['error'])): ?>
+                                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                            <?php echo htmlspecialchars($_GET['error']); ?>
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <?php if (isset($_GET['success'])): ?>
+                                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                            <?php echo htmlspecialchars($_GET['success']); ?>
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                        </div>
+                                    <?php endif; ?>
 
                                     <form action="php/login_process.php" method="POST">
                                         <div class="mb-3">

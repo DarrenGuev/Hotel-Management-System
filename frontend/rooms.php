@@ -8,8 +8,8 @@ $roomTypesResult = executeQuery($getRoomTypes);
 // Function to get features for a room
 function getRoomFeatures($roomID) {
     $query = "SELECT f.featureName FROM features f 
-              INNER JOIN roomfeatures rf ON f.featureId = rf.featureID 
-              WHERE rf.roomID = " . (int)$roomID;
+            INNER JOIN roomfeatures rf ON f.featureId = rf.featureID 
+            WHERE rf.roomID = " . (int)$roomID;
     return executeQuery($query);
 }
 ?>

@@ -1,3 +1,15 @@
+<?php
+include 'connect.php';
+
+// Fetch users from database for customers tab
+$getUsersQuery = "SELECT * FROM users WHERE role = 'user' ORDER BY created_at DESC";
+$usersResult = executeQuery($getUsersQuery);
+
+$customersData = [];
+while ($user = mysqli_fetch_assoc($usersResult)) {
+    $customersData[] = $user;
+}
+?>
 <!doctype html>
 <html lang="en">
 
@@ -144,6 +156,9 @@
         crossorigin="anonymous"></script>
 
     <script>
+        // Customer data from database
+        const customersFromDb = <?php echo json_encode($customersData); ?>;
+
         const tableData = {
             reservations: {
                 headers: ['#', 'Email', 'Check-In', 'Check-Out', 'Room Type', 'Time-Stamp', 'Status', 'Notes'],
@@ -154,12 +169,18 @@
                 ]
             },
             customers: {
-                headers: ['#', 'Name', 'Email', 'Phone', 'Total Bookings', 'Member Since', 'Status', 'Notes'],
-                rows: [
-                    ['1', 'Mark Johnson', 'mark@email.com', '+63 912 345 6789', '5', '2024-01-15', 'Active', 'VIP Customer'],
-                    ['2', 'Sarah Smith', 'sarah@email.com', '+63 923 456 7890', '2', '2024-06-20', 'Active', 'None'],
-                    ['3', 'Mike Brown', 'mike@email.com', '+63 934 567 8901', '1', '2025-01-01', 'New', 'First-time guest']
-                ]
+                headers: ['#', 'Name', 'Email', 'Username', 'Phone', 'Member Since', 'Role'],
+                rows: customersFromDb.length > 0 
+                    ? customersFromDb.map((user, index) => [
+                        (index + 1).toString(),
+                        user.firstName + ' ' + user.lastName,
+                        user.email,
+                        user.username,
+                        user.phoneNumber || 'N/A',
+                        user.created_at,
+                        user.role
+                    ])
+                    : [['', 'No customers found', '', '', '', '', '']]
             },
             confirmed: {
                 headers: ['#', 'Email', 'Check-In', 'Check-Out', 'Room Type', 'Time-Stamp', 'Status', 'Notes'],
@@ -215,29 +236,6 @@
             if (activeTab) {
                 activeTab.classList.add('active');
             }
-
-            // ==========================================
-            // BACKEND INTEGRATION POINT
-            // ==========================================
-            // When ready for backend, replace the above with:
-            //
-            // fetch(`/api/admin/${tableType}`)
-            //     .then(response => response.json())
-            //     .then(data => {
-            //         // Update headers
-            //         const thead = document.querySelector('#tableSection table thead tr');
-            //         thead.innerHTML = data.headers.map(h => `<th scope="col">${h}</th>`).join('');
-            //         
-            //         // Update body
-            //         const tbody = document.querySelector('#tableSection table tbody');
-            //         tbody.innerHTML = data.rows.map(row => `
-            //             <tr>
-            //                 <th scope="row">${row[0]}</th>
-            //                 ${row.slice(1).map(cell => `<td>${cell}</td>`).join('')}
-            //             </tr>
-            //         `).join('');
-            //     })
-            //     .catch(error => console.error('Error:', error));
         }
 
         // Initialize with reservations on page load
