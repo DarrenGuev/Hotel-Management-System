@@ -66,10 +66,15 @@
                     <div class="glass border border-secondary border-opacity-25 rounded-4 shadow-lg p-4 p-lg-5">
                         <div class="row align-items-stretch" style="min-height: 500px;">
                             <!-- left Side-->
-                            <div class="col-12 col-md-6 d-flex flex-column justify-content-between mb-4 mb-md-0 pe-md-5">
+                            <div
+                                class="col-12 col-md-6 d-flex flex-column justify-content-between mb-4 mb-md-0 pe-md-5">
                                 <div>
-                                    <p class="fs-4 fw-bold fst-italic text-white mb-4">TravelMates</p>
-                                    <h1 class="display-4 fw-bold text-white mb-2">Welcome</h1>
+                                    <div class="mt-2">
+                                        <a href="/HOTEL-MANAGEMENT-SYSTEM/index.php"
+                                            class="text-white-50 small mb-0 text-decoration-underline">&lt;-- Back to
+                                            Home Page</a>
+                                    </div>
+                                    <h1 class="display-4 fw-bold text-white mb-2 mt-5">Welcome</h1>
                                     <h1 class="display-4 fw-bold text-white mb-4">Back!</h1>
                                     <p class="text-white-50 fs-6">
                                         Experience comfort and luxury at TravelMates Hotel.
@@ -77,9 +82,9 @@
                                         unforgettable memories with us.
                                     </p>
                                 </div>
-                                <div class="mt-4">
-                                    <a href="/HOTEL-MANAGEMENT-SYSTEM/index.php" class="text-white-50 small mb-0 text-decoration-underline">&lt;-- Back to Home Page</a>
-                                </div>
+                                <a class="navbar-brand fw-bold fs-3" href="/HOTEL-MANAGEMENT-SYSTEM/index.php"><img
+                                        id="site-logo" src="/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoW.png"
+                                        style="width: 120px;" alt="logo"></a>
                             </div>
 
                             <!-- divider -->
@@ -94,23 +99,29 @@
 
                                     <form action="php/login_process.php" method="POST">
                                         <div class="mb-3">
-                                            <input type="text" class="form-control form-control-lg form-control-glass rounded-3 py-3"
+                                            <input type="text"
+                                                class="form-control form-control-lg form-control-glass rounded-3 py-3"
                                                 name="username" placeholder="Username" required>
                                         </div>
                                         <div class="mb-4 position-relative">
-                                            <input type="password" class="form-control form-control-lg form-control-glass rounded-3 py-3"
-                                                name="password" placeholder="Password" required id="password" style="padding-right: 2.5rem;">
-                                            <i class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-3 text-white" id="togglePassword" style="cursor: pointer;"></i>
+                                            <input type="password"
+                                                class="form-control form-control-lg form-control-glass rounded-3 py-3"
+                                                name="password" placeholder="Password" required id="password"
+                                                style="padding-right: 2.5rem;">
+                                            <i class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-3 text-white"
+                                                id="togglePassword" style="cursor: pointer;"></i>
                                         </div>
 
                                         <div class="d-grid mb-4">
-                                            <button type="submit" class="btn btn-glass btn-lg text-white fw-semibold rounded-3 py-3">Login</button>
+                                            <button type="submit"
+                                                class="btn btn-glass btn-lg text-white fw-semibold rounded-3 py-3">Login</button>
                                         </div>
                                     </form>
 
                                     <p class="text-center text-white-50 small mb-0">
                                         Don't have an account?
-                                        <a href="/HOTEL-MANAGEMENT-SYSTEM/frontend/register.php" class="text-warning text-decoration-none fw-semibold">Register</a>
+                                        <a href="/HOTEL-MANAGEMENT-SYSTEM/frontend/register.php"
+                                            class="text-warning text-decoration-none fw-semibold">Register</a>
                                     </p>
                                 </div>
                             </div>
@@ -128,7 +139,7 @@
         const togglePassword = document.querySelector('#togglePassword');
         const password = document.querySelector('#password');
 
-        togglePassword.addEventListener('click', function(e) {
+        togglePassword.addEventListener('click', function (e) {
             const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
             password.setAttribute('type', type);
             this.classList.toggle('bi-eye');

@@ -70,8 +70,12 @@
                             <div
                                 class="col-12 col-md-5 d-flex flex-column justify-content-between mb-4 mb-md-0 pe-md-4">
                                 <div>
-                                    <p class="fs-4 fw-bold fst-italic text-white mb-4">TravelMates</p>
-                                    <h1 class="display-4 fw-bold text-white mb-2">Join</h1>
+                                    <div class="mt-2">
+                                        <a href="/HOTEL-MANAGEMENT-SYSTEM/index.php"
+                                            class="text-white-50 small mb-0 text-decoration-underline">&lt;-- Back to
+                                            Home Page</a>
+                                    </div>
+                                    <h1 class="display-4 fw-bold text-white mb-2 mt-5">Join</h1>
                                     <h1 class="display-4 fw-bold text-white mb-4">Us Today!</h1>
                                     <p class="text-white-50 fs-6">
                                         Create your account and unlock exclusive deals,
@@ -79,9 +83,9 @@
                                         Your adventure starts here.
                                     </p>
                                 </div>
-                                <div class="mt-4">
-                                    <a href="/HOTEL-MANAGEMENT-SYSTEM/index.php" class="text-white-50 small mb-0 text-decoration-underline">&lt;-- Back to Home Page</a>
-                                </div>
+                                <a class="navbar-brand fw-bold fs-3" href="/HOTEL-MANAGEMENT-SYSTEM/index.php"><img
+                                        id="site-logo" src="/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoW.png"
+                                        style="width: 120px;" alt="logo"></a>
                             </div>
 
                             <!-- divider -->
@@ -94,45 +98,64 @@
                                 <div class="d-flex flex-column h-100 justify-content-center">
                                     <h2 class="fs-3 fw-semibold text-white text-center mb-4">Register</h2>
 
-                                    <form action="php/register_process.php" method="POST" class="needs-validation" novalidate>
+                                    <form action="php/register_process.php" method="POST" class="needs-validation"
+                                        novalidate>
                                         <div class="row">
                                             <div class="col-12 col-sm-6 mb-3">
                                                 <input id="firstname" name="firstname" type="text"
-                                                    class="form-control form-control-lg form-control-glass rounded-3" placeholder="First Name" required>
+                                                    class="form-control form-control-lg form-control-glass rounded-3"
+                                                    placeholder="First Name" required>
                                                 <div class="invalid-feedback">Please provide your first name.</div>
                                             </div>
                                             <div class="col-12 col-sm-6 mb-3">
                                                 <input id="lastname" name="lastname" type="text"
-                                                    class="form-control form-control-lg form-control-glass rounded-3" placeholder="Last Name" required>
+                                                    class="form-control form-control-lg form-control-glass rounded-3"
+                                                    placeholder="Last Name" required>
                                                 <div class="invalid-feedback">Please provide your last name.</div>
                                             </div>
                                         </div>
                                         <div class="mb-3">
                                             <input id="email" name="email" type="email"
-                                                class="form-control form-control-lg form-control-glass rounded-3" placeholder="Email Address" required>
+                                                class="form-control form-control-lg form-control-glass rounded-3"
+                                                placeholder="Email Address" required>
                                             <div class="invalid-feedback">Please enter a valid email address.</div>
                                         </div>
                                         <div class="mb-3">
                                             <input id="username" name="username" type="text"
-                                                class="form-control form-control-lg form-control-glass rounded-3" placeholder="Username (3-15 letters, numbers, or _ )" pattern="[A-Za-z0-9_]{3,15}" title="3-15 letters, numbers or underscore" required>
-                                            <div class="invalid-feedback">Please choose a username (3-15 letters, numbers, or _).</div>
+                                                class="form-control form-control-lg form-control-glass rounded-3"
+                                                placeholder="Username (3-15 letters, numbers, or _ )"
+                                                pattern="[A-Za-z0-9_]{3,15}" title="3-15 letters, numbers or underscore"
+                                                required>
+                                            <div class="invalid-feedback">Please choose a username (3-15 letters,
+                                                numbers, or _).</div>
                                         </div>
                                         <div class="mb-3">
                                             <input id="phone" name="phone" type="tel"
-                                                class="form-control form-control-lg form-control-glass rounded-3" placeholder="Phone Number (7-15 digits)" pattern="[0-9]{7,15}" title="Enter 7 to 15 digits" required>
-                                            <div class="invalid-feedback">Please enter a valid phone number (7-15 digits).</div>
+                                                class="form-control form-control-lg form-control-glass rounded-3"
+                                                placeholder="Phone Number (7-15 digits)" pattern="[0-9]{7,15}"
+                                                title="Enter 7 to 15 digits" required>
+                                            <div class="invalid-feedback">Please enter a valid phone number (7-15
+                                                digits).</div>
                                         </div>
                                         <div class="mb-3 position-relative">
                                             <input id="password" name="password" type="password"
-                                                class="form-control form-control-lg form-control-glass rounded-3" placeholder="Password (min 8 chars)" minlength="8" pattern=".{8,}" title="Minimum 8 characters" required style="padding-right: 2.5rem;">
-                                            <i class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-3 text-white" id="togglePassword" style="cursor: pointer;"></i>
-                                            <div class="invalid-feedback">Please provide a password (minimum 8 characters).</div>
+                                                class="form-control form-control-lg form-control-glass rounded-3"
+                                                placeholder="Password (min 8 chars)" minlength="8" pattern=".{8,}"
+                                                title="Minimum 8 characters" required style="padding-right: 2.5rem;">
+                                            <i class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-3 text-white"
+                                                id="togglePassword" style="cursor: pointer;"></i>
+                                            <div class="invalid-feedback">Please provide a password (minimum 8
+                                                characters).</div>
                                         </div>
                                         <div class="mb-4 position-relative">
                                             <input id="confirmPassword" name="confirm_password" type="password"
-                                                class="form-control form-control-lg form-control-glass rounded-3" placeholder="Confirm Password" minlength="8" required style="padding-right: 2.5rem;">
-                                            <i class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-3 text-white" id="toggleConfirmPassword" style="cursor: pointer;"></i>
-                                            <div class="invalid-feedback" id="confirmFeedback">Passwords must match.</div>
+                                                class="form-control form-control-lg form-control-glass rounded-3"
+                                                placeholder="Confirm Password" minlength="8" required
+                                                style="padding-right: 2.5rem;">
+                                            <i class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-3 text-white"
+                                                id="toggleConfirmPassword" style="cursor: pointer;"></i>
+                                            <div class="invalid-feedback" id="confirmFeedback">Passwords must match.
+                                            </div>
                                         </div>
 
                                         <div class="d-grid mb-4">
