@@ -305,7 +305,7 @@ function getRoomFeatures($roomID)
                                                     <?php if (!empty($features)) {
                                                         foreach ($features as $featureName) { ?>
                                                             <span
-                                                                class="badge bg-dark me-1 mb-1"><?php echo htmlspecialchars($featureName); ?></span>
+                                                                class="badge bg-dark text-white me-1 mb-1"><?php echo htmlspecialchars($featureName); ?></span>
                                                         <?php }
                                                     } else { ?>
                                                         <span class="text-muted small">No features listed</span>
