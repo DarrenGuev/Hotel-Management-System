@@ -21,6 +21,9 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="rooms.php">Rooms</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="features.php">Features</a>
+                            </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                                     aria-expanded="false">

@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '../../admin/connect.php';
+include '../../dbconnect/connect.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['userID'])) {
@@ -9,26 +9,35 @@ if (!isset($_SESSION['userID'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $userID = $_SESSION['userID'];
-    $bookingID = mysqli_real_escape_string($conn, $_POST['bookingID']);
+    $bookingID = (int)$_POST['bookingID'];
+    $userID = (int)$_SESSION['userID'];
+    $verifyBooking = $conn->prepare("SELECT bookingID, bookingStatus FROM bookings WHERE bookingID = ? AND userID = ?");
+    $verifyBooking->bind_param("ii", $bookingID, $userID);
+    $verifyBooking->execute();
+    $result = $verifyBooking->get_result();
     
-    // Verify the booking belongs to the user and is pending
-    $checkQuery = "SELECT * FROM bookings WHERE bookingID = '$bookingID' AND userID = '$userID' AND bookingStatus = 'pending'";
-    $result = executeQuery($checkQuery);
+    if ($result->num_rows === 0) {
+        header("Location: ../bookings.php?error=Booking not found");
+        exit();
+    }
     
-    if (mysqli_num_rows($result) === 0) {
-        header("Location: ../bookings.php?error=Booking not found or cannot be cancelled");
+    $booking = $result->fetch_assoc();
+    
+    if ($booking['bookingStatus'] !== 'pending') {
+        header("Location: ../bookings.php?error=Only pending bookings can be cancelled");
         exit();
     }
     
     // Update booking status to cancelled
-    $updateQuery = "UPDATE bookings SET bookingStatus = 'cancelled' WHERE bookingID = '$bookingID' AND userID = '$userID'";
+    $cancelBooking = $conn->prepare("UPDATE bookings SET bookingStatus = 'cancelled', paymentStatus = 'refunded', updatedAt = NOW() WHERE bookingID = ? AND userID = ?");
+    $cancelBooking->bind_param("ii", $bookingID, $userID);
     
-    if (executeQuery($updateQuery)) {
+    if ($cancelBooking->execute()) {
         header("Location: ../bookings.php?success=Booking cancelled successfully");
     } else {
         header("Location: ../bookings.php?error=Failed to cancel booking. Please try again.");
     }
+    $cancelBooking->close();
     exit();
 } else {
     header("Location: ../bookings.php");

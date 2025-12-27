@@ -2,29 +2,28 @@
 session_start();
 include '../dbconnect/connect.php';
 
-// Redirect to login if not logged in
 if (!isset($_SESSION['userID'])) {
     header("Location: login.php?error=Please login to view your bookings");
     exit();
 }
 
-$userID = $_SESSION['userID'];
+$userID = (int)$_SESSION['userID'];
 
-// Fetch user's bookings with room details and features
-$getBookings = "SELECT bookings.*, rooms.roomName, rooms.imagePath, rooms.capacity, rooms.base_price, roomtypes.roomType 
+$getBookings = $conn->prepare("SELECT bookings.*, rooms.roomName, rooms.imagePath, rooms.capacity, rooms.base_price, roomtypes.roomType 
                 FROM bookings 
                 INNER JOIN rooms ON bookings.roomID = rooms.roomID 
                 INNER JOIN roomtypes ON rooms.roomTypeId = roomtypes.roomTypeID 
-                WHERE bookings.userID = '$userID' 
-                ORDER BY bookings.createdAt DESC";
-$bookingsResult = executeQuery($getBookings);
+                WHERE bookings.userID = ? 
+                ORDER BY bookings.createdAt DESC");
+$getBookings->bind_param("i", $userID);
+$getBookings->execute();
+$bookingsResult = $getBookings->get_result();
 
-// Function to get features for a room
-function getBookingRoomFeatures($roomID) {
-    $query = "SELECT features.featureName FROM features 
-              INNER JOIN roomfeatures ON features.featureId = roomfeatures.featureID 
-              WHERE roomfeatures.roomID = " . (int)$roomID;
-    return executeQuery($query);
+function getBookingRoomFeatures($conn, $roomID) {
+    $query = $conn->prepare("SELECT features.featureName FROM features INNER JOIN roomfeatures ON features.featureId = roomfeatures.featureID WHERE roomfeatures.roomID = ?");
+    $query->bind_param("i", $roomID);
+    $query->execute();
+    return $query->get_result();
 }
 ?>
 <!doctype html>
@@ -34,223 +33,347 @@ function getBookingRoomFeatures($roomID) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>TravelMates - My Bookings</title>
+    <link rel="icon" type="image/png" href="/HOTEL-MANAGEMENT-SYSTEM/images/flag.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/HOTEL-MANAGEMENT-SYSTEM/css/style.css">
-    <style>
-        .booking-card {
-            background: #2d2d2d;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        
-        .booking-card-img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
-        
-        @media (min-width: 768px) {
-            .booking-card-img {
-                height: 100%;
-                min-height: 250px;
-            }
-        }
-        
-        .feature-badge {
-            background: #4a4a4a;
-            color: #fff;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            display: inline-block;
-            margin: 2px;
-        }
-        
-        .room-description {
-            color: #b0b0b0;
-            font-size: 0.85rem;
-            line-height: 1.5;
-        }
-        
-        .status-section {
-            background: #1a1a1a;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        
-        .btn-booking-status {
-            background: #6c757d;
-            color: #fff;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 5px;
-            font-size: 0.85rem;
-        }
-        
-        .btn-cancel {
-            background: #dc3545;
-            color: #fff;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 5px;
-            font-size: 0.85rem;
-        }
-    </style>
 </head>
 
-<body class="bg-dark text-white">
+<body>
     <?php include 'includes/navbar.php'; ?>
 
-    <div class="container py-5">
-        <h1 class="mb-4"><i class="bi bi-calendar-check me-2"></i>My Bookings</h1>
-        <p class="text-muted mb-4">Welcome, <?php echo htmlspecialchars($_SESSION['firstName']); ?>! Here are your bookings.</p>
+    <!-- Page Header -->
+    <div class="container-fluid bg-body-tertiary py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h1 class="fw-bold mb-2"><i class="bi bi-calendar-check me-2"></i>My Bookings</h1>
+                    <p class="text-muted">Welcome back, <?php echo htmlspecialchars($_SESSION['firstName']); ?>! Manage your reservations here.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Main Content -->
+    <div class="container py-5">
+        <!-- Alert Messages -->
         <?php if (isset($_GET['success'])): ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <?php echo htmlspecialchars($_GET['success']); ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i><?php echo htmlspecialchars($_GET['success']); ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
         </div>
         <?php endif; ?>
 
-        <?php if (mysqli_num_rows($bookingsResult) > 0): ?>
-            <?php while ($booking = mysqli_fetch_assoc($bookingsResult)): 
-                // Get features for this room
-                $featuresResult = getBookingRoomFeatures($booking['roomID']);
-                $features = [];
-                while ($feature = mysqli_fetch_assoc($featuresResult)) {
-                    $features[] = $feature['featureName'];
-                }
-                
-                // Calculate nights
-                $checkIn = new DateTime($booking['checkInDate']);
-                $checkOut = new DateTime($booking['checkOutDate']);
-                $nights = $checkIn->diff($checkOut)->days;
-            ?>
-            <div class="booking-card mb-4">
-                <div class="row g-0">
-                    <!-- Room Image -->
-                    <div class="col-12 col-md-3">
-                        <img src="/HOTEL-MANAGEMENT-SYSTEM/admin/assets/<?php echo htmlspecialchars($booking['imagePath']); ?>" 
-                             alt="<?php echo htmlspecialchars($booking['roomName']); ?>" 
-                             class="booking-card-img">
-                    </div>
+        <?php if (isset($_GET['error'])): ?>
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-circle me-2"></i><?php echo htmlspecialchars($_GET['error']); ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- Bookings List -->
+        <?php if ($bookingsResult->num_rows > 0): ?>
+            <div class="row g-4">
+                <?php while ($booking = $bookingsResult->fetch_assoc()): 
+                    $featuresResult = getBookingRoomFeatures($conn, $booking['roomID']);
+                    $features = [];
+                    while ($feature = $featuresResult->fetch_assoc()) {
+                        $features[] = $feature['featureName'];
+                    }
                     
-                    <!-- Room Details -->
-                    <div class="col-12 col-md-6 p-4">
-                        <h4 class="fw-bold mb-3"><?php echo htmlspecialchars($booking['roomName']); ?></h4>
-                        
-                        <!-- Features -->
-                        <div class="mb-3">
-                            <?php foreach ($features as $featureName): ?>
-                                <span class="feature-badge"><?php echo htmlspecialchars($featureName); ?></span>
-                            <?php endforeach; ?>
-                            <span class="feature-badge"><?php echo $booking['capacity']; ?> Guests Max</span>
-                        </div>
-                        
-                        <!-- Room Description -->
-                        <p class="room-description mb-3">
-                            <strong>Check-in:</strong> <?php echo date('M d, Y', strtotime($booking['checkInDate'])); ?><br>
-                            <strong>Check-out:</strong> <?php echo date('M d, Y', strtotime($booking['checkOutDate'])); ?><br>
-                            <strong>Duration:</strong> <?php echo $nights; ?> night(s)<br>
-                            <strong>Guests:</strong> <?php echo $booking['numberOfGuests']; ?><br>
-                            <strong>Total Price:</strong> ₱<?php echo number_format($booking['totalPrice'], 2); ?><br>
-                            <strong>Payment Method:</strong> <?php echo ucfirst(str_replace('_', ' ', $booking['paymentMethod'])); ?>
-                        </p>
-                    </div>
+                    $checkIn = new DateTime($booking['checkInDate']);
+                    $checkOut = new DateTime($booking['checkOutDate']);
+                    $nights = $checkIn->diff($checkOut)->days;
                     
-                    <!-- Status Section -->
-                    <div class="col-12 col-md-3 status-section">
-                        <div class="text-center mb-3">
-                            <!-- Payment Status -->
-                            <p class="text-muted small mb-1">Payment Status</p>
-                            <?php 
-                            $paymentClass = match($booking['paymentStatus']) {
-                                'paid' => 'bg-success',
-                                'pending' => 'bg-warning text-dark',
-                                'refunded' => 'bg-secondary',
-                                default => 'bg-secondary'
-                            };
-                            ?>
-                            <span class="badge <?php echo $paymentClass; ?> mb-3">
-                                <?php echo ucfirst($booking['paymentStatus']); ?>
-                            </span>
+                    $statusBadgeClass = match($booking['bookingStatus']) {
+                        'confirmed' => 'bg-success',
+                        'pending' => 'bg-warning text-dark',
+                        'cancelled' => 'bg-danger',
+                        'completed' => 'bg-info',
+                        default => 'bg-secondary'
+                    };
+                    
+                    $paymentBadgeClass = match($booking['paymentStatus']) {
+                        'paid' => 'bg-success',
+                        'pending' => 'bg-warning text-dark',
+                        'refunded' => 'bg-secondary',
+                        default => 'bg-secondary'
+                    };
+                ?>
+                <div class="col-12">
+                    <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+                        <div class="row g-0">
+                            <!-- Room Image -->
+                            <div class="col-12 col-md-3">
+                                <img src="/HOTEL-MANAGEMENT-SYSTEM/admin/assets/<?php echo htmlspecialchars($booking['imagePath']); ?>" 
+                                    alt="<?php echo htmlspecialchars($booking['roomName']); ?>" 
+                                    class="img-fluid h-100 w-100" style="object-fit: cover; min-height: 200px;">
+                            </div>
                             
-                            <!-- Booking Status -->
-                            <p class="text-muted small mb-1">Booking Status</p>
-                            <?php 
-                            $statusClass = match($booking['bookingStatus']) {
-                                'confirmed' => 'bg-success',
-                                'pending' => 'bg-warning text-dark',
-                                'cancelled' => 'bg-danger',
-                                'completed' => 'bg-info',
-                                default => 'bg-secondary'
-                            };
-                            ?>
-                            <span class="badge <?php echo $statusClass; ?> fs-6 px-3 py-2">
-                                <?php echo ucfirst($booking['bookingStatus']); ?>
-                            </span>
-                        </div>
-                        
-                        <div class="d-grid gap-2">
-                            <button class="btn-booking-status" disabled>
-                                <i class="bi bi-info-circle me-1"></i>Booking #<?php echo $booking['bookingID']; ?>
-                            </button>
-                            <?php if ($booking['bookingStatus'] === 'pending'): ?>
-                            <button class="btn-cancel" onclick="cancelBooking(<?php echo $booking['bookingID']; ?>)">
-                                <i class="bi bi-x-circle me-1"></i>Cancel
-                            </button>
-                            <?php endif; ?>
+                            <!-- Booking Details -->
+                            <div class="col-12 col-md-6">
+                                <div class="card-body p-4">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title fw-bold mb-0"><?php echo htmlspecialchars($booking['roomName']); ?></h5>
+                                        <span class="badge <?php echo $statusBadgeClass; ?> fs-6">
+                                            <?php echo ucfirst($booking['bookingStatus']); ?>
+                                        </span>
+                                    </div>
+                                    <p class="text-muted small mb-3"><?php echo htmlspecialchars($booking['roomType']); ?> Room • Booking #<?php echo $booking['bookingID']; ?></p>
+                                    
+                                    <!-- Features -->
+                                    <div class="mb-3">
+                                        <?php foreach ($features as $featureName): ?>
+                                            <span class="badge bg-dark me-1 mb-1"><?php echo htmlspecialchars($featureName); ?></span>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    
+                                    <!-- Booking Info -->
+                                    <div class="row">
+                                        <div class="col-6 col-sm-4 mb-2">
+                                            <small class="text-muted d-block">Check-in</small>
+                                            <strong><?php echo date('M d, Y', strtotime($booking['checkInDate'])); ?></strong>
+                                        </div>
+                                        <div class="col-6 col-sm-4 mb-2">
+                                            <small class="text-muted d-block">Check-out</small>
+                                            <strong><?php echo date('M d, Y', strtotime($booking['checkOutDate'])); ?></strong>
+                                        </div>
+                                        <div class="col-6 col-sm-4 mb-2">
+                                            <small class="text-muted d-block">Duration</small>
+                                            <strong><?php echo $nights; ?> night(s)</strong>
+                                        </div>
+                                        <div class="col-6 col-sm-4 mb-2">
+                                            <small class="text-muted d-block">Guests</small>
+                                            <strong><?php echo $booking['numberOfGuests']; ?> guest(s)</strong>
+                                        </div>
+                                        <div class="col-6 col-sm-4 mb-2">
+                                            <small class="text-muted d-block">Payment</small>
+                                            <strong><?php echo ucfirst(str_replace('_', ' ', $booking['paymentMethod'])); ?></strong>
+                                        </div>
+                                        <div class="col-6 col-sm-4 mb-2">
+                                            <small class="text-muted d-block">Payment Status</small>
+                                            <span class="badge <?php echo $paymentBadgeClass; ?>"><?php echo ucfirst($booking['paymentStatus']); ?></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Price & Actions -->
+                            <div class="col-12 col-md-3 bg-body-tertiary">
+                                <div class="card-body p-4 h-100 d-flex flex-column justify-content-between">
+                                    <div class="text-center text-md-end mb-3">
+                                        <small class="text-muted d-block">Total Price</small>
+                                        <h4 class="fw-bold text-warning mb-0">₱<?php echo number_format($booking['totalPrice'], 2); ?></h4>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <?php if ($booking['bookingStatus'] === 'confirmed'): ?>
+                                            <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#receiptModal<?php echo $booking['bookingID']; ?>">
+                                                <i class="bi bi-receipt me-1"></i>View Receipt
+                                            </button>
+                                        <?php endif; ?>
+                                        
+                                        <?php if ($booking['bookingStatus'] === 'pending'): ?>
+                                            <button class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#cancelModal<?php echo $booking['bookingID']; ?>">
+                                                <i class="bi bi-x-circle me-1"></i>Cancel Booking
+                                            </button>
+                                        <?php endif; ?>
+                                        
+                                        <small class="text-muted text-center">
+                                            Booked on <?php echo date('M d, Y', strtotime($booking['createdAt'])); ?>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Cancel Modal -->
+                <?php if ($booking['bookingStatus'] === 'pending'): ?>
+                <div class="modal fade" id="cancelModal<?php echo $booking['bookingID']; ?>" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Cancel Booking</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form action="php/cancel_booking.php" method="POST">
+                                <div class="modal-body">
+                                    <input type="hidden" name="bookingID" value="<?php echo $booking['bookingID']; ?>">
+                                    <p>Are you sure you want to cancel your booking for <strong><?php echo htmlspecialchars($booking['roomName']); ?></strong>?</p>
+                                    <div class="alert alert-warning">
+                                        <i class="bi bi-info-circle me-1"></i>This action cannot be undone.
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Booking</button>
+                                    <button type="submit" class="btn btn-danger">Yes, Cancel Booking</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <!-- Receipt Modal -->
+                <?php if ($booking['bookingStatus'] === 'confirmed'): ?>
+                <div class="modal fade" id="receiptModal<?php echo $booking['bookingID']; ?>" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title"><i class="bi bi-receipt me-2"></i>Booking Receipt</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <div class="text-center mb-4">
+                                    <img src="/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoB.png" alt="TravelMates" style="width: 150px;">
+                                    <h4 class="fw-bold mt-3">TravelMates Hotel</h4>
+                                    <p class="text-muted">Official Booking Confirmation</p>
+                                </div>
+                                
+                                <hr>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-6">
+                                        <strong>Booking Reference:</strong><br>
+                                        <span class="text-muted">#<?php echo str_pad($booking['bookingID'], 6, '0', STR_PAD_LEFT); ?></span>
+                                    </div>
+                                    <div class="col-6 text-end">
+                                        <strong>Booking Date:</strong><br>
+                                        <span class="text-muted"><?php echo date('F d, Y', strtotime($booking['createdAt'])); ?></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="card bg-body-tertiary mb-4">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold mb-3">Guest Information</h6>
+                                        <div class="row">
+                                            <div class="col-sm-6 mb-2">
+                                                <small class="text-muted">Full Name</small><br>
+                                                <strong><?php echo htmlspecialchars($booking['fullName']); ?></strong>
+                                            </div>
+                                            <div class="col-sm-6 mb-2">
+                                                <small class="text-muted">Email</small><br>
+                                                <strong><?php echo htmlspecialchars($booking['email']); ?></strong>
+                                            </div>
+                                            <div class="col-sm-6 mb-2">
+                                                <small class="text-muted">Phone Number</small><br>
+                                                <strong><?php echo htmlspecialchars($booking['phoneNumber']); ?></strong>
+                                            </div>
+                                            <div class="col-sm-6 mb-2">
+                                                <small class="text-muted">Number of Guests</small><br>
+                                                <strong><?php echo $booking['numberOfGuests']; ?></strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card bg-body-tertiary mb-4">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold mb-3">Room Details</h6>
+                                        <div class="row">
+                                            <div class="col-sm-6 mb-2">
+                                                <small class="text-muted">Room</small><br>
+                                                <strong><?php echo htmlspecialchars($booking['roomName']); ?></strong>
+                                            </div>
+                                            <div class="col-sm-6 mb-2">
+                                                <small class="text-muted">Room Type</small><br>
+                                                <strong><?php echo htmlspecialchars($booking['roomType']); ?></strong>
+                                            </div>
+                                            <div class="col-sm-6 mb-2">
+                                                <small class="text-muted">Check-in Date</small><br>
+                                                <strong><?php echo date('F d, Y', strtotime($booking['checkInDate'])); ?></strong>
+                                            </div>
+                                            <div class="col-sm-6 mb-2">
+                                                <small class="text-muted">Check-out Date</small><br>
+                                                <strong><?php echo date('F d, Y', strtotime($booking['checkOutDate'])); ?></strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card bg-warning bg-opacity-10 border-warning">
+                                    <div class="card-body">
+                                        <div class="row align-items-center">
+                                            <div class="col-sm-6">
+                                                <h6 class="fw-bold mb-1">Payment Details</h6>
+                                                <small class="text-muted">
+                                                    <?php echo ucfirst(str_replace('_', ' ', $booking['paymentMethod'])); ?> • 
+                                                    <?php echo ucfirst($booking['paymentStatus']); ?>
+                                                </small>
+                                            </div>
+                                            <div class="col-sm-6 text-sm-end">
+                                                <small class="text-muted">Total Amount</small>
+                                                <h3 class="fw-bold text-warning mb-0">₱<?php echo number_format($booking['totalPrice'], 2); ?></h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center mt-4">
+                                    <small class="text-muted">Thank you for choosing TravelMates Hotel!</small>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-success" onclick="window.print()">
+                                    <i class="bi bi-printer me-1"></i>Print Receipt
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <?php endwhile; ?>
             </div>
-            <?php endwhile; ?>
         <?php else: ?>
-            <div class="alert alert-info">
-                <i class="bi bi-info-circle me-2"></i>You have no bookings yet. 
-                <a href="rooms.php" class="alert-link">Browse our rooms</a> and make your first booking!
+            <!-- No Bookings -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow-sm border-0 rounded-3">
+                        <div class="card-body text-center py-5">
+                            <i class="bi bi-calendar-x display-1 text-muted mb-3"></i>
+                            <h4 class="fw-bold">No Bookings Yet</h4>
+                            <p class="text-muted mb-4">You haven't made any reservations yet. Start exploring our rooms!</p>
+                            <a href="rooms.php" class="btn btn-warning">
+                                <i class="bi bi-search me-1"></i>Browse Rooms
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         <?php endif; ?>
     </div>
 
     <?php include 'includes/footer.php'; ?>
 
-    <!-- Cancel Booking Modal -->
-    <div class="modal fade" id="cancelBookingModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content bg-dark text-white">
-                <div class="modal-header bg-danger">
-                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Cancel Booking</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <form action="php/cancel_booking.php" method="POST">
-                    <div class="modal-body">
-                        <input type="hidden" name="bookingID" id="cancelBookingID">
-                        <p>Are you sure you want to cancel this booking?</p>
-                        <p class="text-warning"><i class="bi bi-info-circle me-1"></i>This action may be subject to cancellation policies.</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Booking</button>
-                        <button type="submit" class="btn btn-danger">Yes, Cancel Booking</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
     <script>
-        function cancelBooking(bookingID) {
-            document.getElementById('cancelBookingID').value = bookingID;
-            new bootstrap.Modal(document.getElementById('cancelBookingModal')).show();
+        function changeMode() {
+            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+            document.documentElement.setAttribute('data-bs-theme', isDark ? 'light' : 'dark');
+            document.querySelectorAll('#mode i, #mode-lg i').forEach(icon => {
+                icon.className = isDark ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+            });
+            document.querySelectorAll('.btn-outline-dark, .btn-outline-light').forEach(element => {
+                element.classList.toggle('btn-outline-dark');
+                element.classList.toggle('btn-outline-light');
+            });
         }
     </script>
 </body>
-
 </html>

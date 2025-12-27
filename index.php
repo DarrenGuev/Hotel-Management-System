@@ -1,5 +1,5 @@
 <?php
-  include "php/connect.php";
+include 'dbconnect/connect.php';
 //   $getQuery = "SELECT * FROM students";
 //   $result = executeQuery($getQuery);
 ?>

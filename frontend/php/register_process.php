@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '../../admin/connect.php';
+include '../../dbconnect/connect.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $firstName = mysqli_real_escape_string($conn, $_POST['firstname']);

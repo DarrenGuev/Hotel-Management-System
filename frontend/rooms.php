@@ -1,15 +1,25 @@
 <?php
 include '../dbconnect/connect.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-// Get all room types
+$userData = null;
+if (isset($_SESSION['userID'])) {
+    $userID = (int)$_SESSION['userID'];
+    $getUserQuery = "SELECT firstName, lastName, email, phoneNumber FROM users WHERE userID = $userID";
+    $userResult = executeQuery($getUserQuery);
+    if ($userResult && mysqli_num_rows($userResult) > 0) {
+        $userData = mysqli_fetch_assoc($userResult);
+        $userData['fullName'] = $userData['firstName'] . ' ' . $userData['lastName'];
+    }
+}
+
 $getRoomTypes = "SELECT * FROM roomtypes ORDER BY roomTypeID";
 $roomTypesResult = executeQuery($getRoomTypes);
 
-// Function to get features for a room
 function getRoomFeatures($roomID) {
-    $query = "SELECT f.featureName FROM features f 
-              INNER JOIN roomfeatures rf ON f.featureId = rf.featureID 
-              WHERE rf.roomID = " . (int)$roomID;
+    $query = "SELECT f.featureName FROM features f INNER JOIN roomfeatures rf ON f.featureId = rf.featureID WHERE rf.roomID = " . (int)$roomID;
     return executeQuery($query);
 }
 ?>
@@ -228,13 +238,10 @@ function getRoomFeatures($roomID) {
                 <?php 
                 // Loop through each room type
                 while ($roomType = mysqli_fetch_assoc($roomTypesResult)) { 
-                    // Get rooms for this room type
                     $getRooms = "SELECT rooms.*, roomtypes.roomType AS roomTypeName FROM rooms 
                                 INNER JOIN roomtypes ON rooms.roomTypeId = roomtypes.roomTypeID 
                                 WHERE rooms.roomTypeId = " . (int)$roomType['roomTypeID'];
                     $roomsResult = executeQuery($getRooms);
-                    
-                    // Only show section if there are rooms of this type
                     if (mysqli_num_rows($roomsResult) > 0) {
                 ?>
                 <div class="container">
@@ -247,7 +254,6 @@ function getRoomFeatures($roomID) {
                     </div>
                     <div class="row" id="<?php echo strtolower($roomType['roomType']); ?>RoomCards">
                         <?php while($row = mysqli_fetch_assoc($roomsResult)) { 
-                            // Get features for this room
                             $featuresResult = getRoomFeatures($row['roomID']);
                             $features = [];
                             while ($feature = mysqli_fetch_assoc($featuresResult)) {
@@ -283,7 +289,6 @@ function getRoomFeatures($roomID) {
                             </div>
                         </div>
 
-                        <!-- Room Detail Modal for Room <?php echo $row['roomID']; ?> -->
                         <div class="modal fade" id="roomDetailModal<?php echo $row['roomID']; ?>" tabindex="-1">
                             <div class="modal-dialog">
                                 <div class="modal-content">
@@ -324,7 +329,6 @@ function getRoomFeatures($roomID) {
                             </div>
                         </div>
 
-                        <!-- Booking Modal for Room <?php echo $row['roomID']; ?> -->
                         <div class="modal fade" id="bookingModal<?php echo $row['roomID']; ?>" tabindex="-1">
                             <div class="modal-dialog modal-xl">
                                 <div class="modal-content">
@@ -333,72 +337,163 @@ function getRoomFeatures($roomID) {
                                         <button class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <div class="row">
-                                            <div class="col-12 col-md-7 justify-content-center text-center">
-                                                <img src="/HOTEL-MANAGEMENT-SYSTEM/admin/assets/<?php echo htmlspecialchars($row['imagePath']); ?>" alt="<?php echo htmlspecialchars($row['roomName']); ?>"
-                                                    class="img-fluid rounded-3 mb-3">
-                                                <div class="col-12 text-start mx-3">
-                                                    <p class="fw-semibold mb-2">Features:</p>
-                                                    <div class="mb-3">
-                                                        <?php if (!empty($features)) { 
-                                                            foreach ($features as $featureName) { ?>
-                                                                <span class="badge bg-dark me-1 mb-1"><?php echo htmlspecialchars($featureName); ?></span>
-                                                            <?php }
-                                                        } ?>
-                                                    </div>
-                                                    <p class="small text-secondary"><strong>Type:</strong> <?php echo htmlspecialchars($row['roomTypeName']); ?> | <strong>Capacity:</strong> <?php echo (int)$row['capacity']; ?> Guests | <strong>Price:</strong> ₱<?php echo number_format($row['base_price'], 2); ?> / night</p>
-                                                </div>
-                                            </div>
-                                            <div class="col-12 col-md-5">
-                                                <div class="row">
-                                                    <div class="col-12">
-                                                        <p class="text-start fw-bold mb-1">Guest information</p>
-                                                        <label for="fullName<?php echo $row['roomID']; ?>" class="form-label mb-0">Full Name</label>
-                                                        <input type="text" id="fullName<?php echo $row['roomID']; ?>" class="form-control mb-1">
-                                                        <label for="email<?php echo $row['roomID']; ?>" class="form-label mb-0">Email Address</label>
-                                                        <input type="email" id="email<?php echo $row['roomID']; ?>" class="form-control mb-1">
-                                                        <label for="phoneNumber<?php echo $row['roomID']; ?>" class="form-label mb-0">Phone Number</label>
-                                                        <input type="tel" id="phoneNumber<?php echo $row['roomID']; ?>" class="form-control mb-1">
+                                        <form id="bookingForm<?php echo $row['roomID']; ?>" action="php/process_booking.php" method="POST">
+                                            <input type="hidden" name="roomID" value="<?php echo $row['roomID']; ?>">
+                                            <input type="hidden" name="totalPrice" id="totalPriceInput<?php echo $row['roomID']; ?>" value="<?php echo $row['base_price']; ?>">
+                                            <input type="hidden" name="paymentMethod" id="paymentMethodInput<?php echo $row['roomID']; ?>" value="">
+                                            
+                                            <div class="row">
+                                                <div class="col-12 col-md-7 justify-content-center text-center">
+                                                    <img src="/HOTEL-MANAGEMENT-SYSTEM/admin/assets/<?php echo htmlspecialchars($row['imagePath']); ?>" alt="<?php echo htmlspecialchars($row['roomName']); ?>"
+                                                        class="img-fluid rounded-3 mb-3">
+                                                    <div class="col-12 text-start mx-3">
+                                                        <p class="fw-semibold mb-2">Features:</p>
+                                                        <div class="mb-3">
+                                                            <?php if (!empty($features)) { 
+                                                                foreach ($features as $featureName) { ?>
+                                                                    <span class="badge bg-dark me-1 mb-1"><?php echo htmlspecialchars($featureName); ?></span>
+                                                                <?php }
+                                                            } ?>
+                                                        </div>
+                                                        <p class="small text-secondary"><strong>Type:</strong> <?php echo htmlspecialchars($row['roomTypeName']); ?> | <strong>Capacity:</strong> <?php echo (int)$row['capacity']; ?> Guests | <strong>Price:</strong> ₱<?php echo number_format($row['base_price'], 2); ?> / night</p>
                                                     </div>
                                                 </div>
-                                                <div class="row">
-                                                    <p class="text-start fw-bold mt-1 mb-1">Booking details</p>
-                                                    <div class="col-5">
-                                                        <label for="checkIn<?php echo $row['roomID']; ?>" class="form-label mb-0">Check-in</label>
-                                                        <input type="date" id="checkIn<?php echo $row['roomID']; ?>" class="form-control mb-1">
+                                                <div class="col-12 col-md-5">
+                                                    <div class="row">
+                                                        <div class="col-12">
+                                                            <p class="text-start fw-bold mb-1">Guest information</p>
+                                                            <input type="text" name="fullName" class="form-control mb-2" placeholder="Full Name" value="<?php echo $userData ? htmlspecialchars($userData['fullName']) : ''; ?>" required>
+                                                            <input type="email" name="email" class="form-control mb-2" placeholder="Email" value="<?php echo $userData ? htmlspecialchars($userData['email']) : ''; ?>" required>
+                                                            <input type="tel" name="phoneNumber" class="form-control mb-2" placeholder="Phone Number" value="<?php echo $userData ? htmlspecialchars($userData['phoneNumber']) : ''; ?>" required>
+                                                        </div>
                                                     </div>
-                                                    <div class="col-5">
-                                                        <label for="checkOut<?php echo $row['roomID']; ?>" class="form-label mb-0">Check-out</label>
-                                                        <input type="date" id="checkOut<?php echo $row['roomID']; ?>" class="form-control mb-1">
+                                                    <div class="row">
+                                                        <p class="text-start fw-bold mt-1 mb-1">Booking details</p>
+                                                        <div class="col-5">
+                                                            <label for="checkIn<?php echo $row['roomID']; ?>" class="form-label mb-0">Check-in</label>
+                                                            <input type="date" name="checkInDate" id="checkIn<?php echo $row['roomID']; ?>" class="form-control mb-1" required>
+                                                        </div>
+                                                        <div class="col-5">
+                                                            <label for="checkOut<?php echo $row['roomID']; ?>" class="form-label mb-0">Check-out</label>
+                                                            <input type="date" name="checkOutDate" id="checkOut<?php echo $row['roomID']; ?>" class="form-control mb-1" required>
+                                                        </div>
+                                                        <div class="col-2">
+                                                            <label for="guests<?php echo $row['roomID']; ?>" class="form-label mb-0">Guests</label>
+                                                            <input type="number" name="numberOfGuests" id="guests<?php echo $row['roomID']; ?>" class="form-control mb-1" min="1" max="<?php echo (int)$row['capacity']; ?>" value="1" required>
+                                                        </div>
                                                     </div>
-                                                    <div class="col-2">
-                                                        <label for="guests<?php echo $row['roomID']; ?>" class="form-label mb-0">Guests</label>
-                                                        <input type="number" id="guests<?php echo $row['roomID']; ?>" class="form-control mb-1" min="1" max="<?php echo (int)$row['capacity']; ?>" value="1">
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-12 m-2">
-                                                        <p class="text-start text-sm text-secondary fw-bold m-1">Booking Summary</p>
-                                                        <div class="row">
-                                                            <div class="col-6 ms-2 text-start">
-                                                                <p class="mb-1"><strong>Room:</strong> <?php echo htmlspecialchars($row['roomName']); ?></p>
-                                                                <p class="mb-1"><strong>Dates:</strong> <span id="summaryDates<?php echo $row['roomID']; ?>">-</span></p>
-                                                                <p class="mb-1"><strong>Duration:</strong> <span id="summaryNights<?php echo $row['roomID']; ?>">-</span></p>
-                                                                <p class="mb-1"><strong>Guests:</strong> <span id="summaryGuests<?php echo $row['roomID']; ?>">-</span></p>
+                                                    <div class="row">
+                                                        <div class="col-12 m-2">
+                                                            <p class="text-start text-sm text-secondary fw-bold m-1">Booking Summary</p>
+                                                            <div class="row">
+                                                                <div class="col-12 ms-2 text-start">
+                                                                    <p class="mb-1"><strong>Room:</strong> <?php echo htmlspecialchars($row['roomName']); ?></p>
+                                                                    <p class="mb-1"><strong>Dates:</strong> <span id="summaryDates<?php echo $row['roomID']; ?>">-</span></p>
+                                                                    <p class="mb-1"><strong>Duration:</strong> <span id="summaryNights<?php echo $row['roomID']; ?>">-</span></p>
+                                                                    <p class="mb-1"><strong>Guests:</strong> <span id="summaryGuests<?php echo $row['roomID']; ?>">1</span></p>
+                                                                    <p class="mb-1 fw-bold text-warning"><strong>Total:</strong> ₱<span id="summaryTotal<?php echo $row['roomID']; ?>"><?php echo number_format($row['base_price'], 2); ?></span></p>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </form>
                                     </div>
                                     <div class="modal-footer">
                                         <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                        <button class="btn btn-warning">Book Now</button>
+                                        <button type="button" class="btn btn-warning" onclick="openPaymentModal(<?php echo $row['roomID']; ?>, <?php echo $row['base_price']; ?>)">Proceed to Payment</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Payment Modal -->
+                        <div class="modal fade" id="paymentModal<?php echo $row['roomID']; ?>" tabindex="-1" data-bs-backdrop="static">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-warning">
+                                        <h5 class="modal-title"><i class="bi bi-credit-card me-2"></i>Payment</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="closePaymentModal(<?php echo $row['roomID']; ?>)"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="text-center mb-4">
+                                            <h6 class="text-muted">Total Amount</h6>
+                                            <h2 class="text-warning fw-bold">₱<span id="paymentTotal<?php echo $row['roomID']; ?>">0.00</span></h2>
+                                        </div>
+                                        
+                                        <h6 class="fw-bold mb-3">Select Payment Method</h6>
+                                        <div class="d-grid gap-2">
+                                            <button type="button" class="btn btn-outline-primary payment-method-btn" onclick="selectPayment(<?php echo $row['roomID']; ?>, 'gcash')">
+                                                <i class="bi bi-phone me-2"></i>GCash
+                                            </button>
+                                            <button type="button" class="btn btn-outline-info payment-method-btn" onclick="selectPayment(<?php echo $row['roomID']; ?>, 'credit_card')">
+                                                <i class="bi bi-credit-card me-2"></i>Credit Card
+                                            </button>
+                                            <button type="button" class="btn btn-outline-success payment-method-btn" onclick="selectPayment(<?php echo $row['roomID']; ?>, 'debit_card')">
+                                                <i class="bi bi-credit-card-2-front me-2"></i>Debit Card
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary payment-method-btn" onclick="selectPayment(<?php echo $row['roomID']; ?>, 'paypal')">
+                                                <i class="bi bi-paypal me-2"></i>PayPal
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Payment Details Section (hidden by default) -->
+                                        <div id="paymentDetails<?php echo $row['roomID']; ?>" class="mt-4" style="display: none;">
+                                            <hr>
+                                            <div id="gcashDetails<?php echo $row['roomID']; ?>" class="payment-detail" style="display: none;">
+                                                <h6 class="fw-bold mb-3"><i class="bi bi-phone text-primary me-2"></i>GCash Payment</h6>
+                                                <div class="mb-3">
+                                                    <label class="form-label">GCash Number</label>
+                                                    <input type="tel" class="form-control" placeholder="09XX XXX XXXX" maxlength="11">
+                                                </div>
+                                                <div class="alert alert-info small">
+                                                    <i class="bi bi-info-circle me-1"></i>You will receive a payment request on your GCash app.
+                                                </div>
+                                            </div>
+                                            
+                                            <div id="cardDetails<?php echo $row['roomID']; ?>" class="payment-detail" style="display: none;">
+                                                <h6 class="fw-bold mb-3"><i class="bi bi-credit-card text-info me-2"></i>Card Payment</h6>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Card Number</label>
+                                                    <input type="text" class="form-control" placeholder="XXXX XXXX XXXX XXXX" maxlength="19">
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-6 mb-3">
+                                                        <label class="form-label">Expiry Date</label>
+                                                        <input type="text" class="form-control" placeholder="MM/YY" maxlength="5">
+                                                    </div>
+                                                    <div class="col-6 mb-3">
+                                                        <label class="form-label">CVV</label>
+                                                        <input type="text" class="form-control" placeholder="XXX" maxlength="3">
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Cardholder Name</label>
+                                                    <input type="text" class="form-control" placeholder="Name on card">
+                                                </div>
+                                            </div>
+                                            
+                                            <div id="paypalDetails<?php echo $row['roomID']; ?>" class="payment-detail" style="display: none;">
+                                                <h6 class="fw-bold mb-3"><i class="bi bi-paypal text-primary me-2"></i>PayPal Payment</h6>
+                                                <div class="mb-3">
+                                                    <label class="form-label">PayPal Email</label>
+                                                    <input type="email" class="form-control" placeholder="your-email@example.com">
+                                                </div>
+                                                <div class="alert alert-info small">
+                                                    <i class="bi bi-info-circle me-1"></i>You will be redirected to PayPal to complete your secure online payment.
+                                                </div>
+                                            </div>
+                                            
+                                            <button type="button" class="btn btn-warning w-100 mt-3" onclick="confirmPayment(<?php echo $row['roomID']; ?>)">
+                                                <i class="bi bi-check-circle me-2"></i>Confirm Booking
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <?php } ?>
                     </div>
                 </div>
@@ -412,31 +507,155 @@ function getRoomFeatures($roomID) {
 
 
     <?php include 'includes/footer.php'; ?>
-
     <?php include '../integrations/chatbot/chatbotUI.html'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
     <script>
-        function changeMode() {
-            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-            document.documentElement.setAttribute('data-bs-theme', isDark ? 'light' : 'dark');
-            document.querySelectorAll('#mode i, #mode-lg i').forEach(icon => {
-                icon.className = isDark ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
-            });
+        // Calculate booking summary when dates change
+        document.addEventListener('DOMContentLoaded', function() {
+            <?php 
+            mysqli_data_seek($roomTypesResult, 0);
+            while ($roomType = mysqli_fetch_assoc($roomTypesResult)) {
+                $getRooms = "SELECT * FROM rooms WHERE roomTypeId = " . (int)$roomType['roomTypeID'];
+                $roomsResult = executeQuery($getRooms);
+                while ($room = mysqli_fetch_assoc($roomsResult)) {
+            ?>
+            setupBookingCalculation(<?php echo $room['roomID']; ?>, <?php echo $room['base_price']; ?>);
+            <?php 
+                }
+            } 
+            ?>
+        });
 
-            document.querySelectorAll('.bg-dark, .bg-secondary').forEach(element => {
-                element.classList.toggle('bg-dark');
-                element.classList.toggle('bg-secondary');
-            });
+        function setupBookingCalculation(roomID, basePrice) {
+            const checkIn = document.getElementById('checkIn' + roomID);
+            const checkOut = document.getElementById('checkOut' + roomID);
+            const guests = document.getElementById('guests' + roomID);
+            
+            if (checkIn && checkOut && guests) {
+                // Set minimum date to today
+                const today = new Date().toISOString().split('T')[0];
+                checkIn.min = today;
+                checkOut.min = today;
+                
+                checkIn.addEventListener('change', () => updateSummary(roomID, basePrice));
+                checkOut.addEventListener('change', () => updateSummary(roomID, basePrice));
+                guests.addEventListener('change', () => updateSummary(roomID, basePrice));
+            }
+        }
 
-            document.querySelectorAll('.btn-outline-dark, .btn-outline-light').forEach(element => {
-                element.classList.toggle('btn-outline-dark');
-                element.classList.toggle('btn-outline-light');
+        function updateSummary(roomID, basePrice) {
+            const checkIn = document.getElementById('checkIn' + roomID).value;
+            const checkOut = document.getElementById('checkOut' + roomID).value;
+            const guests = document.getElementById('guests' + roomID).value;
+            
+            if (checkIn && checkOut) {
+                const checkInDate = new Date(checkIn);
+                const checkOutDate = new Date(checkOut);
+                const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+                
+                if (nights > 0) {
+                    const total = basePrice * nights;
+                    document.getElementById('summaryDates' + roomID).textContent = 
+                    checkInDate.toLocaleDateString() + ' - ' + checkOutDate.toLocaleDateString();
+                    document.getElementById('summaryNights' + roomID).textContent = nights + ' night(s)';
+                    document.getElementById('summaryGuests' + roomID).textContent = guests;
+                    document.getElementById('summaryTotal' + roomID).textContent = total.toLocaleString('en-PH', {minimumFractionDigits: 2});
+                    document.getElementById('totalPriceInput' + roomID).value = total;
+                }
+            }
+        }
+
+        let selectedPaymentMethod = {};
+
+        function openPaymentModal(roomID, basePrice) {
+            // Validate form first
+            const form = document.getElementById('bookingForm' + roomID);
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            // Get total price
+            const total = document.getElementById('totalPriceInput' + roomID).value;
+            document.getElementById('paymentTotal' + roomID).textContent = 
+                parseFloat(total).toLocaleString('en-PH', {minimumFractionDigits: 2});
+            
+            // Hide booking modal and show payment modal
+            const bookingModal = bootstrap.Modal.getInstance(document.getElementById('bookingModal' + roomID));
+            bookingModal.hide();
+            
+            setTimeout(() => {
+                const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal' + roomID));
+                paymentModal.show();
+            }, 300);
+        }
+
+        function closePaymentModal(roomID) {
+            // Reset payment selection
+            selectedPaymentMethod[roomID] = null;
+            document.getElementById('paymentDetails' + roomID).style.display = 'none';
+            document.querySelectorAll('#paymentModal' + roomID + ' .payment-method-btn').forEach(btn => {
+                btn.classList.remove('active', 'btn-primary', 'btn-info', 'btn-success', 'btn-secondary');
+                btn.classList.add('btn-outline-primary', 'btn-outline-info', 'btn-outline-success', 'btn-outline-secondary');
             });
         }
-    </script>
-</body>
 
+        function selectPayment(roomID, method) {
+            selectedPaymentMethod[roomID] = method;
+            document.getElementById('paymentMethodInput' + roomID).value = method;
+            
+            // Update button styles
+            const buttons = document.querySelectorAll('#paymentModal' + roomID + ' .payment-method-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+                const outline = btn.className.match(/btn-outline-\w+/);
+                if (outline) {
+                    btn.classList.add(outline[0]);
+                }
+            });
+            
+            // Highlight selected button
+            event.target.classList.add('active');
+            
+            // Show payment details
+            document.getElementById('paymentDetails' + roomID).style.display = 'block';
+            
+            // Hide all detail sections
+            document.querySelectorAll('#paymentModal' + roomID + ' .payment-detail').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // Show relevant detail section
+            if (method === 'gcash') {
+                document.getElementById('gcashDetails' + roomID).style.display = 'block';
+            } else if (method === 'credit_card' || method === 'debit_card') {
+                document.getElementById('cardDetails' + roomID).style.display = 'block';
+            } else if (method === 'paypal') {
+                document.getElementById('paypalDetails' + roomID).style.display = 'block';
+            }
+        }
+
+        function confirmPayment(roomID) {
+            if (!selectedPaymentMethod[roomID]) {
+                alert('Please select a payment method');
+                return;
+            }
+            
+            // Show processing
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+            
+            // Simulate payment processing (2 seconds)
+            setTimeout(() => {
+                // Submit the form
+                document.getElementById('bookingForm' + roomID).submit();
+            }, 2000);
+        }
+    </script>
+
+</body>
 </html>
