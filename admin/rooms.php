@@ -8,24 +8,18 @@ if (isset($_POST['add_room'])) {
     $quantity = $_POST['quantity'];
     $base_price = $_POST['base_price'];
     $selectedFeatures = isset($_POST['features']) ? $_POST['features'] : [];
-
-    // Image Handling for Add
     $fileName = isset($_FILES['roomImage']) && $_FILES['roomImage']['error'] === UPLOAD_ERR_OK ? $_FILES['roomImage']['name'] : '';
     $tempName = isset($_FILES['roomImage']) && $_FILES['roomImage']['error'] === UPLOAD_ERR_OK ? $_FILES['roomImage']['tmp_name'] : '';
     $folder = "assets/" . $fileName; 
 
     if (!empty($roomName) && !empty($roomTypeId)) {
-        // Move file first
         move_uploaded_file($tempName, $folder);
-
         $postQuery = "INSERT INTO `rooms`(`roomName`, `roomTypeId`, `capacity`, `quantity`, `base_price`, `imagePath`) 
                     VALUES ('$roomName', '$roomTypeId', '$capacity', '$quantity', '$base_price', '$fileName')";
         
         if (executeQuery($postQuery)) {
             $newRoomID = mysqli_insert_id($conn);
-            
-            // Insert selected features into roomfeatures
-            foreach ($selectedFeatures as $featureId) {
+                foreach ($selectedFeatures as $featureId) {
                 $featureId = (int)$featureId;
                 $insertFeatureQuery = "INSERT INTO `roomfeatures`(`roomID`, `featureID`) VALUES ('$newRoomID', '$featureId')";
                 executeQuery($insertFeatureQuery);
@@ -40,7 +34,6 @@ if (isset($_POST['add_room'])) {
 if (isset($_POST['deleteID'])) {
     $deleteID = $_POST['deleteID'];
     $deleteQuery = "DELETE FROM rooms WHERE roomID = '$deleteID'";
-
     executeQuery($deleteQuery);
 }
 
@@ -68,21 +61,16 @@ if (isset($_POST['update_room'])) {
                 $updateQuery .= ", `imagePath`='$fileName'";
             }
         }
-
         $updateQuery .= " WHERE `roomID`='$roomID'";
 
         if (executeQuery($updateQuery)) {
-            // Delete existing features for this room
             $deleteFeatures = "DELETE FROM `roomfeatures` WHERE `roomID`='$roomID'";
             executeQuery($deleteFeatures);
-            
-            // Insert new selected features
             foreach ($selectedFeatures as $featureId) {
                 $featureId = (int)$featureId;
                 $insertFeatureQuery = "INSERT INTO `roomfeatures`(`roomID`, `featureID`) VALUES ('$roomID', '$featureId')";
                 executeQuery($insertFeatureQuery);
             }
-            
             echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3"
                 role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
                 Room updated successfully.
@@ -170,9 +158,7 @@ $features = executeQuery($getFeatures);
                     <tbody id="roomsTableBody">
                         <?php while ($row = mysqli_fetch_assoc($rooms)) { 
                             // Get features for this room
-                            $roomFeaturesQuery = "SELECT f.featureName FROM features f 
-                                                  INNER JOIN roomfeatures rf ON f.featureId = rf.featureID 
-                                                  WHERE rf.roomID = " . (int)$row['roomID'];
+                            $roomFeaturesQuery = "SELECT f.featureName FROM features f INNER JOIN roomfeatures rf ON f.featureId = rf.featureID  WHERE rf.roomID = " . (int)$row['roomID'];
                             $roomFeaturesResult = executeQuery($roomFeaturesQuery);
                             $roomFeatures = [];
                             while ($feature = mysqli_fetch_assoc($roomFeaturesResult)) {
@@ -188,11 +174,11 @@ $features = executeQuery($getFeatures);
                             }
                         ?>
                             <tr data-room-type="<?php echo htmlspecialchars($row['roomTypeName'], ENT_QUOTES); ?>">
-                                <td scope="col"><?php echo $row['roomID'] ?></td>
-                                <td scope="col"><?php echo $row['roomTypeName'] ?></td>
-                                <td scope="col"><?php echo $row['roomName'] ?></td>
-                                <td scope="col"><?php echo $row['capacity'] ?></td>
-                                <td scope="col">
+                                <td scope="col" class="text-center align-middle"><?php echo $row['roomID'] ?></td>
+                                <td scope="col" class="text-center align-middle "><?php echo $row['roomTypeName'] ?></td>
+                                <td scope="col" class="text-center align-middle"><?php echo $row['roomName'] ?></td>
+                                <td scope="col" class="text-center align-middle"><?php echo $row['capacity'] ?></td>
+                                <td scope="col" class="align-middle">
                                     <?php if (!empty($roomFeatures)) { 
                                         foreach ($roomFeatures as $featureName) { ?>
                                             <span class="badge bg-secondary me-1 mb-1"><?php echo htmlspecialchars($featureName); ?></span>
@@ -201,15 +187,15 @@ $features = executeQuery($getFeatures);
                                         <span class="text-muted">No features</span>
                                     <?php } ?>
                                 </td>
-                                <td scope="col">₱<?php echo ($row['base_price']) ?></td>
-                                <td scope="col"><?php echo $row['quantity'] ?></td>
-                                <td scope="col"><?php echo '<img src="assets/' . $row['imagePath'] . '" style="width:200px;">'; ?></td>
-                                <td scope="col" class="text-center">
+                                <td scope="col" class="text-center align-middle">₱<?php echo ($row['base_price']) ?></td>
+                                <td scope="col" class="text-center align-middle"><?php echo $row['quantity'] ?></td>
+                                <td scope="col" class="text-center align-middle"><?php echo '<img src="assets/' . $row['imagePath'] . '" style="width:200px;">'; ?></td>
+                                <td scope="col" class="text-center align-middle">
                                     <form method="POST" style="display: inline-block;">
                                         <input type="hidden" value="<?php echo $row['roomID'] ?>" name="deleteID">
-                                        <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+                                        <button class="btn btn-outline-danger btn-sm m-2" type="submit">Delete</button>
                                     </form>
-                                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal<?php echo $row['roomID']; ?>">
+                                    <button type="button" class="btn btn-outline-primary btn-sm m-2" data-bs-toggle="modal" data-bs-target="#editModal<?php echo $row['roomID']; ?>">
                                         Edit
                                     </button>
 
@@ -407,8 +393,6 @@ $features = executeQuery($getFeatures);
                 }
             });
         }
-
-        // Initialize with 'All' rooms visible
         document.addEventListener('DOMContentLoaded', function() {
             filterRooms('All');
         });

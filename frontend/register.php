@@ -66,7 +66,6 @@
                 <div class="col-12 col-xl-10">
                     <div class="glass border border-secondary border-opacity-25 rounded-4 shadow-lg p-4 p-lg-5">
                         <div class="row align-items-stretch" style="min-height: 500px;">
-                            <!-- left Side-->
                             <div
                                 class="col-12 col-md-5 d-flex flex-column justify-content-between mb-4 mb-md-0 pe-md-4">
                                 <div>
@@ -88,12 +87,10 @@
                                         style="width: 120px;" alt="logo"></a>
                             </div>
 
-                            <!-- divider -->
                             <div class="col-auto d-none d-md-flex align-items-center px-4">
                                 <div class="divider-vertical h-75"></div>
                             </div>
 
-                            <!-- right Side -->
                             <div class="col-12 col-md-6">
                                 <div class="d-flex flex-column h-100 justify-content-center">
                                     <h2 class="fs-3 fw-semibold text-white text-center mb-4">Register</h2>
@@ -185,7 +182,6 @@
         (function () {
             'use strict'
 
-            // Password toggle handlers (guard against missing elements)
             const togglePassword = document.querySelector('#togglePassword');
             const toggleConfirmPassword = document.querySelector('#toggleConfirmPassword');
             const password = document.querySelector('#password');
@@ -209,15 +205,12 @@
                 });
             }
 
-            // Bootstrap validation: check validity and password match
             var forms = document.querySelectorAll('.needs-validation');
             Array.prototype.slice.call(forms).forEach(function (form) {
                 form.addEventListener('submit', function (event) {
-                    // ensure password match before checking validity
                     if (password && confirmPassword) {
                         if (password.value !== confirmPassword.value) {
                             confirmPassword.setCustomValidity('Passwords do not match');
-                            // make sure the invalid feedback is shown
                             document.getElementById('confirmFeedback').textContent = 'Passwords do not match.';
                         } else {
                             confirmPassword.setCustomValidity('');
