@@ -28,8 +28,21 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
 
                 <!-- Actions inside collapsed menu on small screens -->
                 <div class="d-flex d-lg-none mt-3">
-                    <button class="btn btn-outline-dark me-2"
-                        onclick="location.href='/HOTEL-MANAGEMENT-SYSTEM/frontend/login.php'">Login</button>
+                    <?php if ($isLoggedIn){ ?>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-dark dropdown-toggle me-2" type="button" id="userDropdownMobile" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle me-1"></i><?php echo htmlspecialchars($username); ?>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdownMobile">
+                                <li><a class="dropdown-item" href="/HOTEL-MANAGEMENT-SYSTEM/frontend/bookings.php"><i class="bi bi-calendar-check me-2"></i>My Bookings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/HOTEL-MANAGEMENT-SYSTEM/frontend/php/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                            </ul>
+                        </div>
+                    <?php } else { ?>
+                        <button class="btn btn-outline-dark me-2"
+                            onclick="location.href='/HOTEL-MANAGEMENT-SYSTEM/frontend/login.php'">Login</button>
+                    <?php } ?>
                     <div class="vr mx-2"></div>
                     <button class="nav-link small text-body ms-2 border-0 bg-transparent" id="mode" type="button"
                         onclick="changeMode()"><i class="bi bi-moon-fill"></i></button>
@@ -38,8 +51,21 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
         </div>
 
         <div class="d-none d-lg-flex align-items-center ms-auto">
-            <button class="btn btn-outline-dark me-2"
-                onclick="location.href='/HOTEL-MANAGEMENT-SYSTEM/frontend/login.php'">Login</button>
+            <?php if ($isLoggedIn){ ?>
+                <div class="dropdown">
+                    <button class="btn btn-outline-dark dropdown-toggle me-2" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle me-1"></i><?php echo htmlspecialchars($username); ?>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="/HOTEL-MANAGEMENT-SYSTEM/frontend/bookings.php"><i class="bi bi-calendar-check me-2"></i>My Bookings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="/HOTEL-MANAGEMENT-SYSTEM/frontend/php/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            <?php } else { ?>
+                <button class="btn btn-outline-dark me-2"
+                    onclick="location.href='/HOTEL-MANAGEMENT-SYSTEM/frontend/login.php'">Login</button>
+            <?php } ?>
             <div class="vr mx-2"></div>
             <button class="nav-link small text-body ms-2 border-0 bg-transparent d-none d-lg-inline" id="mode-lg"
                 type="button" onclick="changeMode()"><i class="bi bi-moon-fill"></i></button>
