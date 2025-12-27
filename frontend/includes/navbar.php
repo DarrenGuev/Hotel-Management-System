@@ -73,6 +73,50 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
     </div>
 </nav>
 <script>
+    function changeMode() {
+        const wasDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+        const newTheme = wasDark ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-bs-theme', newTheme);
+
+        // Update the toggle icons
+        document.querySelectorAll('#mode i, #mode-lg i').forEach(function (icon) {
+            icon.className = newTheme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+        });
+
+        // Text utilities: ensure consistent colors
+        document.querySelectorAll('.text-black, .text-white').forEach(function (el) {
+            if (newTheme === 'dark') {
+                el.classList.remove('text-black');
+                el.classList.add('text-white');
+            } else {
+                el.classList.remove('text-white');
+                el.classList.add('text-black');
+            }
+        });
+
+        // Outline buttons
+        document.querySelectorAll('.btn-outline-dark, .btn-outline-light').forEach(function (el) {
+            if (newTheme === 'dark') {
+                el.classList.remove('btn-outline-dark');
+                el.classList.add('btn-outline-light');
+            } else {
+                el.classList.remove('btn-outline-light');
+                el.classList.add('btn-outline-dark');
+            }
+        });
+
+        // Badges: set background and foreground explicitly for readability
+        document.querySelectorAll('.badge').forEach(function (badge) {
+            if (newTheme === 'light') {
+                badge.classList.remove('bg-light', 'text-dark');
+                badge.classList.add('bg-dark', 'text-white');
+            } else {
+                badge.classList.remove('bg-dark', 'text-white');
+                badge.classList.add('bg-light', 'text-dark');
+            }
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         const stored = localStorage.getItem('siteMode');
         const current = document.documentElement.getAttribute('data-bs-theme') || 'light';
