@@ -158,7 +158,21 @@ function getBookingRoomFeatures($conn, $roomID) {
                                         </div>
                                         <div class="col-6 col-sm-4 mb-2">
                                             <small class="text-muted d-block">Payment</small>
-                                            <strong><?php echo ucfirst(str_replace('_', ' ', $booking['paymentMethod'])); ?></strong>
+                                            <?php
+                                                    $pm = $booking['paymentMethod'] ?? '';
+                                                    $ps = strtolower($booking['paymentStatus'] ?? '');
+                                                    if ($pm !== '') {
+                                                        if (strtolower($pm) === 'paypal') {
+                                                            echo '<strong><i class="bi bi-paypal me-1"></i>PayPal</strong>';
+                                                        } else {
+                                                            echo '<strong>' . ucfirst(str_replace('_', ' ', $pm)) . '</strong>';
+                                                        }
+                                                    } elseif ($ps === 'paid') {
+                                                        echo '<strong><i class="bi bi-paypal me-1"></i>PayPal</strong>';
+                                                    } else {
+                                                        echo '<strong>-</strong>';
+                                                    }
+                                                ?>
                                         </div>
                                         <div class="col-6 col-sm-4 mb-2">
                                             <small class="text-muted d-block">Payment Status</small>

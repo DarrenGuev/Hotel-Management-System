@@ -269,7 +269,23 @@ $countCompleted = executeQuery("SELECT COUNT(*) as count FROM bookings WHERE boo
                                                     <span class="badge <?php echo $paymentBadgeClass; ?>">
                                                         <?php echo ucfirst($booking['paymentStatus']); ?>
                                                     </span>
-                                                    <br><small class="text-muted"><?php echo ucfirst(str_replace('_', ' ', $booking['paymentMethod'])); ?></small>
+                                                    <br><small class="text-muted">
+                                                        <?php
+                                                            $pm = $booking['paymentMethod'] ?? '';
+                                                            $ps = strtolower($booking['paymentStatus'] ?? '');
+                                                            if ($pm !== '') {
+                                                                if (strtolower($pm) === 'paypal') {
+                                                                    echo '<i class="bi bi-paypal me-1"></i>PayPal';
+                                                                } else {
+                                                                    echo ucfirst(str_replace('_', ' ', $pm));
+                                                                }
+                                                            } elseif ($ps === 'paid') {
+                                                                echo '<i class="bi bi-paypal me-1"></i>PayPal';
+                                                            } else {
+                                                                echo '-';
+                                                            }
+                                                        ?>
+                                                    </small>
                                                 </td>
                                                 <td>
                                                     <span class="badge <?php echo $statusBadgeClass; ?>">
@@ -333,7 +349,22 @@ $countCompleted = executeQuery("SELECT COUNT(*) as count FROM bookings WHERE boo
                                                                     <p><strong>Check-in:</strong> <?php echo date('F d, Y', strtotime($booking['checkInDate'])); ?></p>
                                                                     <p><strong>Check-out:</strong> <?php echo date('F d, Y', strtotime($booking['checkOutDate'])); ?></p>
                                                                     <p><strong>Total Price:</strong> ₱<?php echo number_format($booking['totalPrice'], 2); ?></p>
-                                                                    <p><strong>Payment:</strong> <?php echo ucfirst(str_replace('_', ' ', $booking['paymentMethod'])); ?> (<?php echo ucfirst($booking['paymentStatus']); ?>)</p>
+                                                                        <p><strong>Payment:</strong> <?php
+                                                                            $pm = $booking['paymentMethod'] ?? '';
+                                                                            $ps = strtolower($booking['paymentStatus'] ?? '');
+                                                                            if ($pm !== '') {
+                                                                                if (strtolower($pm) === 'paypal') {
+                                                                                    echo 'PayPal';
+                                                                                } else {
+                                                                                    echo ucfirst(str_replace('_', ' ', $pm));
+                                                                                }
+                                                                            } elseif ($ps === 'paid') {
+                                                                                echo 'PayPal';
+                                                                            } else {
+                                                                                echo '-';
+                                                                            }
+                                                                            echo ' (' . ucfirst($booking['paymentStatus']) . ')';
+                                                                        ?></p>
                                                                     <p><strong>Status:</strong> <span class="badge <?php echo $statusBadgeClass; ?>"><?php echo ucfirst($booking['bookingStatus']); ?></span></p>
                                                                 </div>
                                                             </div>
