@@ -360,7 +360,7 @@ $countPending = count($pendingBookingsData);
                         <p><strong>Check-in:</strong> ${checkIn}</p>
                         <p><strong>Check-out:</strong> ${checkOut}</p>
                         <p><strong>Total:</strong> ₱${parseFloat(booking.totalPrice).toLocaleString('en-PH', {minimumFractionDigits: 2})}</p>
-                        <p><strong>Payment:</strong> ${booking.paymentMethod.replace('_', ' ')} - ${getPaymentBadge(booking.paymentStatus)}</p>
+                        <p><strong>Payment:</strong> ${booking.paymentMethod ? booking.paymentMethod.replace('_', ' ') + ' ' + getPaymentBadge(booking.paymentStatus) : getPaymentBadge(booking.paymentStatus)}</p>
                         <p><strong>Status:</strong> ${getStatusBadge(booking.bookingStatus)}</p>
                     </div>
                 </div>
@@ -395,7 +395,7 @@ $countPending = count($pendingBookingsData);
                         <td>${booking.checkOutDate}</td>
                         <td>₱${parseFloat(booking.totalPrice).toLocaleString('en-PH', {minimumFractionDigits: 2})}</td>
                         <td>${getStatusBadge(booking.bookingStatus)}</td>
-                        <td>${getPaymentBadge(booking.paymentStatus)}</td>
+                        <td>${booking.paymentMethod ? booking.paymentMethod.replace('_', ' ') + ' ' + getPaymentBadge(booking.paymentStatus) : getPaymentBadge(booking.paymentStatus)}</td>
                         <td>${getBookingActions(booking)}</td>
                     </tr>
                 `
