@@ -1,45 +1,158 @@
-<div class="container-fluid">
-        <div class="navbar bg-dark fixed-top">
-            <div class="container-fluid">
-                <a class="navbar-brand text-white p-2" href="#">Travel Mates</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas"
-                    data-bs-target="#offcanvasNavbar" style="background-color: orange;" aria-controls="offcanvasNavbar"
-                    aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar"
-                    aria-labelledby="offcanvasNavbarLabel">
-                    <div class="offcanvas-header">
-                        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Travel Mates</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                    </div>
-                    <div class="offcanvas-body">
-                        <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-                            <li class="nav-item">
-                                <a class="nav-link" aria-current="page" href="admin.php">Home</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="rooms.php">Rooms</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="features.php">Features</a>
-                            </li>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                                    aria-expanded="false">
-                                    Admin Profile
-                                </a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="/HOTEL-MANAGEMENT-SYSTEM/index.php">Go to user website</a></li>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                    <li><a class="dropdown-item" href="#">Logout</a></li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </div>
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$isLoggedIn = isset($_SESSION['userID']);
+$username = $isLoggedIn ? $_SESSION['username'] : '';
+?>
+<nav class="navbar navbar-expand-lg sticky-top glass bg-body-tertiary shadow animate-nav">
+    <div class="container-fluid px-3 mx-3 px-md-5">
+        <a class="navbar-brand fw-bold fs-3" href="/HOTEL-MANAGEMENT-SYSTEM/index.php"><img id="site-logo"
+                src="/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoB.png" style="width: 120px;" alt="logo"></a>
+
+        <button class="navbar-toggler ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+            aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse justify-content-center" id="mainNavbar">
+            <div class="navbar-nav">
+                <a class="nav-link small text-body me-5" href="/HOTEL-MANAGEMENT-SYSTEM/admin/admin.php"><i
+                        class="bi bi-house-fill me-2"></i>DASHBOARD</a>
+                <a class="nav-link small text-body me-5" href="/HOTEL-MANAGEMENT-SYSTEM/admin/rooms.php"><i
+                        class="bi bi-door-open me-2"></i>ROOMS</a>
+                <a class="nav-link small text-body me-5" href="/HOTEL-MANAGEMENT-SYSTEM/admin/features.php"><i
+                        class="bi bi-calendar-event me-2"></i>FEATURES</a>
+                <!-- Actions inside collapsed menu on small screens -->
+                <div class="d-flex d-lg-none mt-3">
+                    <?php if ($isLoggedIn){ ?>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-dark dropdown-toggle me-2" type="button" id="userDropdownMobile" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle me-1"></i><?php echo htmlspecialchars($username); ?>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdownMobile">
+                                <li><a class="dropdown-item" href="/HOTEL-MANAGEMENT-SYSTEM/index.php"><i class="bi bi-display me-2"></i>User Side</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/HOTEL-MANAGEMENT-SYSTEM/frontend/php/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                            </ul>
+                        </div>
+                    <?php } else { ?>
+                        <button class="btn btn-outline-dark me-2"
+                            onclick="location.href='/HOTEL-MANAGEMENT-SYSTEM/frontend/login.php'">Login</button>
+                    <?php } ?>
+                    <div class="vr mx-2"></div>
+                    <button class="nav-link small text-body ms-2 border-0 bg-transparent" id="mode" type="button"
+                        onclick="changeMode()"><i class="bi bi-moon-fill"></i></button>
                 </div>
             </div>
         </div>
+
+        <div class="d-none d-lg-flex align-items-center ms-auto">
+            <?php if ($isLoggedIn){ ?>
+                <div class="dropdown">
+                    <button class="btn btn-outline-dark dropdown-toggle me-2" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle me-1"></i><?php echo htmlspecialchars($username); ?>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="/HOTEL-MANAGEMENT-SYSTEM/index.php"><i class="bi bi-display me-2"></i>User Side</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="/HOTEL-MANAGEMENT-SYSTEM/frontend/php/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            <?php } else { ?>
+                <button class="btn btn-outline-dark me-2"
+                    onclick="location.href='/HOTEL-MANAGEMENT-SYSTEM/frontend/login.php'">Login</button>
+            <?php } ?>
+            <div class="vr mx-2"></div>
+            <button class="nav-link small text-body ms-2 border-0 bg-transparent d-none d-lg-inline" id="mode-lg"
+                type="button" onclick="changeMode()"><i class="bi bi-moon-fill"></i></button>
+        </div>
     </div>
+</nav>
+<script>
+    function changeMode() {
+        const wasDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+        const newTheme = wasDark ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-bs-theme', newTheme);
+
+        // Update the toggle icons
+        document.querySelectorAll('#mode i, #mode-lg i').forEach(function (icon) {
+            icon.className = newTheme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+        });
+
+        // Text utilities: ensure consistent colors
+        document.querySelectorAll('.text-black, .text-white').forEach(function (el) {
+            if (newTheme === 'dark') {
+                el.classList.remove('text-black');
+                el.classList.add('text-white');
+            } else {
+                el.classList.remove('text-white');
+                el.classList.add('text-black');
+            }
+        });
+
+        // Outline buttons
+        document.querySelectorAll('.btn-outline-dark, .btn-outline-light').forEach(function (el) {
+            if (newTheme === 'dark') {
+                el.classList.remove('btn-outline-dark');
+                el.classList.add('btn-outline-light');
+            } else {
+                el.classList.remove('btn-outline-light');
+                el.classList.add('btn-outline-dark');
+            }
+        });
+
+        // Badges: set background and foreground explicitly for readability
+        document.querySelectorAll('.badge').forEach(function (badge) {
+            if (newTheme === 'light') {
+                badge.classList.remove('bg-light', 'text-dark');
+                badge.classList.add('bg-dark', 'text-white');
+            } else {
+                badge.classList.remove('bg-dark', 'text-white');
+                badge.classList.add('bg-light', 'text-dark');
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const stored = localStorage.getItem('siteMode');
+        const current = document.documentElement.getAttribute('data-bs-theme') || 'light';
+        if (stored && stored !== current) {
+            if (typeof changeMode === 'function') {
+                changeMode();
+                var logoAfter = document.getElementById('site-logo');
+                if (logoAfter) logoAfter.src = stored === 'dark' ? '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoW.png' : '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoB.png';
+            } else {
+                document.documentElement.setAttribute('data-bs-theme', stored);
+                document.querySelectorAll('#mode i, #mode-lg i').forEach(function (icon) {
+                    icon.className = stored === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+                });
+                document.querySelectorAll('.text-black, .text-white').forEach(function (el) {
+                    el.classList.toggle('text-black');
+                    el.classList.toggle('text-white');
+                });
+                document.querySelectorAll('.btn-outline-dark, .btn-outline-light').forEach(function (el) {
+                    el.classList.toggle('btn-outline-dark');
+                    el.classList.toggle('btn-outline-light');
+                });
+                function applyLogo(theme) {
+                    var logo = document.getElementById('site-logo');
+                    if (!logo) return;
+                    logo.src = theme === 'dark' ? '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoW.png' : '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoB.png';
+                }
+                applyLogo(stored);
+            }
+        }
+        function updateStoredModeAndLogo() {
+            setTimeout(function () {
+                const now = document.documentElement.getAttribute('data-bs-theme') || 'light';
+                localStorage.setItem('siteMode', now);
+                var logo = document.getElementById('site-logo');
+                if (logo) logo.src = now === 'dark' ? '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoW.png' : '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoB.png';
+            }, 10);
+        }
+        document.querySelectorAll('#mode, #mode-lg').forEach(function (btn) {
+            btn.addEventListener('click', updateStoredModeAndLogo);
+        });
+    });
+</script>

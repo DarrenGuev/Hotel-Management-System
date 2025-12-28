@@ -1,66 +1,140 @@
 <?php
 include 'connect.php';
 
+// Helper function to handle image upload
+function handleImageUpload($fileInput, $targetFolder = "assets/") {
+    if (!isset($_FILES[$fileInput]) || $_FILES[$fileInput]['error'] !== UPLOAD_ERR_OK) {
+        return ['success' => false, 'fileName' => '', 'error' => 'No file uploaded or upload error'];
+    }
+
+    $file = $_FILES[$fileInput];
+    $tempName = $file['tmp_name'];
+    $originalName = $file['name'];
+    
+    // Validate file type
+    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    $fileType = mime_content_type($tempName);
+    
+    if (!in_array($fileType, $allowedTypes)) {
+        return ['success' => false, 'fileName' => '', 'error' => 'Invalid file type. Only JPG, PNG, GIF, and WEBP are allowed.'];
+    }
+
+    // Generate unique filename to prevent overwrites
+    $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+    $uniqueName = uniqid('room_', true) . '.' . strtolower($extension);
+    
+    // Ensure target folder exists
+    if (!is_dir($targetFolder)) {
+        mkdir($targetFolder, 0755, true);
+    }
+    
+    $targetPath = $targetFolder . $uniqueName;
+    
+    if (move_uploaded_file($tempName, $targetPath)) {
+        return ['success' => true, 'fileName' => $uniqueName, 'error' => ''];
+    } else {
+        return ['success' => false, 'fileName' => '', 'error' => 'Failed to move uploaded file. Check folder permissions.'];
+    }
+}
+
 if (isset($_POST['add_room'])) {
-    $roomName = $_POST['roomName'];
-    $roomTypeId = $_POST['roomTypeId'];
-    $capacity = $_POST['capacity'];
-    $quantity = $_POST['quantity'];
-    $base_price = $_POST['base_price'];
+    $roomName = mysqli_real_escape_string($conn, $_POST['roomName']);
+    $roomTypeId = (int)$_POST['roomTypeId'];
+    $capacity = (int)$_POST['capacity'];
+    $quantity = (int)$_POST['quantity'];
+    $basePrice = (float)$_POST['base_price'];
     $selectedFeatures = isset($_POST['features']) ? $_POST['features'] : [];
-    $fileName = isset($_FILES['roomImage']) && $_FILES['roomImage']['error'] === UPLOAD_ERR_OK ? $_FILES['roomImage']['name'] : '';
-    $tempName = isset($_FILES['roomImage']) && $_FILES['roomImage']['error'] === UPLOAD_ERR_OK ? $_FILES['roomImage']['tmp_name'] : '';
-    $folder = "assets/" . $fileName; 
+    
+    // Handle image upload
+    $uploadResult = handleImageUpload('roomImage', 'assets/');
+    $fileName = $uploadResult['fileName'];
+    
+    if (!$uploadResult['success'] && isset($_FILES['roomImage']) && $_FILES['roomImage']['error'] !== UPLOAD_ERR_NO_FILE) {
+        echo '<div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
+            role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
+            Image upload failed: ' . htmlspecialchars($uploadResult['error']) . '
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>';
+    }
 
     if (!empty($roomName) && !empty($roomTypeId)) {
-        move_uploaded_file($tempName, $folder);
         $postQuery = "INSERT INTO `rooms`(`roomName`, `roomTypeId`, `capacity`, `quantity`, `base_price`, `imagePath`) 
-                    VALUES ('$roomName', '$roomTypeId', '$capacity', '$quantity', '$base_price', '$fileName')";
+                    VALUES ('$roomName', '$roomTypeId', '$capacity', '$quantity', '$basePrice', '$fileName')";
         
         if (executeQuery($postQuery)) {
             $newRoomID = mysqli_insert_id($conn);
-                foreach ($selectedFeatures as $featureId) {
+            foreach ($selectedFeatures as $featureId) {
                 $featureId = (int)$featureId;
                 $insertFeatureQuery = "INSERT INTO `roomfeatures`(`roomID`, `featureID`) VALUES ('$newRoomID', '$featureId')";
                 executeQuery($insertFeatureQuery);
             }
             
-            echo '<div class="alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 9999;">Room Added!</div>';
+            echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
+                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
+                Room Added Successfully!
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>';
         }
     }
 }
 
-
 if (isset($_POST['deleteID'])) {
-    $deleteID = $_POST['deleteID'];
+    $deleteID = (int)$_POST['deleteID'];
+    
+    // Get image path before deleting to remove the file
+    $getImageQuery = "SELECT imagePath FROM rooms WHERE roomID = '$deleteID'";
+    $imageResult = executeQuery($getImageQuery);
+    if ($imageRow = mysqli_fetch_assoc($imageResult)) {
+        $imagePath = 'assets/' . $imageRow['imagePath'];
+        if (file_exists($imagePath) && !empty($imageRow['imagePath'])) {
+            unlink($imagePath); // Delete the image file
+        }
+    }
+    
     $deleteQuery = "DELETE FROM rooms WHERE roomID = '$deleteID'";
     executeQuery($deleteQuery);
 }
 
 if (isset($_POST['update_room'])) {
-    $roomID = $_POST['roomID'];
-    $roomName = $_POST['editRoomName'];
-    $roomTypeId = $_POST['editRoomTypeId'];
-    $capacity = $_POST['editCapacity'];
-    $quantity = $_POST['editQuantity'];
-    $base_price = $_POST['editBasePrice'];
+    $roomID = (int)$_POST['roomID'];
+    $roomName = mysqli_real_escape_string($conn, $_POST['editRoomName']);
+    $roomTypeId = (int)$_POST['editRoomTypeId'];
+    $capacity = (int)$_POST['editCapacity'];
+    $quantity = (int)$_POST['editQuantity'];
+    $basePrice = (float)$_POST['editBasePrice'];
     $selectedFeatures = isset($_POST['editFeatures']) ? $_POST['editFeatures'] : [];
-    $fileName = isset($_FILES['roomImage']) && $_FILES['roomImage']['error'] === UPLOAD_ERR_OK ? $_FILES['roomImage']['name'] : '';
-    $tempName = isset($_FILES['roomImage']) && $_FILES['roomImage']['error'] === UPLOAD_ERR_OK ? $_FILES['roomImage']['tmp_name'] : '';
-    $folder = "assets/" . $fileName;
 
-    if (!empty($roomID) && !empty($roomName) && !empty($roomTypeId) && is_numeric($capacity) && is_numeric($quantity) && is_numeric($base_price)) {
+    if (!empty($roomID) && !empty($roomName) && !empty($roomTypeId) && is_numeric($capacity) && is_numeric($quantity) && is_numeric($basePrice)) {
         $updateQuery = "UPDATE `rooms` SET 
                         `roomName`='$roomName', 
                         `roomTypeId`='$roomTypeId', 
                         `capacity`='$capacity', 
                         `quantity`='$quantity', 
-                        `base_price`='$base_price'";
-        if (!empty($fileName)) {
-            if (move_uploaded_file($tempName, $folder)) {
-                $updateQuery .= ", `imagePath`='$fileName'";
+                        `base_price`='$basePrice'";
+        
+        if (isset($_FILES['editRoomImage']) && $_FILES['editRoomImage']['error'] === UPLOAD_ERR_OK) {
+            $uploadResult = handleImageUpload('editRoomImage', 'assets/');
+            
+            if ($uploadResult['success']) {
+                $getOldImageQuery = "SELECT imagePath FROM rooms WHERE roomID = '$roomID'";
+                $oldImageResult = executeQuery($getOldImageQuery);
+                if ($oldImageRow = mysqli_fetch_assoc($oldImageResult)) {
+                    $oldImagePath = 'assets/' . $oldImageRow['imagePath'];
+                    if (file_exists($oldImagePath) && !empty($oldImageRow['imagePath'])) {
+                        unlink($oldImagePath);
+                    }
+                }
+                
+                $updateQuery .= ", `imagePath`='" . $uploadResult['fileName'] . "'";
+            } else {
+                echo '<div class="alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
+                    role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
+                    Image upload failed: ' . htmlspecialchars($uploadResult['error']) . '. Other details were updated.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>';
             }
         }
+        
         $updateQuery .= " WHERE `roomID`='$roomID'";
 
         if (executeQuery($updateQuery)) {
@@ -106,6 +180,8 @@ $features = executeQuery($getFeatures);
     <title>Rooms</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/HOTEL-MANAGEMENT-SYSTEM/css/style.css">
 </head>
 
 <body>
@@ -199,7 +275,6 @@ $features = executeQuery($getFeatures);
                                         Edit
                                     </button>
 
-                                    <!-- Edit Modal for Room <?php echo $row['roomID']; ?> -->
                                     <div class="modal fade" id="editModal<?php echo $row['roomID']; ?>" tabindex="-1" aria-labelledby="editModalLabel<?php echo $row['roomID']; ?>" aria-hidden="true">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
@@ -243,12 +318,16 @@ $features = executeQuery($getFeatures);
                                                         </div>
                                                         <div class="col-md-6 mb-3">
                                                             <label for="editRoomImage<?php echo $row['roomID']; ?>" class="form-label">Room Image</label>
-                                                            <input id="editRoomImage<?php echo $row['roomID']; ?>" class="form-control" type="file" name="roomImage" accept="image/*">
+                                                            <input id="editRoomImage<?php echo $row['roomID']; ?>" class="form-control" type="file" name="editRoomImage" accept="image/*">
+                                                            <?php if (!empty($row['imagePath'])) { ?>
+                                                                <small class="text-muted">Current image:</small>
+                                                                <img src="assets/<?php echo htmlspecialchars($row['imagePath']); ?>" class="img-thumbnail mt-1" style="max-width: 100px; max-height: 60px;">
+                                                            <?php } ?>
                                                         </div>
                                                         </div>
                                                         <div class="mb-3">
                                                             <label class="form-label">Room Features</label>
-                                                            <div class="row">
+                                                            <div class="row" id="editRoomFeaturesContainer<?php echo $row['roomID']; ?>">
                                                                 <?php
                                                                 mysqli_data_seek($features, 0);
                                                                 while ($feature = mysqli_fetch_assoc($features)) {
@@ -263,6 +342,15 @@ $features = executeQuery($getFeatures);
                                                                         </div>
                                                                     </div>
                                                                 <?php } ?>
+                                                            </div>
+                                                            <div class="mt-3 border-top pt-3">
+                                                                <label class="form-label text-muted small">Add Custom Feature</label>
+                                                                <div class="input-group">
+                                                                    <input type="text" class="form-control" id="customFeatureInputEdit<?php echo $row['roomID']; ?>" placeholder="Enter new feature name">
+                                                                    <button type="button" class="btn btn-outline-success" onclick="addCustomFeature('editRoomFeaturesContainer<?php echo $row['roomID']; ?>', 'customFeatureInputEdit<?php echo $row['roomID']; ?>', 'editFeatures[]', '<?php echo $row['roomID']; ?>')">
+                                                                        <i class="bi bi-plus-lg"></i> Add
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                         <div class="modal-footer">
@@ -339,7 +427,7 @@ $features = executeQuery($getFeatures);
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Room Features</label>
-                                        <div class="row">
+                                        <div class="row" id="addRoomFeaturesContainer">
                                             <?php
                                             mysqli_data_seek($features, 0);
                                             while ($feature = mysqli_fetch_assoc($features)) {
@@ -353,6 +441,15 @@ $features = executeQuery($getFeatures);
                                                     </div>
                                                 </div>
                                             <?php } ?>
+                                        </div>
+                                        <div class="mt-3 border-top pt-3">
+                                            <label class="form-label text-muted small">Add Custom Feature</label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="customFeatureInput" placeholder="Enter new feature name">
+                                                <button type="button" class="btn btn-outline-success" onclick="addCustomFeature('addRoomFeaturesContainer', 'customFeatureInput', 'features[]')">
+                                                    <i class="bi bi-plus-lg"></i> Add
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="modal-footer">
@@ -396,6 +493,132 @@ $features = executeQuery($getFeatures);
         document.addEventListener('DOMContentLoaded', function() {
             filterRooms('All');
         });
+
+        // Function to add custom feature via AJAX
+        function addCustomFeature(containerId, inputId, checkboxName, roomId = null) {
+            const input = document.getElementById(inputId);
+            const featureName = input.value.trim();
+            
+            if (!featureName) {
+                alert('Please enter a feature name');
+                input.focus();
+                return;
+            }
+            
+            // Create FormData
+            const formData = new FormData();
+            formData.append('featureName', featureName);
+            
+            // Send AJAX request
+            fetch('php/add_feature.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Add new checkbox to the container
+                    addFeatureCheckbox(containerId, data.featureId, data.featureName, checkboxName, roomId, true);
+                    
+                    // Also add to all other feature containers on the page
+                    addFeatureToAllContainers(data.featureId, data.featureName, containerId);
+                    
+                    // Clear input
+                    input.value = '';
+                    
+                    // Show success message
+                    showToast('Feature "' + data.featureName + '" added successfully!', 'success');
+                } else if (data.error === 'Feature already exists') {
+                    // Feature exists, just check the existing checkbox if available
+                    const existingCheckbox = document.querySelector('#' + containerId + ' input[value="' + data.featureId + '"]');
+                    if (existingCheckbox) {
+                        existingCheckbox.checked = true;
+                        showToast('Feature already exists. It has been selected.', 'info');
+                    } else {
+                        // Add the checkbox since it's not in this container
+                        addFeatureCheckbox(containerId, data.featureId, featureName, checkboxName, roomId, true);
+                        showToast('Feature already exists. It has been added and selected.', 'info');
+                    }
+                    input.value = '';
+                } else {
+                    showToast('Error: ' + data.error, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('An error occurred while adding the feature', 'danger');
+            });
+        }
+        
+        // Function to add feature checkbox to a container
+        function addFeatureCheckbox(containerId, featureId, featureName, checkboxName, roomId = null, isChecked = false) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            // Check if checkbox already exists
+            const existingCheckbox = container.querySelector('input[value="' + featureId + '"]');
+            if (existingCheckbox) {
+                if (isChecked) existingCheckbox.checked = true;
+                return;
+            }
+            
+            // Create unique ID for the checkbox
+            const checkboxId = roomId ? 'editFeature' + roomId + '_' + featureId : 'feature' + featureId;
+            
+            // Create the checkbox HTML
+            const colDiv = document.createElement('div');
+            colDiv.className = 'col-6';
+            colDiv.innerHTML = `
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="${checkboxName}" value="${featureId}" id="${checkboxId}" ${isChecked ? 'checked' : ''}>
+                    <label class="form-check-label" for="${checkboxId}">
+                        ${escapeHtml(featureName)}
+                    </label>
+                </div>
+            `;
+            
+            container.appendChild(colDiv);
+        }
+        
+        // Function to add feature to all containers on the page
+        function addFeatureToAllContainers(featureId, featureName, excludeContainerId) {
+            // Add to main add room container
+            if (excludeContainerId !== 'addRoomFeaturesContainer') {
+                addFeatureCheckbox('addRoomFeaturesContainer', featureId, featureName, 'features[]', null, false);
+            }
+            
+            // Add to all edit room containers
+            document.querySelectorAll('[id^="editRoomFeaturesContainer"]').forEach(container => {
+                if (container.id !== excludeContainerId) {
+                    const roomId = container.id.replace('editRoomFeaturesContainer', '');
+                    addFeatureCheckbox(container.id, featureId, featureName, 'editFeatures[]', roomId, false);
+                }
+            });
+        }
+        
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Function to show toast notification
+        function showToast(message, type = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+            alertDiv.style.cssText = 'z-index: 99999; max-width: 600px; width: calc(100% - 2rem);';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
     </script>
 </body>
 
