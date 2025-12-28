@@ -1,4 +1,1 @@
-/dbconnect/connect.php
-/admin/connect.php
-
-/integrations/paypal/
+integrations/paypal/config.php
