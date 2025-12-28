@@ -262,7 +262,6 @@ function getRoomFeatures($roomID)
                 <div class="mx-auto mt-3 mb-5" style="width: 80px; height: 4px; background-color: #FF9900;"></div>
 
                 <?php
-                // Loop through each room type
                 while ($roomType = mysqli_fetch_assoc($roomTypesResult)) {
                     $getRooms = "SELECT rooms.*, roomtypes.roomType AS roomTypeName FROM rooms 
                                 INNER JOIN roomtypes ON rooms.roomTypeId = roomtypes.roomTypeID 
@@ -360,6 +359,9 @@ function getRoomFeatures($roomID)
                                                                             class="badge bg-dark me-1 mb-1"><?php echo htmlspecialchars($featureName); ?></span>
                                                                     <?php }
                                                                 } ?>
+                                                            </div>
+                                                            <div class="mb-2 justify-content-evenly">
+
                                                             </div>
                                                         </div>
                                                     </div>

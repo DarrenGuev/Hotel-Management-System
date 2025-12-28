@@ -4,6 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 $isLoggedIn = isset($_SESSION['userID']);
 $username = $isLoggedIn ? $_SESSION['username'] : '';
+$userRole = $isLoggedIn && isset($_SESSION['role']) ? $_SESSION['role'] : '';
 ?>
 <nav class="navbar navbar-expand-lg sticky-top glass bg-body-tertiary shadow animate-nav">
     <div class="container-fluid px-3 mx-3 px-md-5">
@@ -26,7 +27,6 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
                 <a class="nav-link small text-body me-5" href="/HOTEL-MANAGEMENT-SYSTEM/index.php#about"><i
                         class="bi bi-info-circle me-2"></i>ABOUT</a>
 
-                <!-- Actions inside collapsed menu on small screens -->
                 <div class="d-flex d-lg-none mt-3">
                     <?php if ($isLoggedIn){ ?>
                         <div class="dropdown">
@@ -34,7 +34,11 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
                                 <i class="bi bi-person-circle me-1"></i><?php echo htmlspecialchars($username); ?>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdownMobile">
-                                <li><a class="dropdown-item" href="/HOTEL-MANAGEMENT-SYSTEM/frontend/bookings.php"><i class="bi bi-calendar-check me-2"></i>My Bookings</a></li>
+                                <?php if ($userRole === 'admin') { ?>
+                                    <li><a class="dropdown-item" href="/HOTEL-MANAGEMENT-SYSTEM/admin/admin.php"><i class="bi bi-speedometer2 me-2"></i>Admin Side</a></li>
+                                <?php } else { ?>
+                                    <li><a class="dropdown-item" href="/HOTEL-MANAGEMENT-SYSTEM/frontend/bookings.php"><i class="bi bi-calendar-check me-2"></i>My Bookings</a></li>
+                                <?php } ?>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item text-danger" href="/HOTEL-MANAGEMENT-SYSTEM/frontend/php/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                             </ul>
@@ -57,7 +61,11 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
                         <i class="bi bi-person-circle me-1"></i><?php echo htmlspecialchars($username); ?>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                        <li><a class="dropdown-item" href="/HOTEL-MANAGEMENT-SYSTEM/frontend/bookings.php"><i class="bi bi-calendar-check me-2"></i>My Bookings</a></li>
+                        <?php if ($userRole === 'admin') { ?>
+                            <li><a class="dropdown-item" href="/HOTEL-MANAGEMENT-SYSTEM/admin/admin.php"><i class="bi bi-speedometer2 me-2"></i>Admin Side</a></li>
+                        <?php } else { ?>
+                            <li><a class="dropdown-item" href="/HOTEL-MANAGEMENT-SYSTEM/frontend/bookings.php"><i class="bi bi-calendar-check me-2"></i>My Bookings</a></li>
+                        <?php } ?>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item text-danger" href="/HOTEL-MANAGEMENT-SYSTEM/frontend/php/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                     </ul>
