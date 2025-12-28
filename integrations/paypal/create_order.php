@@ -17,9 +17,7 @@ if ($access['error']) {
     exit;
 }
 $token = $access['access_token'];
-
 $bookingID = $_REQUEST['bookingID'] ?? null;
-
 $base = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'];
 $returnUrl = $base . '/HOTEL-MANAGEMENT-SYSTEM/integrations/paypal/capture.php?roomID=' . urlencode($roomID) . ($bookingID ? '&bookingID=' . urlencode($bookingID) : '');
 $cancelUrl = $base . '/HOTEL-MANAGEMENT-SYSTEM/frontend/rooms.php?paypal_cancel=1' . ($bookingID ? '&bookingID=' . urlencode($bookingID) : '');

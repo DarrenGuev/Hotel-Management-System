@@ -169,7 +169,7 @@ $countPending = count($pendingBookingsData);
     </div>
 
     <!-- Data Table Section -->
-    <div class="container my-5" id="tableSection">
+    <div class="container-fluid my-5" id="tableSection">
         <div class="row">
             <div class="col-12">
                 <div class="card shadow-sm">

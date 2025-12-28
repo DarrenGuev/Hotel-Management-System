@@ -773,5 +773,4 @@ function getRoomFeatures($roomID)
     </script>
 
 </body>
-
 </html>
