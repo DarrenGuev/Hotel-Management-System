@@ -762,7 +762,7 @@ function getRoomFeatures($roomID)
                 }).then(r => r.json()).then(data => {
                     if (data && data.success && data.bookingID) {
                         // Redirect to create order with bookingID so capture can update paymentStatus
-                        const url = '/HOTEL-MANAGEMENT-SYSTEM/integrations/paypal/createOrder.php?roomID=' + encodeURIComponent(roomID) + '&amount=' + encodeURIComponent(total) + '&bookingID=' + encodeURIComponent(data.bookingID);
+                        const url = '/HOTEL-MANAGEMENT-SYSTEM/integrations/paypal/create_order.php?roomID=' + encodeURIComponent(roomID) + '&amount=' + encodeURIComponent(total) + '&bookingID=' + encodeURIComponent(data.bookingID);
                         window.location.href = url;
                     } else {
                         alert('Failed to create booking before redirecting to PayPal.');
