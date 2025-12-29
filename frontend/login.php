@@ -103,14 +103,18 @@ session_start();
                                     <?php if (isset($_GET['error'])): ?>
                                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                             <?php echo htmlspecialchars($_GET['error']); ?>
-                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                                aria-label="Close"></button>
                                         </div>
                                     <?php endif; ?>
+
+                                    <!-- (social buttons moved below the form) -->
 
                                     <?php if (isset($_GET['success'])): ?>
                                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                                             <?php echo htmlspecialchars($_GET['success']); ?>
-                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                                aria-label="Close"></button>
                                         </div>
                                     <?php endif; ?>
 
@@ -129,11 +133,23 @@ session_start();
                                                 id="togglePassword" style="cursor: pointer;"></i>
                                         </div>
 
-                                        <div class="d-grid mb-4">
+                                        <div class="d-grid">
                                             <button type="submit"
                                                 class="btn btn-glass btn-lg text-white fw-semibold rounded-3 py-3">Login</button>
                                         </div>
                                     </form>
+
+                                    <div class="d-flex align-items-center my-3">
+                                        <hr class="flex-grow-1" style="border-color: rgba(255,255,255,0.12);" />
+                                        <span class="mx-3 text-white-50 small">Sign in via</span>
+                                        <hr class="flex-grow-1" style="border-color: rgba(255,255,255,0.12);" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <a href="/HOTEL-MANAGEMENT-SYSTEM/integrations/gmail/googleLogin.php"
+                                            class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center py-2">
+                                            <i class="bi bi-google me-2"></i> Google
+                                        </a>
+                                    </div>
 
                                     <p class="text-center text-white-50 small mb-0">
                                         Don't have an account?
