@@ -2,10 +2,11 @@
 include 'connect.php';
 
 if (isset($_POST['add_feature'])) {
-    $featureName = $_POST['featureName'];
+    $featureName = mysqli_real_escape_string($conn, $_POST['featureName']);
+    $category = mysqli_real_escape_string($conn, $_POST['category']);
 
-    if (!empty($featureName)) {
-        $insertFeatureQuery = "INSERT INTO `features`(`featureName`) VALUES ('$featureName')";
+    if (!empty($featureName) && !empty($category)) {
+        $insertFeatureQuery = "INSERT INTO `features`(`featureName`, `category`) VALUES ('$featureName', '$category')";
         if (executeQuery($insertFeatureQuery)) {
             echo '<div class="alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 9999;">Feature Added!</div>';
         }
@@ -20,10 +21,11 @@ if (isset($_POST['deleteFeatureId'])) {
 
 if (isset($_POST['update_feature'])) {
     $featureId = (int)$_POST['featureId'];
-    $featureName = $_POST['editFeatureName'];
+    $featureName = mysqli_real_escape_string($conn, $_POST['editFeatureName']);
+    $category = mysqli_real_escape_string($conn, $_POST['editCategory']);
 
-    if ($featureId && !empty($featureName)) {
-        $updateFeatureQuery = "UPDATE `features` SET `featureName`='$featureName' WHERE `featureId`='$featureId'";
+    if ($featureId && !empty($featureName) && !empty($category)) {
+        $updateFeatureQuery = "UPDATE `features` SET `featureName`='$featureName', `category`='$category' WHERE `featureId`='$featureId'";
         if (executeQuery($updateFeatureQuery)) {
             echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3"
                 role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
@@ -40,8 +42,13 @@ if (isset($_POST['update_feature'])) {
     }
 }
 
-$getFeatures = "SELECT * FROM features ORDER BY featureId";
+$getFeatures = "SELECT * FROM features ORDER BY category, featureId";
 $features = executeQuery($getFeatures);
+
+// Get distinct categories for dropdown
+$getCategories = "SELECT DISTINCT category FROM features ORDER BY category";
+$categories = executeQuery($getCategories);
+$categoryList = ['Beds', 'Rooms', 'Bathroom', 'Amenities', 'Entertainment', 'General']; // Predefined categories
 
 ?>
 
@@ -55,7 +62,7 @@ $features = executeQuery($getFeatures);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="/HOTEL-MANAGEMENT-SYSTEM/css/style.css">
+    <link rel="stylesheet" href="HOTEL-MANAGEMENT-SYSTEM/css/style.css">
 </head>
 
 <body>
@@ -75,6 +82,7 @@ $features = executeQuery($getFeatures);
                     <thead class="table-dark">
                         <tr>
                             <th scope="col">ID</th>
+                            <th scope="col">Category</th>
                             <th scope="col">Feature Name</th>
                             <th scope="col" style="width: 180px;"></th>
                         </tr>
@@ -83,6 +91,7 @@ $features = executeQuery($getFeatures);
                         <?php while ($row = mysqli_fetch_assoc($features)) { ?>
                             <tr>
                                 <td><?php echo (int)$row['featureId']; ?></td>
+                                <td><span class="badge bg-info"><?php echo htmlspecialchars($row['category'] ?? 'General'); ?></span></td>
                                 <td><?php echo htmlspecialchars($row['featureName']); ?></td>
                                 <td class="text-center">
                                     <form method="POST" style="display:inline-block;">
@@ -104,6 +113,14 @@ $features = executeQuery($getFeatures);
                                                 <div class="modal-body">
                                                     <form method="POST">
                                                         <input type="hidden" name="featureId" value="<?php echo (int)$row['featureId']; ?>">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Category</label>
+                                                            <select class="form-select" name="editCategory" required>
+                                                                <?php foreach ($categoryList as $cat) { ?>
+                                                                    <option value="<?php echo $cat; ?>" <?php echo ($row['category'] == $cat) ? 'selected' : ''; ?>><?php echo $cat; ?></option>
+                                                                <?php } ?>
+                                                            </select>
+                                                        </div>
                                                         <div class="mb-3">
                                                             <label class="form-label">Feature Name</label>
                                                             <input class="form-control" type="text" name="editFeatureName" value="<?php echo htmlspecialchars($row['featureName']); ?>" required>
@@ -135,6 +152,15 @@ $features = executeQuery($getFeatures);
                 </div>
                 <div class="modal-body">
                     <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Category</label>
+                            <select class="form-select" name="category" required>
+                                <option value="" selected disabled>-- Select Category --</option>
+                                <?php foreach ($categoryList as $cat) { ?>
+                                    <option value="<?php echo $cat; ?>"><?php echo $cat; ?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
                         <div class="mb-3">
                             <label class="form-label">Feature Name</label>
                             <input class="form-control" type="text" name="featureName" placeholder="e.g., Free Wi-Fi" required>
