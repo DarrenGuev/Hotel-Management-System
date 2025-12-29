@@ -50,7 +50,7 @@ function getBookingRoomFeatures($conn, $roomID) {
             <div class="row">
                 <div class="col-12 text-center">
                     <h1 class="fw-bold mb-2"><i class="bi bi-calendar-check me-2"></i>My Bookings</h1>
-                    <p class="text-muted">Welcome back, <?php echo htmlspecialchars($_SESSION['firstName']); ?>! Manage your reservations here.</p>
+                    <p class="text-muted">Welcome back, <?php echo htmlspecialchars($_SESSION['firstName'] ?? $_SESSION['givenName'] ?? $_SESSION['name'] ?? 'Guest'); ?>! Manage your reservations here.</p>
                 </div>
             </div>
         </div>

@@ -155,7 +155,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="d-grid mb-4">
+                                        <div class="d-grid mb-3">
                                             <button type="submit"
                                                 class="btn btn-glass btn-lg text-white fw-semibold rounded-3 py-3">Register</button>
                                         </div>
