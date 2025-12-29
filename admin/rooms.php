@@ -228,19 +228,20 @@ mysqli_data_seek($features, 0);
                         </button>
                     </li>
                 </ul>
-
-                <table class="table table-hover table-bordered">
+                <div class="row">
+                    <div class="col-12 overflow-auto">
+                        <table class="table table-hover table-bordered">
                     <thead class="table-dark">
                         <tr>
-                            <th scope="col">ID</th>
-                            <th scope="col">Room Type</th>
-                            <th scope="col">Room Name</th>
-                            <th scope="col">Max Occupancy</th>
-                            <th scope="col">Features</th>
-                            <th scope="col">Price</th>
-                            <th scope="col">Quantity</th>
-                            <th scope="col">Room Image</th>
-                            <th scope="col"></th>
+                            <th scope="col" class="text-center align-middle">ID</th>
+                            <th scope="col" class="text-center align-middle">Room Type</th>
+                            <th scope="col" class="text-center align-middle">Room Name</th>
+                            <th scope="col" class="text-center align-middle">Max Occupancy</th>
+                            <th scope="col" class="text-center align-middle">Features</th>
+                            <th scope="col" class="text-center align-middle">Price</th>
+                            <th scope="col" class="text-center align-middle">Quantity</th>
+                            <th scope="col" class="text-center align-middle">Room Image</th>
+                            <th scope="col" class="text-center align-middle"></th>
                         </tr>
                     </thead>
                     <tbody id="roomsTableBody">
@@ -252,8 +253,6 @@ mysqli_data_seek($features, 0);
                             while ($feature = mysqli_fetch_assoc($roomFeaturesResult)) {
                                 $roomFeatures[] = $feature['featureName'];
                             }
-                            
-                            // Get feature IDs for this room (for edit modal)
                             $roomFeatureIdsQuery = "SELECT featureID FROM roomfeatures WHERE roomID = " . (int)$row['roomID'];
                             $roomFeatureIdsResult = executeQuery($roomFeatureIdsQuery);
                             $roomFeatureIds = [];
@@ -392,6 +391,8 @@ mysqli_data_seek($features, 0);
                         <?php } ?>
                     </tbody>
                 </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

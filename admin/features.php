@@ -77,29 +77,29 @@ $categoryList = ['Beds', 'Rooms', 'Bathroom', 'Amenities', 'Entertainment', 'Gen
                 </button>
             </div>
 
-            <div class="col-12">
+            <div class="col-12 overflow-auto">
                 <table class="table table-hover table-bordered">
                     <thead class="table-dark">
                         <tr>
-                            <th scope="col">ID</th>
-                            <th scope="col">Category</th>
-                            <th scope="col">Feature Name</th>
+                            <th scope="col" class="text-center">ID</th>
+                            <th scope="col" class="text-center">Category</th>
+                            <th scope="col" class="text-center">Feature Name</th>
                             <th scope="col" style="width: 180px;"></th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php while ($row = mysqli_fetch_assoc($features)) { ?>
                             <tr>
-                                <td><?php echo (int)$row['featureId']; ?></td>
-                                <td><span class="badge bg-info"><?php echo htmlspecialchars($row['category'] ?? 'General'); ?></span></td>
-                                <td><?php echo htmlspecialchars($row['featureName']); ?></td>
-                                <td class="text-center">
+                                <td class="text-center align-middle"><?php echo (int)$row['featureId']; ?></td>
+                                <td class="text-center align-middle"><span class="badge bg-info"><?php echo htmlspecialchars($row['category'] ?? 'General'); ?></span></td>
+                                <td class="text-center align-middle"><?php echo htmlspecialchars($row['featureName']); ?></td>
+                                <td class="text-center align-middle">
                                     <form method="POST" style="display:inline-block;">
                                         <input type="hidden" name="deleteFeatureId" value="<?php echo (int)$row['featureId']; ?>">
-                                        <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+                                        <button class="btn btn-outline-danger btn-sm m-2" type="submit">Delete</button>
                                     </form>
 
-                                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editFeatureModal<?php echo (int)$row['featureId']; ?>">
+                                    <button type="button" class="btn btn-outline-primary btn-sm m-2" data-bs-toggle="modal" data-bs-target="#editFeatureModal<?php echo (int)$row['featureId']; ?>">
                                         Edit
                                     </button>
 
