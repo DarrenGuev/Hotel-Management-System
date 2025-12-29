@@ -442,9 +442,16 @@ function getRoomFeatures($roomID)
                                                                                 value="<?php echo htmlspecialchars($userData['email'] ?? '', ENT_QUOTES); ?>"
                                                                                 required>
                                                                             <input type="tel" name="phoneNumber"
-                                                                                class="form-control mb-2" placeholder="Phone Number"
+                                                                                class="form-control mb-2"
+                                                                                placeholder="Phone Number (7-12 digits, optional +country)"
                                                                                 value="<?php echo htmlspecialchars($userData['phoneNumber'] ?? '', ENT_QUOTES); ?>"
+                                                                                pattern="^\+?[0-9]{7,12}$"
+                                                                                title="Enter 7 to 12 digits (optional leading +country code)"
+                                                                                inputmode="tel" maxlength="13"
+                                                                                oninput="this.value = this.value.replace(/(?!^\+)[^0-9]/g, '').replace(/(?!^)\+/g, '')"
                                                                                 required>
+                                                                            <div class="invalid-feedback">Please enter a valid phone
+                                                                                number (7-12 digits).</div>
                                                                         <?php else: ?>
                                                                             <div class="alert alert-warning small">
                                                                                 <i class="bi bi-info-circle me-1"></i>Please log in to
@@ -452,15 +459,15 @@ function getRoomFeatures($roomID)
                                                                             </div>
                                                                             <div class="row g-2">
                                                                                 <div class="col-12 col-sm-6">
-                                                                                    <input type="text" name="firstName" id="firstName" disabled
-                                                                                        class="form-control mb-2"
+                                                                                    <input type="text" name="firstName" id="firstName"
+                                                                                        disabled class="form-control mb-2"
                                                                                         placeholder="First name"
                                                                                         value="<?php echo htmlspecialchars($userData['firstName'] ?? '', ENT_QUOTES); ?>"
                                                                                         required>
                                                                                 </div>
                                                                                 <div class="col-12 col-sm-6">
-                                                                                    <input type="text" name="lastName" id="lastName" disabled
-                                                                                        class="form-control mb-2"
+                                                                                    <input type="text" name="lastName" id="lastName"
+                                                                                        disabled class="form-control mb-2"
                                                                                         placeholder="Last name"
                                                                                         value="<?php echo htmlspecialchars($userData['lastName'] ?? '', ENT_QUOTES); ?>"
                                                                                         required>
@@ -471,7 +478,10 @@ function getRoomFeatures($roomID)
                                                                             <input type="email" class="form-control mb-2"
                                                                                 placeholder="Email" disabled>
                                                                             <input type="tel" class="form-control mb-2"
-                                                                                placeholder="Phone Number" disabled>
+                                                                                placeholder="Phone Number (7-12 digits, optional +country)"
+                                                                                disabled pattern="^\+?[0-9]{7,12}$"
+                                                                                title="Enter 7 to 12 digits (optional leading +country code)"
+                                                                                inputmode="tel" maxlength="13">
                                                                         <?php endif; ?>
                                                                     </div>
                                                                 </div>
