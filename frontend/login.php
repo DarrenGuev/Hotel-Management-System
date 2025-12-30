@@ -58,6 +58,22 @@ session_start();
         .btn-glass {
             background: linear-gradient(135deg, #ff9900 0%, #ff6600 100%);
         }
+
+        /* White Google button: solid white, black text, no hover effect */
+        .btn-google-white {
+            background: #ffffff !important;
+            color: #000000 !important;
+            border: 1px solid rgba(0, 0, 0, 0.08) !important;
+            box-shadow: none !important;
+        }
+
+        .btn-google-white:active {
+            background: #ffffff !important;
+            color: #000000 !important;
+            border-color: rgba(0, 0, 0, 0.08) !important;
+            box-shadow: none !important;
+            transform: none !important;
+        }
     </style>
 </head>
 
@@ -146,8 +162,14 @@ session_start();
                                     </div>
                                     <div class="mb-3">
                                         <a href="/HOTEL-MANAGEMENT-SYSTEM/integrations/gmail/googleLogin.php"
-                                            class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center py-2">
-                                            <i class="bi bi-google me-2"></i> Google
+                                            class="btn btn-google-white w-100 d-flex align-items-center justify-content-center py-2">
+                                            <svg class="me-2" width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                                                <path d="M21.6 12.227c0-.766-.069-1.5-.198-2.227H12v4.217h5.597c-.242 1.308-.98 2.418-2.09 3.168v2.633h3.376c1.977-1.821 3.117-4.5 3.117-7.791z" fill="#4285F4"/>
+                                                <path d="M12 22c2.7 0 4.972-.9 6.63-2.445l-3.376-2.633C14.9 17.1 13.55 17.6 12 17.6c-2.26 0-4.174-1.52-4.852-3.56H3.604v2.813C5.26 19.86 8.36 22 12 22z" fill="#34A853"/>
+                                                <path d="M7.148 13.999a4.999 4.999 0 010-3.998V7.188H3.604A9.998 9.998 0 0012 2c2.7 0 4.972.9 6.63 2.445l-3.376 2.633C14.9 6.9 13.55 6.4 12 6.4c-2.26 0-4.174 1.52-4.852 3.56z" fill="#FBBC05"/>
+                                                <path d="M12 6.4c1.55 0 2.9.5 3.854 1.678L19.23 5.445C17.972 4.018 15.7 3 12 3 8.36 3 5.26 5.14 3.604 7.999l3.544 2.001C7.826 8.02 9.74 6.5 12 6.5z" fill="#EA4335"/>
+                                            </svg>
+                                            <p class="m-0 fw-normal">Continue with Google</p>
                                         </a>
                                     </div>
 
