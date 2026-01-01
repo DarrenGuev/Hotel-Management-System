@@ -1,588 +1,613 @@
-<!DOCTYPE html>
+<?php
+session_start();
+include 'connect.php';
+
+if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'admin') {
+    header("Location: ../frontend/login.php?error=Access denied");
+    exit();
+}
+require_once '../integrations/sms/SmsService.php';
+
+$smsService = new SmsService();
+$stats = $smsService->getStatistics();
+
+// Handle manual SMS sending
+$alertMessage = null;
+$alertType = null;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    if ($_POST['action'] === 'send_sms') {
+        $phoneNumber = trim($_POST['phone_number']);
+        $message = trim($_POST['message']);
+        $bookingId = !empty($_POST['booking_id']) ? (int)$_POST['booking_id'] : null;
+
+        if (empty($phoneNumber) || !preg_match('/^\d+$/', $phoneNumber)) {
+            $alertMessage = 'Please enter a valid phone number (numbers only).';
+            $alertType = 'danger';
+        } elseif ($message !== 'Your Booking is Approved.') {
+            $alertMessage = 'You must enter "Your Booking is Approved." as the message.';
+            $alertType = 'danger';
+        } else {
+            $result = $smsService->sendCustomSms($phoneNumber, $message, $bookingId);
+            if ($result['success']) {
+                $alertMessage = 'SMS sent successfully!';
+                $alertType = 'success';
+            } else {
+                $alertMessage = 'Failed to send SMS: ' . $result['error'];
+                $alertType = 'danger';
+            }
+        }
+        $stats = $smsService->getStatistics();
+    }
+}
+
+$filters = [];
+if (!empty($_GET['status'])) {
+    $filters['status'] = $_GET['status'];
+}
+if (!empty($_GET['direction'])) {
+    $filters['direction'] = $_GET['direction'];
+}
+
+// Pagination
+$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$limit = 15;
+$offset = ($page - 1) * $limit;
+
+// Get logs
+$logs = $smsService->getSmsLogs($filters, $limit, $offset);
+$totalCount = $smsService->getTotalCount($filters);
+$totalPages = ceil($totalCount / $limit);
+
+// Get bookings for dropdown
+$bookingsQuery = "SELECT b.bookingID, b.phoneNumber, u.firstName, u.lastName 
+                  FROM bookings b 
+                  INNER JOIN users u ON b.userID = u.userID 
+                  WHERE b.bookingStatus IN ('pending', 'confirmed') 
+                  ORDER BY b.createdAt DESC LIMIT 50";
+$bookingsResult = executeQuery($bookingsQuery);
+$bookings = [];
+while ($row = mysqli_fetch_assoc($bookingsResult)) {
+    $bookings[] = $row;
+}
+?>
+<!doctype html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMS Management - Admin Panel</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TravelMates - SMS Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            background-color: #f8f9fa;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: 'Poppins', sans-serif;
         }
 
-        .sms-container {
-            height: calc(100vh - 56px);
-            max-height: calc(100vh - 56px);
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
         }
 
-        .conversations-sidebar {
-            height: 100%;
-            border-right: 1px solid #dee2e6;
-            background: white;
-            overflow-y: auto;
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.7);
+            padding: 12px 20px;
+            margin: 4px 12px;
+            border-radius: 8px;
+            transition: all 0.3s;
         }
 
-        .chat-container {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            background: white;
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
         }
 
-        .messages-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            background: #f8f9fa;
+        .stat-card {
+            border-radius: 12px;
+            border: none;
+            transition: transform 0.2s;
         }
 
-        .message-bubble {
-            max-width: 70%;
-            margin-bottom: 15px;
-            padding: 12px 16px;
-            border-radius: 18px;
-            word-wrap: break-word;
+        .stat-card:hover {
+            transform: translateY(-5px);
         }
 
-        .message-client {
-            background: #e9ecef;
-            margin-right: auto;
-            border-bottom-left-radius: 4px;
+        .sms-log-item {
+            transition: background-color 0.2s;
         }
 
-        .message-admin {
-            background: #0d6efd;
-            color: white;
-            margin-left: auto;
-            border-bottom-right-radius: 4px;
+        .sms-log-item:hover {
+            background-color: rgba(0, 0, 0, 0.02);
         }
 
-        .message-time {
-            font-size: 0.75rem;
-            opacity: 0.7;
-            margin-top: 4px;
+        .badge-sent {
+            background-color: #198754;
         }
 
-        .conversation-item {
-            padding: 15px;
-            border-bottom: 1px solid #f0f0f0;
-            cursor: pointer;
-            transition: background 0.2s;
+        .badge-failed {
+            background-color: #dc3545;
         }
 
-        .conversation-item:hover {
-            background: #f8f9fa;
+        .badge-received {
+            background-color: #0d6efd;
         }
 
-        .conversation-item.active {
-            background: #e7f3ff;
-            border-left: 3px solid #0d6efd;
+        .badge-pending {
+            background-color: #ffc107;
+            color: #000;
         }
 
-        .conversation-item .phone {
-            font-weight: 600;
-            color: #212529;
-        }
-
-        .conversation-item .last-message {
-            color: #6c757d;
-            font-size: 0.875rem;
+        .message-preview {
+            max-width: 300px;
+            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .conversation-item .time {
-            font-size: 0.75rem;
-            color: #adb5bd;
-        }
-
-        .unread-badge {
-            background: #0d6efd;
-            color: white;
-            border-radius: 10px;
-            padding: 2px 8px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .compose-area {
-            padding: 15px;
-            background: white;
-            border-top: 1px solid #dee2e6;
-        }
-
-        .empty-state {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #6c757d;
-            text-align: center;
-        }
-
-        .search-box {
-            padding: 15px;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        @media (max-width: 768px) {
-            .conversations-sidebar {
-                display: none;
-            }
-
-            .conversations-sidebar.show {
-                display: block;
-                position: fixed;
-                top: 56px;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                z-index: 1050;
-            }
-
-            .message-bubble {
-                max-width: 85%;
-            }
-        }
-
-        .typing-indicator {
-            display: none;
-            padding: 10px;
-            color: #6c757d;
-            font-style: italic;
-            font-size: 0.875rem;
-        }
-
-        .sender-info {
-            padding: 15px;
-            background: white;
-            border-bottom: 2px solid #dee2e6;
-        }
-
-        .status-badge {
-            font-size: 0.75rem;
-            padding: 3px 8px;
         }
     </style>
 </head>
 
-<body>
-    <!-- Top Navigation -->
-    <nav class="navbar navbar-dark bg-primary">
-        <div class="container-fluid">
-            <button class="btn btn-outline-light d-md-none" id="toggleSidebar">
-                <i class="bi bi-list"></i>
-            </button>
-            <span class="navbar-brand mb-0 h1">
-                <i class="bi bi-chat-dots"></i> SMS Management
-            </span>
-            <div class="d-flex align-items-center">
-                <span class="badge bg-light text-primary me-2" id="unreadBadge">0</span>
-                <button class="btn btn-outline-light btn-sm" onclick="refreshConversations()">
-                    <i class="bi bi-arrow-clockwise"></i>
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container-fluid p-0">
-        <div class="row g-0 sms-container">
-            <!-- Conversations Sidebar -->
-            <div class="col-md-4 col-lg-3 conversations-sidebar" id="conversationsSidebar">
-                <!-- Search Box -->
-                <div class="search-box">
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control" id="searchInput" placeholder="Search conversations...">
-                    </div>
+<body class="bg-light">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-2 d-none d-lg-block px-0 sidebar">
+                <div class="p-4 text-center">
+                    <h4 class="text-white fw-bold">TravelMates</h4>
+                    <small class="text-white-50">Admin Panel</small>
                 </div>
+                <nav class="nav flex-column">
+                    <a class="nav-link" href="admin.php"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
+                    <a class="nav-link" href="rooms.php"><i class="bi bi-door-open me-2"></i>Rooms</a>
+                    <a class="nav-link" href="manage_bookings.php"><i class="bi bi-calendar-check me-2"></i>Bookings</a>
+                    <a class="nav-link" href="features.php"><i class="bi bi-star me-2"></i>Features</a>
+                    <a class="nav-link active" href="smsDashboard.php"><i class="bi bi-chat-dots me-2"></i>SMS</a>
+                    <hr class="text-white-50 mx-3">
+                    <a class="nav-link text-danger" href="../frontend/php/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
+                </nav>
+            </div>
 
-                <!-- Conversations List -->
-                <div id="conversationsList">
-                    <div class="text-center p-4">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
+            <!-- Mobile Header -->
+            <div class="col-12 d-lg-none bg-dark py-3">
+                <div class="d-flex justify-content-between align-items-center px-3">
+                    <h5 class="text-white mb-0">TravelMates</h5>
+                    <button class="btn btn-outline-light btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
+                        <i class="bi bi-list"></i>
+                    </button>
                 </div>
             </div>
 
-            <!-- Chat Area -->
-            <div class="col-md-8 col-lg-9 chat-container">
-                <div id="emptyChatState" class="empty-state">
-                    <div>
-                        <i class="bi bi-chat-text" style="font-size: 4rem; color: #dee2e6;"></i>
-                        <h5 class="mt-3">Select a conversation</h5>
-                        <p class="text-muted">Choose a conversation from the left to start messaging</p>
+            <!-- Mobile Offcanvas Menu -->
+            <div class="offcanvas offcanvas-start bg-dark" tabindex="-1" id="mobileMenu">
+                <div class="offcanvas-header">
+                    <h5 class="text-white">Menu</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <nav class="nav flex-column">
+                        <a class="nav-link text-white" href="admin.php"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
+                        <a class="nav-link text-white" href="rooms.php"><i class="bi bi-door-open me-2"></i>Rooms</a>
+                        <a class="nav-link text-white" href="manage_bookings.php"><i class="bi bi-calendar-check me-2"></i>Bookings</a>
+                        <a class="nav-link text-white" href="features.php"><i class="bi bi-star me-2"></i>Features</a>
+                        <a class="nav-link text-white-50 active" href="smsDashboard.php"><i class="bi bi-chat-dots me-2"></i>SMS</a>
+                        <hr class="text-white-50">
+                        <a class="nav-link text-danger" href="../frontend/php/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-12 col-lg-10 p-3 p-lg-4">
+                <!-- Page Header -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                            <div class="mb-3 mb-md-0">
+                                <h2 class="fw-bold mb-1">SMS Dashboard</h2>
+                                <p class="text-muted mb-0">Manage SMS notifications and view message logs</p>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="../integrations/sms/test_connection.php" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-gear me-1"></i>Test Connection
+                                </a>
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#sendSmsModal">
+                                    <i class="bi bi-send me-1"></i>Send SMS
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div id="chatArea" style="display: none; height: 100%; display: flex; flex-direction: column;">
-                    <!-- Sender Info -->
-                    <div class="sender-info">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-1" id="chatClientName">Client Name</h6>
-                                <small class="text-muted" id="chatClientPhone">+1234567890</small>
-                            </div>
-                            <button class="btn btn-sm btn-outline-secondary" onclick="closeChat()">
-                                <i class="bi bi-x-lg"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Messages Container -->
-                    <div class="messages-container" id="messagesContainer">
-                        <div class="text-center p-4">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading messages...</span>
+                <!-- Alert Messages -->
+                <?php if ($alertMessage): ?>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="alert alert-<?php echo $alertType; ?> alert-dismissible fade show" role="alert">
+                                <?php echo htmlspecialchars($alertMessage); ?>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
                         </div>
                     </div>
+                <?php endif; ?>
 
-                    <!-- Typing Indicator -->
-                    <div class="typing-indicator" id="typingIndicator">
-                        <i class="bi bi-three-dots"></i> Client is typing...
+                <!-- Stats Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-3">
+                        <div class="card stat-card bg-success text-white h-100">
+                            <div class="card-body text-center py-3">
+                                <i class="bi bi-send-check display-6"></i>
+                                <h3 class="fw-bold mt-2 mb-0"><?php echo $stats['total_sent']; ?></h3>
+                                <small>Total Sent</small>
+                            </div>
+                        </div>
                     </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card stat-card bg-primary text-white h-100">
+                            <div class="card-body text-center py-3">
+                                <i class="bi bi-inbox display-6"></i>
+                                <h3 class="fw-bold mt-2 mb-0"><?php echo $stats['total_received']; ?></h3>
+                                <small>Total Received</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card stat-card bg-danger text-white h-100">
+                            <div class="card-body text-center py-3">
+                                <i class="bi bi-x-circle display-6"></i>
+                                <h3 class="fw-bold mt-2 mb-0"><?php echo $stats['total_failed']; ?></h3>
+                                <small>Failed</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card stat-card bg-info text-white h-100">
+                            <div class="card-body text-center py-3">
+                                <i class="bi bi-calendar-check display-6"></i>
+                                <h3 class="fw-bold mt-2 mb-0"><?php echo $stats['today_sent']; ?></h3>
+                                <small>Sent Today</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                    <!-- Compose Area -->
-                    <div class="compose-area">
-                        <form id="messageForm" onsubmit="sendMessage(event)">
-                            <div class="row g-2">
-                                <div class="col-12">
-                                    <div class="input-group mb-2">
-                                        <span class="input-group-text">From:</span>
-                                        <input type="text" class="form-control" id="senderNumber"
-                                            placeholder="Your number" required>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="input-group">
-                                        <textarea class="form-control" id="messageInput" rows="2"
-                                            placeholder="Type your message..." required></textarea>
-                                        <button class="btn btn-primary" type="submit">
-                                            <i class="bi bi-send"></i> Send
-                                        </button>
-                                    </div>
-                                    <small class="text-muted">
-                                        <span id="charCount">0</span>/1600 characters
-                                    </small>
-                                </div>
+                <!-- Filters -->
+                <div class="card mb-4">
+                    <div class="card-body py-3">
+                        <form method="GET" class="row g-2 align-items-end">
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <label class="form-label small mb-1">Status</label>
+                                <select name="status" class="form-select form-select-sm">
+                                    <option value="">All Status</option>
+                                    <option value="sent" <?php echo (isset($_GET['status']) && $_GET['status'] === 'sent') ? 'selected' : ''; ?>>Sent</option>
+                                    <option value="failed" <?php echo (isset($_GET['status']) && $_GET['status'] === 'failed') ? 'selected' : ''; ?>>Failed</option>
+                                    <option value="received" <?php echo (isset($_GET['status']) && $_GET['status'] === 'received') ? 'selected' : ''; ?>>Received</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <label class="form-label small mb-1">Direction</label>
+                                <select name="direction" class="form-select form-select-sm">
+                                    <option value="">All Directions</option>
+                                    <option value="outgoing" <?php echo (isset($_GET['direction']) && $_GET['direction'] === 'outgoing') ? 'selected' : ''; ?>>Outgoing</option>
+                                    <option value="incoming" <?php echo (isset($_GET['direction']) && $_GET['direction'] === 'incoming') ? 'selected' : ''; ?>>Incoming</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <button type="submit" class="btn btn-primary btn-sm w-100">
+                                    <i class="bi bi-funnel me-1"></i>Filter
+                                </button>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <a href="smsDashboard.php" class="btn btn-outline-secondary btn-sm w-100">
+                                    <i class="bi bi-x-circle me-1"></i>Clear
+                                </a>
                             </div>
                         </form>
                     </div>
                 </div>
+
+                <!-- SMS Logs Table -->
+                <div class="card">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>SMS Logs</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <!-- Desktop Table -->
+                        <div class="table-responsive d-none d-md-block">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Phone Number</th>
+                                        <th>Message</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                        <th>Direction</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (empty($logs)): ?>
+                                        <tr>
+                                            <td colspan="8" class="text-center py-4 text-muted">
+                                                <i class="bi bi-inbox display-6 d-block mb-2"></i>
+                                                No SMS logs found
+                                            </td>
+                                        </tr>
+                                    <?php else: ?>
+                                        <?php foreach ($logs as $log): ?>
+                                            <tr class="sms-log-item">
+                                                <td><small class="text-muted">#<?php echo $log['id']; ?></small></td>
+                                                <td><code><?php echo htmlspecialchars($log['phone_number']); ?></code></td>
+                                                <td>
+                                                    <span class="message-preview" title="<?php echo htmlspecialchars($log['message']); ?>">
+                                                        <?php echo htmlspecialchars(substr($log['message'], 0, 50)); ?>
+                                                        <?php echo strlen($log['message']) > 50 ? '...' : ''; ?>
+                                                    </span>
+                                                </td>
+                                                <td><span class="badge bg-secondary"><?php echo htmlspecialchars($log['message_type']); ?></span></td>
+                                                <td>
+                                                    <?php
+                                                    $statusClass = match ($log['status']) {
+                                                        'sent' => 'badge-sent',
+                                                        'failed' => 'badge-failed',
+                                                        'received' => 'badge-received',
+                                                        default => 'badge-pending'
+                                                    };
+                                                    ?>
+                                                    <span class="badge <?php echo $statusClass; ?>"><?php echo ucfirst($log['status']); ?></span>
+                                                </td>
+                                                <td>
+                                                    <i class="bi <?php echo $log['direction'] === 'outgoing' ? 'bi-arrow-up-right text-success' : 'bi-arrow-down-left text-primary'; ?>"></i>
+                                                    <?php echo ucfirst($log['direction']); ?>
+                                                </td>
+                                                <td><small><?php echo date('M d, Y H:i', strtotime($log['created_at'])); ?></small></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#viewLogModal<?php echo $log['id']; ?>">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+
+                                            <!-- View Log Modal -->
+                                            <div class="modal fade" id="viewLogModal<?php echo $log['id']; ?>" tabindex="-1">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">SMS Details #<?php echo $log['id']; ?></h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-bold">Phone Number</label>
+                                                                <p class="mb-0"><?php echo htmlspecialchars($log['phone_number']); ?></p>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-bold">Message</label>
+                                                                <p class="mb-0 bg-light p-3 rounded"><?php echo nl2br(htmlspecialchars($log['message'])); ?></p>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-6">
+                                                                    <label class="form-label fw-bold">Status</label>
+                                                                    <p class="mb-0"><span class="badge <?php echo $statusClass; ?>"><?php echo ucfirst($log['status']); ?></span></p>
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <label class="form-label fw-bold">Direction</label>
+                                                                    <p class="mb-0"><?php echo ucfirst($log['direction']); ?></p>
+                                                                </div>
+                                                            </div>
+                                                            <div class="mt-3">
+                                                                <label class="form-label fw-bold">Date</label>
+                                                                <p class="mb-0"><?php echo date('F d, Y H:i:s', strtotime($log['created_at'])); ?></p>
+                                                            </div>
+                                                            <?php if ($log['booking_id']): ?>
+                                                                <div class="mt-3">
+                                                                    <label class="form-label fw-bold">Booking ID</label>
+                                                                    <p class="mb-0">#<?php echo $log['booking_id']; ?></p>
+                                                                </div>
+                                                            <?php endif; ?>
+                                                            <?php if ($log['status'] === 'failed' && !empty($log['response'])): ?>
+                                                                <div class="mt-3">
+                                                                    <label class="form-label fw-bold">Error Details</label>
+                                                                    <pre class="bg-dark text-light p-2 rounded small"><?php echo htmlspecialchars($log['response']); ?></pre>
+                                                                </div>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Mobile Cards View -->
+                        <div class="d-md-none">
+                            <?php if (empty($logs)): ?>
+                                <div class="text-center py-4 text-muted">
+                                    <i class="bi bi-inbox display-6 d-block mb-2"></i>
+                                    No SMS logs found
+                                </div>
+                            <?php else: ?>
+                                <?php foreach ($logs as $log): ?>
+                                    <div class="border-bottom p-3 sms-log-item">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <code class="small"><?php echo htmlspecialchars($log['phone_number']); ?></code>
+                                                <small class="text-muted ms-2">#<?php echo $log['id']; ?></small>
+                                            </div>
+                                            <?php
+                                            $statusClass = match ($log['status']) {
+                                                'sent' => 'badge-sent',
+                                                'failed' => 'badge-failed',
+                                                'received' => 'badge-received',
+                                                default => 'badge-pending'
+                                            };
+                                            ?>
+                                            <span class="badge <?php echo $statusClass; ?>"><?php echo ucfirst($log['status']); ?></span>
+                                        </div>
+                                        <p class="mb-2 small"><?php echo htmlspecialchars(substr($log['message'], 0, 80)); ?><?php echo strlen($log['message']) > 80 ? '...' : ''; ?></p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                <i class="bi <?php echo $log['direction'] === 'outgoing' ? 'bi-arrow-up-right' : 'bi-arrow-down-left'; ?> me-1"></i>
+                                                <?php echo date('M d, H:i', strtotime($log['created_at'])); ?>
+                                            </small>
+                                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#viewLogModal<?php echo $log['id']; ?>">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <?php if ($totalPages > 1): ?>
+                        <div class="card-footer bg-white">
+                            <nav>
+                                <ul class="pagination pagination-sm justify-content-center mb-0 flex-wrap">
+                                    <?php if ($page > 1): ?>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=<?php echo $page - 1; ?>&status=<?php echo $_GET['status'] ?? ''; ?>&direction=<?php echo $_GET['direction'] ?? ''; ?>">
+                                                <i class="bi bi-chevron-left"></i>
+                                            </a>
+                                        </li>
+                                    <?php endif; ?>
+
+                                    <?php
+                                    $startPage = max(1, $page - 2);
+                                    $endPage = min($totalPages, $page + 2);
+                                    for ($i = $startPage; $i <= $endPage; $i++):
+                                    ?>
+                                        <li class="page-item <?php echo $i === $page ? 'active' : ''; ?>">
+                                            <a class="page-link" href="?page=<?php echo $i; ?>&status=<?php echo $_GET['status'] ?? ''; ?>&direction=<?php echo $_GET['direction'] ?? ''; ?>">
+                                                <?php echo $i; ?>
+                                            </a>
+                                        </li>
+                                    <?php endfor; ?>
+
+                                    <?php if ($page < $totalPages): ?>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=<?php echo $page + 1; ?>&status=<?php echo $_GET['status'] ?? ''; ?>&direction=<?php echo $_GET['direction'] ?? ''; ?>">
+                                                <i class="bi bi-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    <?php endif; ?>
+                                </ul>
+                            </nav>
+                            <p class="text-center text-muted small mt-2 mb-0">
+                                Showing <?php echo count($logs); ?> of <?php echo $totalCount; ?> records
+                            </p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Send SMS Modal -->
+    <div class="modal fade" id="sendSmsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" class="needs-validation" novalidate>
+                    <input type="hidden" name="action" value="send_sms">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="bi bi-send me-2"></i>Send SMS</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Select Booking (Optional)</label>
+                            <select name="booking_id" class="form-select" id="bookingSelect">
+                                <option value="">-- Select a booking --</option>
+                                <?php foreach ($bookings as $booking): ?>
+                                    <option value="<?php echo $booking['bookingID']; ?>" data-phone="<?php echo htmlspecialchars($booking['phoneNumber']); ?>">
+                                        #<?php echo $booking['bookingID']; ?> - <?php echo htmlspecialchars($booking['firstName'] . ' ' . $booking['lastName']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone Number <span class="text-danger">*</span></label>
+                            <input type="text" name="phone_number" id="phoneNumber" class="form-control" placeholder="e.g., 09171234567 or 639171234567" required pattern="\d+">
+                            <div class="invalid-feedback">Please enter a valid phone number (numbers only).</div>
+                            <div class="form-text">Enter Philippine mobile number format</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Message <span class="text-danger">*</span></label>
+                            <textarea name="message" id="smsMessage" class="form-control" rows="4" required placeholder="Enter your message here..."></textarea>
+                            <div class="invalid-feedback">You must enter "Your Booking is Approved."</div>
+                            <div class="form-text"><span id="charCount">0</span> characters</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send me-1"></i>Send SMS
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        let currentConversationId = null;
-        let currentClientPhone = null;
-        let refreshInterval = null;
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function () {
-            loadConversations();
-            loadUnreadCount();
-            startAutoRefresh();
-
-            // Search functionality
-            document.getElementById('searchInput').addEventListener('input', debounce(searchConversations, 500));
-
-            // Character counter
-            document.getElementById('messageInput').addEventListener('input', updateCharCount);
-
-            // Toggle sidebar on mobile
-            document.getElementById('toggleSidebar').addEventListener('click', function () {
-                document.getElementById('conversationsSidebar').classList.toggle('show');
-            });
+        document.getElementById('bookingSelect').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const phone = selectedOption.getAttribute('data-phone');
+            if (phone) {
+                document.getElementById('phoneNumber').value = phone;
+            }
         });
 
-        // Load conversations
-        async function loadConversations() {
-            try {
-                const response = await fetch('api.php?action=get_conversations');
-                const data = await response.json();
-
-                if (data.success) {
-                    displayConversations(data.data);
-                }
-            } catch (error) {
-                console.error('Error loading conversations:', error);
-            }
-        }
-
-        // Display conversations
-        function displayConversations(conversations) {
-            const container = document.getElementById('conversationsList');
-
-            if (conversations.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center p-4 text-muted">
-                        <i class="bi bi-inbox" style="font-size: 3rem;"></i>
-                        <p class="mt-2">No conversations yet</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = conversations.map(conv => `
-                <div class="conversation-item ${conv.conversation_id === currentConversationId ? 'active' : ''}" 
-                     onclick="openConversation('${conv.conversation_id}', '${conv.client_phone}', '${conv.client_name || ''}')">
-                    <div class="d-flex justify-content-between align-items-start mb-1">
-                        <div class="phone">
-                            <i class="bi bi-person-circle me-1"></i>
-                            ${conv.client_name || conv.client_phone}
-                        </div>
-                        <div class="d-flex align-items-center">
-                            ${conv.unread_count > 0 ? `<span class="unread-badge me-2">${conv.unread_count}</span>` : ''}
-                            <span class="time">${formatTime(conv.last_message_at)}</span>
-                        </div>
-                    </div>
-                    <div class="last-message">${conv.last_message || 'No messages yet'}</div>
-                </div>
-            `).join('');
-        }
-
-        // Open conversation
-        async function openConversation(conversationId, phone, name) {
-            currentConversationId = conversationId;
-            currentClientPhone = phone;
-
-            // Hide empty state, show chat
-            document.getElementById('emptyChatState').style.display = 'none';
-            document.getElementById('chatArea').style.display = 'flex';
-
-            // Update client info
-            document.getElementById('chatClientName').textContent = name || 'Unknown';
-            document.getElementById('chatClientPhone').textContent = phone;
-
-            // Mark as read
-            await markAsRead(conversationId);
-
-            // Load messages
-            await loadMessages(conversationId);
-
-            // Close sidebar on mobile
-            document.getElementById('conversationsSidebar').classList.remove('show');
-
-            // Update conversations list
-            loadConversations();
-        }
-
-        // Load messages
-        async function loadMessages(conversationId) {
-            const container = document.getElementById('messagesContainer');
-            container.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary"></div></div>';
-
-            try {
-                const response = await fetch(`api.php?action=get_messages&conversation_id=${conversationId}`);
-                const data = await response.json();
-
-                if (data.success) {
-                    displayMessages(data.data);
-                }
-            } catch (error) {
-                console.error('Error loading messages:', error);
-                container.innerHTML = '<div class="alert alert-danger m-3">Failed to load messages</div>';
-            }
-        }
-
-        // Display messages
-        function displayMessages(messages) {
-            const container = document.getElementById('messagesContainer');
-
-            if (messages.length === 0) {
-                container.innerHTML = '<div class="text-center p-4 text-muted">No messages yet. Start the conversation!</div>';
-                return;
-            }
-
-            container.innerHTML = messages.map(msg => `
-                <div class="d-flex ${msg.sender_type === 'admin' ? 'justify-content-end' : 'justify-content-start'}">
-                    <div class="message-bubble message-${msg.sender_type}">
-                        ${msg.sender_type === 'admin' && msg.sender_name ?
-                    `<div class="fw-bold mb-1" style="font-size: 0.875rem;">${msg.sender_name}</div>` : ''}
-                        <div>${escapeHtml(msg.message_text)}</div>
-                        <div class="message-time text-end">
-                            ${formatTime(msg.created_at)}
-                            ${msg.status === 'failed' ? '<i class="bi bi-exclamation-circle text-danger ms-1"></i>' : ''}
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-
-            // Scroll to bottom
-            container.scrollTop = container.scrollHeight;
-        }
-
-        // Send message
-        async function sendMessage(event) {
-            event.preventDefault();
-
-            const messageInput = document.getElementById('messageInput');
-            const senderNumber = document.getElementById('senderNumber').value;
-            const message = messageInput.value.trim();
-
-            if (!message || !currentClientPhone) return;
-
-            try {
-                const response = await fetch('api.php?action=send_message', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        to: currentClientPhone,
-                        from: senderNumber,
-                        message: message
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    messageInput.value = '';
-                    updateCharCount();
-                    await loadMessages(currentConversationId);
-                    await loadConversations();
-                } else {
-                    alert('Failed to send message: ' + data.error);
-                }
-            } catch (error) {
-                console.error('Error sending message:', error);
-                alert('Failed to send message. Please try again.');
-            }
-        }
-
-        // Mark as read
-        async function markAsRead(conversationId) {
-            try {
-                await fetch('api.php?action=mark_read', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ conversation_id: conversationId })
-                });
-                loadUnreadCount();
-            } catch (error) {
-                console.error('Error marking as read:', error);
-            }
-        }
-
-        // Search conversations
-        async function searchConversations() {
-            const query = document.getElementById('searchInput').value.trim();
-
-            if (query.length < 2) {
-                loadConversations();
-                return;
-            }
-
-            try {
-                const response = await fetch(`api.php?action=search&q=${encodeURIComponent(query)}`);
-                const data = await response.json();
-
-                if (data.success) {
-                    displayConversations(data.data);
-                }
-            } catch (error) {
-                console.error('Error searching:', error);
-            }
-        }
-
-        // Load unread count
-        async function loadUnreadCount() {
-            try {
-                const response = await fetch('api.php?action=get_unread_count');
-                const data = await response.json();
-
-                if (data.success) {
-                    const badge = document.getElementById('unreadBadge');
-                    badge.textContent = data.count;
-                    badge.style.display = data.count > 0 ? 'inline-block' : 'none';
-                }
-            } catch (error) {
-                console.error('Error loading unread count:', error);
-            }
-        }
-
-        // Refresh conversations
-        function refreshConversations() {
-            loadConversations();
-            loadUnreadCount();
-            if (currentConversationId) {
-                loadMessages(currentConversationId);
-            }
-        }
-
-        // Auto-refresh
-        function startAutoRefresh() {
-            refreshInterval = setInterval(refreshConversations, 30000); // Every 30 seconds
-        }
-
-        // Close chat
-        function closeChat() {
-            currentConversationId = null;
-            currentClientPhone = null;
-            document.getElementById('chatArea').style.display = 'none';
-            document.getElementById('emptyChatState').style.display = 'flex';
-        }
-
-        // Update character count
-        function updateCharCount() {
-            const input = document.getElementById('messageInput');
-            const count = document.getElementById('charCount');
-            count.textContent = input.value.length;
-
-            if (input.value.length > 1600) {
-                count.classList.add('text-danger');
+        document.getElementById('smsMessage').addEventListener('input', function() {
+            document.getElementById('charCount').textContent = this.value.length;
+            
+            if (this.value !== 'Your Booking is Approved.') {
+                this.setCustomValidity('Invalid message');
             } else {
-                count.classList.remove('text-danger');
-            }
-        }
-
-        // Utility functions
-        function formatTime(timestamp) {
-            if (!timestamp) return '';
-            const date = new Date(timestamp);
-            const now = new Date();
-            const diff = now - date;
-
-            if (diff < 60000) return 'Just now';
-            if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
-            if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
-            if (diff < 604800000) return Math.floor(diff / 86400000) + 'd ago';
-
-            return date.toLocaleDateString();
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
-
-        // Cleanup on page unload
-        window.addEventListener('beforeunload', function () {
-            if (refreshInterval) {
-                clearInterval(refreshInterval);
+                this.setCustomValidity('');
             }
         });
+
+        // Form validation
+        const smsForm = document.querySelector('#sendSmsModal form');
+        smsForm.addEventListener('submit', function(event) {
+            const phoneInput = document.getElementById('phoneNumber');
+            const messageInput = document.getElementById('smsMessage');
+            let isValid = true;
+
+            // Phone validation (numbers only)
+            if (!/^\d+$/.test(phoneInput.value)) {
+                phoneInput.setCustomValidity('Numbers only');
+                isValid = false;
+            } else {
+                phoneInput.setCustomValidity('');
+            }
+
+            // Message validation (exact match)
+            if (messageInput.value !== 'Your Booking is Approved.') {
+                messageInput.setCustomValidity('Invalid message');
+                isValid = false;
+            } else {
+                messageInput.setCustomValidity('');
+            }
+
+            if (!this.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            this.classList.add('was-validated');
+        }, false);
     </script>
 </body>
 

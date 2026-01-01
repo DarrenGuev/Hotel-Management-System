@@ -7,26 +7,74 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'admin') {
     exit();
 }
 
+// Include SMS Service
+require_once '../integrations/sms/SmsService.php';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $bookingID = (int)$_POST['bookingID'];
     $action = $_POST['action'];
+    
+    // Get booking details for SMS
+    $getBookingDetails = $conn->prepare("SELECT b.phoneNumber, b.checkInDate, u.firstName, u.lastName 
+                                          FROM bookings b 
+                                          INNER JOIN users u ON b.userID = u.userID 
+                                          WHERE b.bookingID = ?");
+    $getBookingDetails->bind_param("i", $bookingID);
+    $getBookingDetails->execute();
+    $bookingDetails = $getBookingDetails->get_result()->fetch_assoc();
+    $phoneNumber = $bookingDetails['phoneNumber'] ?? '';
+    $checkInDate = $bookingDetails['checkInDate'] ?? '';
+    $customerName = trim(($bookingDetails['firstName'] ?? '') . ' ' . ($bookingDetails['lastName'] ?? ''));
     
     if ($action === 'confirm') {
         $updateBooking = $conn->prepare("UPDATE bookings SET bookingStatus = 'confirmed', updatedAt = NOW() WHERE bookingID = ?");
         $updateBooking->bind_param("i", $bookingID);
         $updateBooking->execute();
+        
+        // Send SMS notification
+        if (!empty($phoneNumber)) {
+            try {
+                $smsService = new SmsService();
+                $smsService->sendBookingApprovalSms($bookingID, $phoneNumber, $customerName, $checkInDate);
+            } catch (Exception $e) {
+                error_log('SMS Error: ' . $e->getMessage());
+            }
+        }
+        
         $message = "Booking confirmed successfully!";
         $messageType = "success";
     } elseif ($action === 'cancel') {
         $updateBooking = $conn->prepare("UPDATE bookings SET bookingStatus = 'cancelled', paymentStatus = 'refunded', updatedAt = NOW() WHERE bookingID = ?");
         $updateBooking->bind_param("i", $bookingID);
         $updateBooking->execute();
+        
+        // Send SMS notification
+        if (!empty($phoneNumber)) {
+            try {
+                $smsService = new SmsService();
+                $smsService->sendBookingCancelledSms($bookingID, $phoneNumber, $customerName);
+            } catch (Exception $e) {
+                error_log('SMS Error: ' . $e->getMessage());
+            }
+        }
+        
         $message = "Booking cancelled successfully!";
         $messageType = "warning";
     } elseif ($action === 'complete') {
         $updateBooking = $conn->prepare("UPDATE bookings SET bookingStatus = 'completed', updatedAt = NOW() WHERE bookingID = ?");
         $updateBooking->bind_param("i", $bookingID);
         $updateBooking->execute();
+        
+        // Send SMS notification
+        if (!empty($phoneNumber)) {
+            try {
+                $smsService = new SmsService();
+                $smsService->sendBookingCompletedSms($bookingID, $phoneNumber, $customerName);
+            } catch (Exception $e) {
+                error_log('SMS Error: ' . $e->getMessage());
+            }
+        }
+        
         $message = "Booking marked as completed!";
         $messageType = "info";
     }
