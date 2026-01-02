@@ -4,17 +4,17 @@ require __DIR__ . '/config.php';
 require __DIR__ . '/../../dbconnect/connect.php';
 
 if (!google_is_configured()) {
-    header('Location: /HOTEL-MANAGEMENT-SYSTEM/frontend/login.php?error=google_not_configured');
+    header('Location: /Hotel-Management-System/frontend/login.php?error=google_not_configured');
     exit;
 }
 
 if (!isset($_GET['code'])) {
-    header('Location: /HOTEL-MANAGEMENT-SYSTEM/frontend/login.php?error=google_no_code');
+    header('Location: /Hotel-Management-System/frontend/login.php?error=google_no_code');
     exit;
 }
 
 if (!isset($_GET['state']) || !isset($_SESSION['google_oauth_state']) || $_GET['state'] !== $_SESSION['google_oauth_state']) {
-    header('Location: /HOTEL-MANAGEMENT-SYSTEM/frontend/login.php?error=google_state_mismatch');
+    header('Location: /Hotel-Management-System/frontend/login.php?error=google_state_mismatch');
     exit;
 }
 
@@ -40,13 +40,42 @@ $err = curl_error($ch);
 curl_close($ch);
 
 if ($err || !$resp) {
-    header('Location: /HOTEL-MANAGEMENT-SYSTEM/frontend/login.php?error=google_token_error');
+    header('Location: /Hotel-Management-System/frontend/login.php?error=google_token_error');
     exit;
 }
 
 $data = json_decode($resp, true);
 if (!isset($data['access_token'])) {
-    header('Location: /HOTEL-MANAGEMENT-SYSTEM/frontend/login.php?error=google_no_access_token');
+    header('Location: /Hotel-Management-System/frontend/login.php?error=google_no_access_token');
+    exit;
+}
+
+// Save tokens for Admin Gmail Integration
+if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
+    $accessToken = $data['access_token'];
+    $refreshToken = $data['refresh_token'] ?? null; // Only returned on first consent or prompt=consent
+    $expiresIn = $data['expires_in'];
+    $created = time();
+
+    // Save to file (simple storage for integration)
+    $tokenFile = __DIR__ . '/tokens.json';
+    
+    $tokens = [];
+    if (file_exists($tokenFile)) {
+        $tokens = json_decode(file_get_contents($tokenFile), true);
+    }
+    
+    $tokens['access_token'] = $accessToken;
+    if ($refreshToken) {
+        $tokens['refresh_token'] = $refreshToken;
+    }
+    $tokens['expires_in'] = $expiresIn;
+    $tokens['created'] = $created;
+    
+    file_put_contents($tokenFile, json_encode($tokens));
+    
+    // Redirect to email dashboard
+    header('Location: /Hotel-Management-System/admin/emailDashboard.php?success=gmail_connected');
     exit;
 }
 

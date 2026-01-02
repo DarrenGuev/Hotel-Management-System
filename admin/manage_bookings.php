@@ -10,6 +10,9 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'admin') {
 // Include SMS Service
 require_once '../integrations/sms/SmsService.php';
 
+// Include Email Service for booking receipts
+require_once '../integrations/gmail/EmailService.php';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $bookingID = (int)$_POST['bookingID'];
     $action = $_POST['action'];
@@ -39,6 +42,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             } catch (Exception $e) {
                 error_log('SMS Error: ' . $e->getMessage());
             }
+        }
+        
+        // Send email receipt automatically
+        try {
+            $emailService = new EmailService();
+            $bookingQuery = $conn->prepare("
+                SELECT b.*, r.roomName, rt.roomType, u.firstName, u.lastName, u.email
+                FROM bookings b
+                INNER JOIN rooms r ON b.roomID = r.roomID
+                INNER JOIN roomtypes rt ON r.roomTypeId = rt.roomTypeID
+                INNER JOIN users u ON b.userID = u.userID
+                WHERE b.bookingID = ?
+            ");
+            $bookingQuery->bind_param('i', $bookingID);
+            $bookingQuery->execute();
+            $bookingData = $bookingQuery->get_result()->fetch_assoc();
+            
+            if ($bookingData && !empty($bookingData['email'])) {
+                $bookingData['customerName'] = trim($bookingData['firstName'] . ' ' . $bookingData['lastName']);
+                $emailResult = $emailService->sendBookingReceipt($bookingData);
+                if (!$emailResult['success']) {
+                    error_log('Email Receipt Error for Booking #' . $bookingID . ': ' . ($emailResult['error'] ?? 'Unknown error'));
+                }
+            }
+        } catch (Exception $e) {
+            error_log('Email Service Error: ' . $e->getMessage());
         }
         
         $message = "Booking confirmed successfully!";

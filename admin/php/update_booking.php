@@ -47,10 +47,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($oldStatus !== $bookingStatus && !empty($phoneNumber)) {
             try {
                 require_once '../../integrations/sms/SmsService.php';
+                require_once '../../integrations/gmail/EmailService.php';
                 $smsService = new SmsService();
                 
                 if ($bookingStatus === 'confirmed') {
                     $smsService->sendBookingApprovalSms($bookingID, $phoneNumber, trim($customerName), $checkInDate);
+                    
+                    // Send email receipt automatically
+                    try {
+                        $emailService = new EmailService();
+                        $bookingQuery = $conn->prepare("
+                            SELECT b.*, r.roomName, rt.roomType, u.firstName, u.lastName, u.email
+                            FROM bookings b
+                            INNER JOIN rooms r ON b.roomID = r.roomID
+                            INNER JOIN roomtypes rt ON r.roomTypeId = rt.roomTypeID
+                            INNER JOIN users u ON b.userID = u.userID
+                            WHERE b.bookingID = ?
+                        ");
+                        $bookingQuery->bind_param('i', $bookingID);
+                        $bookingQuery->execute();
+                        $bookingData = $bookingQuery->get_result()->fetch_assoc();
+                        
+                        if ($bookingData && !empty($bookingData['email'])) {
+                            $bookingData['customerName'] = trim($bookingData['firstName'] . ' ' . $bookingData['lastName']);
+                            $emailResult = $emailService->sendBookingReceipt($bookingData);
+                            if (!$emailResult['success']) {
+                                error_log('Email Receipt Error for Booking #' . $bookingID . ': ' . ($emailResult['error'] ?? 'Unknown error'));
+                            }
+                        }
+                    } catch (Exception $emailEx) {
+                        error_log('Email Service Error: ' . $emailEx->getMessage());
+                    }
                 } elseif ($bookingStatus === 'cancelled') {
                     $smsService->sendBookingCancelledSms($bookingID, $phoneNumber, trim($customerName));
                 } elseif ($bookingStatus === 'completed') {

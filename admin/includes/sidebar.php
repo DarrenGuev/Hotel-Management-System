@@ -29,6 +29,9 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         <a class="nav-link <?php echo $currentPage === 'smsDashboard.php' ? 'active' : ''; ?>" href="smsDashboard.php">
             <i class="bi bi-chat-dots me-2"></i>SMS
         </a>
+        <a class="nav-link <?php echo $currentPage === 'emailDashboard.php' ? 'active' : ''; ?>" href="emailDashboard.php">
+            <i class="bi bi-envelope me-2"></i>Email
+        </a>
         <hr class="text-white-50 mx-3">
         <a class="nav-link" href="../index.php">
             <i class="bi bi-display me-2"></i>View Site
@@ -71,6 +74,9 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             </a>
             <a class="nav-link text-white <?php echo $currentPage === 'smsDashboard.php' ? 'active' : ''; ?>" href="smsDashboard.php">
                 <i class="bi bi-chat-dots me-2"></i>SMS
+            </a>
+            <a class="nav-link text-white <?php echo $currentPage === 'emailDashboard.php' ? 'active' : ''; ?>" href="emailDashboard.php">
+                <i class="bi bi-envelope me-2"></i>Email
             </a>
             <hr class="text-white-50">
             <a class="nav-link text-white" href="../index.php">
