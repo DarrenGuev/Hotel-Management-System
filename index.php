@@ -2,6 +2,15 @@
 include 'dbconnect/connect.php';
 //   $getQuery = "SELECT * FROM students";
 //   $result = executeQuery($getQuery);
+
+// Load recent customer feedbacks for the homepage
+$feedbackQuery = "SELECT f.userName AS username, f.comments AS userReview, f.rating, r.roomName, f.submittedAt FROM feedback f LEFT JOIN rooms r ON f.roomID = r.roomID ORDER BY f.submittedAt DESC LIMIT 8";
+$feedbackResult = $conn->query($feedbackQuery);
+if ($feedbackResult) {
+    $reviews = $feedbackResult;
+} else {
+    $reviews = null; // no feedback table or query failed
+}
 ?>
 
 <!doctype html>
@@ -169,33 +178,46 @@ include 'dbconnect/connect.php';
                 </div>
             </div>
         </div>
-        <?php /* ?> <!--remove nalang yung line nato pag may database na-->
 
-<div class="container mt-5">
-    <div class="row">
-        <?php while($row = mysqli_fetch_assoc($result)) { ?>
-        <div class="col-md-3 mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title fw-bold h-font">
-                        <?php echo $row['username'] ?>
-                    </h5>
-                    <p class="card-text">
-                        <?php echo $row['userReview'] ?>
-                    </p>
-                </div>
+        <div class="container mt-5">
+            <div class="row">
+                <?php if (isset($reviews) && $reviews->num_rows > 0): ?>
+                    <?php while ($row = mysqli_fetch_assoc($reviews)) { ?>
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title fw-bold h-font">
+                                        <?php echo htmlspecialchars($row['username']); ?>
+                                    </h5>
+                                    <?php for ($i = 0; $i < (int)$row['rating']; $i++) {
+                                            echo '<i class="bi bi-star-fill text-warning"></i>';
+                                        } ?>
+                                    <p class="mt-3 card-subtitle mb-2 text-muted">
+                                        Reviewed on <?php echo date("F j, Y", strtotime($row['submittedAt'])); ?>
+                                        <?php if (!empty($row['roomName'])): ?>
+                                            for <?php echo htmlspecialchars($row['roomName']); ?>
+                                        <?php endif; ?>
+                                    </p>
+                                    <h6 class="card-text">
+                                        <?php echo nl2br(htmlspecialchars($row['userReview'])); ?>
+                                    </h6>
+                                </div>
+                            </div>
+                        </div>
+                    <?php } ?>
+                <?php else: ?>
+                    <div class="col-12">
+                        <div class="alert alert-info mb-0">No customer reviews yet. Be the first to <a href="frontend/userFeedback.php">leave a review</a>.</div>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
-        <?php } ?>
-    </div>
-</div>
 
-<?php */ ?> <!--remove nalang yung line nato pag may database na-->
 
         <div class="col-lg-12 text-center my-4">
-            <button class="btn btn-dark shadow-none" data-bs-toggle="modal" data-bs-target="#addReviewModal">
+            <a href="frontend/userFeedback.php" class="btn btn-dark shadow-none">
                 <i class="bi bi-pencil-square me-2"></i>Add Your Review
-            </button>
+            </a>
         </div>
     </div>
 

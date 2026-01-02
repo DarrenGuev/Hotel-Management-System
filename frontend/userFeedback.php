@@ -94,15 +94,7 @@ unset($_SESSION['feedback_success'], $_SESSION['feedback_error']);
                                     placeholder="Enter your full name" required maxlength="300">
                             </div>
 
-                            <!-- User Email -->
-                            <div class="mb-3">
-                                <label for="userEmail" class="form-label">
-                                    <i class="bi bi-envelope-fill me-1"></i>Email Address <span class="text-danger">*</span>
-                                </label>
-                                <input type="email" class="form-control" id="userEmail" name="userEmail"
-                                    placeholder="Enter your email address" required maxlength="200">
-                                <div class="form-text">We'll never share your email with anyone else.</div>
-                            </div>
+
 
                             <!-- Room Selection -->
                             <div class="mb-3">

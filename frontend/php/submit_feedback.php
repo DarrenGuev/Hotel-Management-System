@@ -2,10 +2,15 @@
 session_start();
 include '../../dbconnect/connect.php';
 
+function redirectTo(string $location): void
+{
+    header("Location: {$location}");
+    exit();
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Get and sanitize form data
+    // Get and sanitize form data (email removed for anonymous feedback)
     $userName = trim($_POST['userName'] ?? '');
-    $userEmail = trim($_POST['userEmail'] ?? '');
     $rating = intval($_POST['rating'] ?? 0);
     $roomID = intval($_POST['roomID'] ?? 0);
     $comments = trim($_POST['comments'] ?? '');
@@ -17,9 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = "Please enter a valid name (max 300 characters).";
     }
 
-    if (empty($userEmail) || !filter_var($userEmail, FILTER_VALIDATE_EMAIL) || strlen($userEmail) > 200) {
-        $errors[] = "Please enter a valid email address.";
-    }
+
 
     if ($rating < 1 || $rating > 5) {
         $errors[] = "Please select a rating between 1 and 5 stars.";
@@ -45,29 +48,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        $stmt = $conn->prepare("INSERT INTO feedback (userName, userEmail, rating, roomID, comments) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssiss", $userName, $userEmail, $rating, $roomID, $comments);
+        $stmt = $conn->prepare("INSERT INTO feedback (userName, rating, roomID, comments) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("siss", $userName, $rating, $roomID, $comments);
 
         if ($stmt->execute()) {
             $_SESSION['feedback_success'] = "Thank you for your feedback! Your review has been submitted successfully.";
             $stmt->close();
             $conn->close();
-            header("Location: ../userFeedback.php?success=1");
-            exit();
+            redirectTo("../../index.php");
         } else {
             $_SESSION['feedback_error'] = "An error occurred while submitting your feedback. Please try again.";
             $stmt->close();
             $conn->close();
-            header("Location: ../userFeedback.php?error=1");
-            exit();
+            redirectTo("../userFeedback.php?error=1");
         }
     } else {
         $_SESSION['feedback_error'] = implode("<br>", $errors);
         $conn->close();
-        header("Location: ../userFeedback.php?error=1");
-        exit();
+        redirectTo("../userFeedback.php?error=1");
     }
 } else {
-    header("Location: ../userFeedback.php");
-    exit();
+    redirectTo("../userFeedback.php");
 }
