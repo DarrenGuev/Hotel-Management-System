@@ -18,6 +18,16 @@ if (isset($_SESSION['userID'])) {
 $getRoomTypes = "SELECT * FROM roomtypes ORDER BY roomTypeID";
 $roomTypesResult = executeQuery($getRoomTypes);
 
+// Get all unique amenities/features from the database
+$getAmenitiesQuery = "SELECT DISTINCT f.featureName FROM features f 
+                      INNER JOIN roomfeatures rf ON f.featureId = rf.featureID 
+                      ORDER BY f.featureName";
+$amenitiesResult = executeQuery($getAmenitiesQuery);
+$availableAmenities = [];
+while ($amenity = mysqli_fetch_assoc($amenitiesResult)) {
+    $availableAmenities[] = $amenity['featureName'];
+}
+
 function getRoomFeatures($roomID)
 {
     $query = "SELECT f.featureName FROM features f INNER JOIN roomfeatures rf ON f.featureId = rf.featureID WHERE rf.roomID = " . (int) $roomID;
@@ -81,85 +91,60 @@ function getRoomFeatures($roomID)
                                             <div class="border-bottom pb-3 mb-3">
                                                 <h6 class="fw-semibold mb-3 text-secondary">Room Type</h6>
                                                 <div class="form-check mb-2">
-                                                    <input class="form-check-input" type="checkbox" value="basic"
-                                                        id="typeBasic">
-                                                    <label class="form-check-label small" for="typeBasic">Basic</label>
+                                                    <input class="form-check-input filter-checkbox" type="checkbox" value="basic"
+                                                        id="typeBasicMobile">
+                                                    <label class="form-check-label small" for="typeBasicMobile">Basic</label>
                                                 </div>
                                                 <div class="form-check mb-2">
-                                                    <input class="form-check-input" type="checkbox" value="twin"
-                                                        id="typeTwin">
-                                                    <label class="form-check-label small" for="typeTwin">Twin</label>
+                                                    <input class="form-check-input filter-checkbox" type="checkbox" value="family"
+                                                        id="typeFamilyMobile">
+                                                    <label class="form-check-label small" for="typeFamilyMobile">Family</label>
                                                 </div>
                                                 <div class="form-check mb-2">
-                                                    <input class="form-check-input" type="checkbox" value="deluxe"
-                                                        id="typeDeluxe">
+                                                    <input class="form-check-input filter-checkbox" type="checkbox" value="suite"
+                                                        id="typeSuiteMobile">
+                                                    <label class="form-check-label small" for="typeSuiteMobile">Suite</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input filter-checkbox" type="checkbox" value="deluxe"
+                                                        id="typeDeluxeMobile">
                                                     <label class="form-check-label small"
-                                                        for="typeDeluxe">Deluxe</label>
-                                                </div>
-                                                <div class="form-check mb-2">
-                                                    <input class="form-check-input" type="checkbox" value="single"
-                                                        id="typeSingle">
-                                                    <label class="form-check-label small"
-                                                        for="typeSingle">Single</label>
-                                                </div>
-                                                <div class="form-check mb-2">
-                                                    <input class="form-check-input" type="checkbox" value="family"
-                                                        id="typeFamily">
-                                                    <label class="form-check-label small"
-                                                        for="typeFamily">Family</label>
+                                                        for="typeDeluxeMobile">Deluxe</label>
                                                 </div>
                                             </div>
 
                                             <!-- Price Range -->
                                             <div class="border-bottom pb-3 mb-3">
                                                 <h6 class="fw-semibold mb-3 text-secondary">Price Range (₱)</h6>
-                                                <input type="range" class="form-range" min="1000" max="6000" step="100"
-                                                    id="priceRange" value="3500">
+                                                <input type="range" class="form-range" min="1000" max="20000" step="100"
+                                                    id="priceRangeMobile" value="20000">
                                                 <div class="d-flex justify-content-between small text-muted">
                                                     <span>₱1,000</span>
-                                                    <span>₱6,000</span>
+                                                    <span>₱20,000</span>
                                                 </div>
                                             </div>
 
-                                            <!-- Facilities -->
+                                            <!-- Amenities -->
                                             <div class="border-bottom pb-3 mb-3">
-                                                <h6 class="fw-semibold mb-3 text-secondary">Facilities</h6>
+                                                <h6 class="fw-semibold mb-3 text-secondary">Amenities</h6>
+                                                <?php foreach ($availableAmenities as $amenity) {
+                                                    $amenityId = 'amenity' . str_replace(' ', '', $amenity) . 'Mobile';
+                                                    $amenityValue = strtolower($amenity);
+                                                ?>
                                                 <div class="form-check mb-2">
-                                                    <input class="form-check-input" type="checkbox" value="wifi"
-                                                        id="facilityWifi">
+                                                    <input class="form-check-input filter-checkbox amenity-checkbox" type="checkbox" 
+                                                        value="<?php echo htmlspecialchars($amenityValue); ?>"
+                                                        id="<?php echo htmlspecialchars($amenityId); ?>">
                                                     <label class="form-check-label small"
-                                                        for="facilityWifi">WiFi</label>
+                                                        for="<?php echo htmlspecialchars($amenityId); ?>"><?php echo htmlspecialchars($amenity); ?></label>
                                                 </div>
-                                                <div class="form-check mb-2">
-                                                    <input class="form-check-input" type="checkbox" value="aircon"
-                                                        id="facilityAircon">
-                                                    <label class="form-check-label small"
-                                                        for="facilityAircon">Air-conditioner</label>
-                                                </div>
-                                                <div class="form-check mb-2">
-                                                    <input class="form-check-input" type="checkbox" value="tv"
-                                                        id="facilityTv">
-                                                    <label class="form-check-label small"
-                                                        for="facilityTv">Television</label>
-                                                </div>
-                                                <div class="form-check mb-2">
-                                                    <input class="form-check-input" type="checkbox" value="kitchen"
-                                                        id="facilityKitchen">
-                                                    <label class="form-check-label small"
-                                                        for="facilityKitchen">Kitchen</label>
-                                                </div>
-                                                <div class="form-check mb-2">
-                                                    <input class="form-check-input" type="checkbox" value="parking"
-                                                        id="facilityParking">
-                                                    <label class="form-check-label small"
-                                                        for="facilityParking">Parking</label>
-                                                </div>
+                                                <?php } ?>
                                             </div>
 
                                             <!-- Guest Capacity -->
                                             <div class="pb-3 mb-3">
                                                 <h6 class="fw-semibold mb-3 text-secondary">Guest Capacity</h6>
-                                                <select class="form-select" id="guestCapacity">
+                                                <select class="form-select" id="guestCapacityMobile">
                                                     <option value="">Any</option>
                                                     <option value="1">1 Guest</option>
                                                     <option value="2">2 Guests</option>
@@ -184,59 +169,45 @@ function getRoomFeatures($roomID)
                                     <label class="form-check-label small" for="typeBasic">Basic</label>
                                 </div>
                                 <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" value="twin" id="typeTwin">
-                                    <label class="form-check-label small" for="typeTwin">Twin</label>
+                                    <input class="form-check-input" type="checkbox" value="family" id="typeFamily">
+                                    <label class="form-check-label small" for="typeFamily">Family</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" value="suite" id="typeSuite">
+                                    <label class="form-check-label small" for="typeSuite">Suite</label>
                                 </div>
                                 <div class="form-check mb-2">
                                     <input class="form-check-input" type="checkbox" value="deluxe" id="typeDeluxe">
                                     <label class="form-check-label small" for="typeDeluxe">Deluxe</label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" value="single" id="typeSingle">
-                                    <label class="form-check-label small" for="typeSingle">Single</label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" value="family" id="typeFamily">
-                                    <label class="form-check-label small" for="typeFamily">Family</label>
                                 </div>
                             </div>
 
                             <!-- Price Range -->
                             <div class="border-bottom pb-3 mb-3">
                                 <h6 class="fw-semibold mb-3 text-secondary">Price Range (₱)</h6>
-                                <input type="range" class="form-range" min="1000" max="6000" step="100" id="priceRange"
-                                    value="3500">
+                                <input type="range" class="form-range" min="1000" max="20000" step="100" id="priceRange"
+                                    value="20000">
                                 <div class="d-flex justify-content-between small text-muted">
                                     <span>₱1,000</span>
-                                    <span>₱6,000</span>
+                                    <span>₱20,000</span>
                                 </div>
                             </div>
 
-                            <!-- Facilities -->
+                            <!-- Amenities -->
                             <div class="border-bottom pb-3 mb-3">
-                                <h6 class="fw-semibold mb-3 text-secondary">Facilities</h6>
+                                <h6 class="fw-semibold mb-3 text-secondary">Amenities</h6>
+                                <?php foreach ($availableAmenities as $amenity) {
+                                    $amenityId = 'amenity' . str_replace(' ', '', $amenity);
+                                    $amenityValue = strtolower($amenity);
+                                ?>
                                 <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" value="wifi" id="facilityWifi">
-                                    <label class="form-check-label small" for="facilityWifi">WiFi</label>
+                                    <input class="form-check-input amenity-checkbox" type="checkbox" 
+                                        value="<?php echo htmlspecialchars($amenityValue); ?>" 
+                                        id="<?php echo htmlspecialchars($amenityId); ?>">
+                                    <label class="form-check-label small" 
+                                        for="<?php echo htmlspecialchars($amenityId); ?>"><?php echo htmlspecialchars($amenity); ?></label>
                                 </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" value="aircon" id="facilityAircon">
-                                    <label class="form-check-label small" for="facilityAircon">Air-conditioner</label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" value="tv" id="facilityTv">
-                                    <label class="form-check-label small" for="facilityTv">Television</label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" value="kitchen"
-                                        id="facilityKitchen">
-                                    <label class="form-check-label small" for="facilityKitchen">Kitchen</label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" value="parking"
-                                        id="facilityParking">
-                                    <label class="form-check-label small" for="facilityParking">Parking</label>
-                                </div>
+                                <?php } ?>
                             </div>
 
                             <!-- Guest Capacity -->
@@ -285,7 +256,11 @@ function getRoomFeatures($roomID)
                                         $features[] = $feature['featureName'];
                                     }
                                     ?>
-                                    <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
+                                    <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4 room-card" 
+                                        data-room-type="<?php echo strtolower($row['roomTypeName']); ?>"
+                                        data-price="<?php echo $row['base_price']; ?>"
+                                        data-capacity="<?php echo (int) $row['capacity']; ?>"
+                                        data-features="<?php echo strtolower(implode(',', $features)); ?>">
                                         <div class="card h-100 bg-transparent shadow rounded-3">
                                             <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
                                                 <img src="/HOTEL-MANAGEMENT-SYSTEM/admin/assets/<?php echo htmlspecialchars($row['imagePath']); ?>"
@@ -618,7 +593,192 @@ function getRoomFeatures($roomID)
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
     <script>
+        function initializeFilters() {
+            const roomTypeCheckboxes = document.querySelectorAll('input[id^="type"]');
+            const amenityCheckboxes = document.querySelectorAll('.amenity-checkbox');
+            const priceRanges = document.querySelectorAll('#priceRange, #priceRangeMobile');
+            const guestCapacities = document.querySelectorAll('#guestCapacity, #guestCapacityMobile');
+            
+            priceRanges.forEach(priceRange => {
+                if (priceRange) {
+                    const priceDisplay = document.createElement('div');
+                    priceDisplay.className = 'text-center fw-semibold mb-2';
+                    priceDisplay.id = 'priceDisplay' + (priceRange.id.includes('Mobile') ? 'Mobile' : '');
+                    priceDisplay.textContent = 'Up to ₱' + parseInt(priceRange.value).toLocaleString();
+                    priceRange.parentElement.insertBefore(priceDisplay, priceRange);
+                    
+                    priceRange.addEventListener('input', function() {
+                        priceDisplay.textContent = 'Up to ₱' + parseInt(this.value).toLocaleString();
+                        syncPriceRanges(this);
+                        applyFilters();
+                    });
+                }
+            });
+            
+            roomTypeCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    syncCheckboxes(this);
+                    applyFilters();
+                });
+            });
+            
+            amenityCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    syncCheckboxes(this);
+                    applyFilters();
+                });
+            });
+            
+            guestCapacities.forEach(select => {
+                if (select) {
+                    select.addEventListener('change', function() {
+                        syncGuestCapacity(this);
+                        applyFilters();
+                    });
+                }
+            });
+        }
+        
+        function syncCheckboxes(sourceCheckbox) {
+            const value = sourceCheckbox.value;
+            const isChecked = sourceCheckbox.checked;
+            const isMobile = sourceCheckbox.id.includes('Mobile');
+            const baseId = sourceCheckbox.id.replace('Mobile', '');
+            
+            const targetId = isMobile ? baseId : baseId + 'Mobile';
+            const targetCheckbox = document.getElementById(targetId);
+            
+            if (targetCheckbox) {
+                targetCheckbox.checked = isChecked;
+            }
+        }
+        
+        function syncPriceRanges(sourceRange) {
+            const value = sourceRange.value;
+            const isMobile = sourceRange.id.includes('Mobile');
+            const targetId = isMobile ? 'priceRange' : 'priceRangeMobile';
+            const targetRange = document.getElementById(targetId);
+            
+            if (targetRange) {
+                targetRange.value = value;
+                const displayId = 'priceDisplay' + (isMobile ? '' : 'Mobile');
+                const targetDisplay = document.getElementById(displayId);
+                if (targetDisplay) {
+                    targetDisplay.textContent = 'Up to ₱' + parseInt(value).toLocaleString();
+                }
+            }
+        }
+        
+        function syncGuestCapacity(sourceSelect) {
+            const value = sourceSelect.value;
+            const isMobile = sourceSelect.id.includes('Mobile');
+            const targetId = isMobile ? 'guestCapacity' : 'guestCapacityMobile';
+            const targetSelect = document.getElementById(targetId);
+            
+            if (targetSelect) {
+                targetSelect.value = value;
+            }
+        }
+        
+        function applyFilters() {
+            // Get selected filters (use desktop version as primary)
+            const selectedTypes = Array.from(document.querySelectorAll('input[id^="type"]:not([id*="Mobile"]):checked'))
+                .map(cb => cb.value.toLowerCase());
+            
+            const selectedAmenities = Array.from(document.querySelectorAll('.amenity-checkbox:not([id*="Mobile"]):checked'))
+                .map(cb => cb.value.toLowerCase());
+            
+            const priceRange = document.getElementById('priceRange');
+            const maxPrice = priceRange ? parseFloat(priceRange.value) : Infinity;
+            
+            const guestCapacity = document.getElementById('guestCapacity');
+            const minCapacity = guestCapacity ? parseInt(guestCapacity.value) || 0 : 0;
+            
+            // Get all room cards
+            const roomCards = document.querySelectorAll('.room-card');
+            let visibleCount = 0;
+            
+            roomCards.forEach(card => {
+                const cardType = card.getAttribute('data-room-type');
+                const cardPrice = parseFloat(card.getAttribute('data-price'));
+                const cardCapacity = parseInt(card.getAttribute('data-capacity'));
+                const cardFeatures = card.getAttribute('data-features').split(',').filter(f => f.trim() !== '');
+                
+                let show = true;
+                
+                // Filter by room type
+                if (selectedTypes.length > 0 && !selectedTypes.includes(cardType)) {
+                    show = false;
+                }
+                
+                // Filter by price
+                if (cardPrice > maxPrice) {
+                    show = false;
+                }
+                
+                // Filter by capacity
+                if (minCapacity > 0 && cardCapacity < minCapacity) {
+                    show = false;
+                }
+                
+                // Filter by amenities (all selected amenities must be present)
+                if (selectedAmenities.length > 0) {
+                    const hasAllAmenities = selectedAmenities.every(amenity => 
+                        cardFeatures.some(feature => feature.toLowerCase().includes(amenity))
+                    );
+                    if (!hasAllAmenities) {
+                        show = false;
+                    }
+                }
+                
+                // Show/hide card
+                if (show) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            document.querySelectorAll('[id$="RoomCards"]').forEach(section => {
+                const visibleCards = section.querySelectorAll('.room-card[style="display: block;"]').length;
+                const heading = section.previousElementSibling;
+                
+                if (visibleCards > 0) {
+                    section.style.display = '';
+                    if (heading) heading.style.display = '';
+                } else {
+                    section.style.display = 'none';
+                    if (heading) heading.style.display = 'none';
+                }
+            });
+            
+            if (visibleCount === 0) {
+                showNoResultsMessage();
+            } else {
+                removeNoResultsMessage();
+            }
+        }
+        
+        function showNoResultsMessage() {
+            removeNoResultsMessage();
+            const container = document.querySelector('.col-12.col-lg-9.col-xl-10');
+            const message = document.createElement('div');
+            message.id = 'noResultsMessage';
+            message.className = 'alert alert-info text-center mt-5';
+            message.innerHTML = '<h5>No rooms match your filters</h5><p>Try adjusting your filter criteria</p>';
+            container.appendChild(message);
+        }
+        
+        function removeNoResultsMessage() {
+            const existing = document.getElementById('noResultsMessage');
+            if (existing) existing.remove();
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
+
+            initializeFilters();
+            
             <?php
             mysqli_data_seek($roomTypesResult, 0);
             while ($roomType = mysqli_fetch_assoc($roomTypesResult)) {
@@ -720,9 +880,7 @@ function getRoomFeatures($roomID)
             const chosenBtn = document.querySelector('#paymentModal' + roomID + ' .payment-method-btn[data-method="' + method + '"]');
             if (chosenBtn) chosenBtn.classList.add('active');
 
-            // hide all detail panes then show the one for the chosen method
             document.querySelectorAll('#paymentModal' + roomID + ' .payment-detail').forEach(el => el.style.display = 'none');
-            // show parent container and the specific detail pane
             const paymentContainer = document.getElementById('paymentDetails' + roomID);
             if (paymentContainer) paymentContainer.style.display = 'block';
             const detail = document.getElementById(method + 'Details' + roomID);
@@ -741,7 +899,6 @@ function getRoomFeatures($roomID)
                 btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
             }
 
-            // If PayPal, submit booking via AJAX to create a pending booking, then redirect to PayPal approval
             if (selectedPaymentMethod[roomID] === 'paypal') {
                 const total = document.getElementById('totalPriceInput' + roomID).value;
                 const form = document.getElementById('bookingForm' + roomID);
@@ -750,11 +907,8 @@ function getRoomFeatures($roomID)
                     return;
                 }
 
-                // Build FormData from the existing booking form and add ajax flag
                 const fd = new FormData(form);
                 fd.append('ajax', '1');
-
-                // Ensure paymentMethod is paypal
                 fd.set('paymentMethod', 'paypal');
 
                 fetch('/HOTEL-MANAGEMENT-SYSTEM/frontend/php/process_booking.php', {
@@ -763,7 +917,6 @@ function getRoomFeatures($roomID)
                     credentials: 'same-origin'
                 }).then(r => r.json()).then(data => {
                     if (data && data.success && data.bookingID) {
-                        // Redirect to create order with bookingID so capture can update paymentStatus
                         const url = '/HOTEL-MANAGEMENT-SYSTEM/integrations/paypal/create_order.php?roomID=' + encodeURIComponent(roomID) + '&amount=' + encodeURIComponent(total) + '&bookingID=' + encodeURIComponent(data.bookingID);
                         window.location.href = url;
                     } else {
