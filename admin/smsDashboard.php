@@ -193,6 +193,7 @@ while ($row = mysqli_fetch_assoc($bookingsResult)) {
                         <a class="nav-link text-white" href="features.php"><i class="bi bi-star me-2"></i>Features</a>
                         <a class="nav-link text-white-50 active" href="smsDashboard.php"><i class="bi bi-chat-dots me-2"></i>SMS</a>
                         <hr class="text-white-50">
+                        <a class="nav-link" href="../index.php"><i class="bi bi-display me-2"></i>View Site</a> 
                         <a class="nav-link text-danger" href="../frontend/php/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
                     </nav>
                 </div>
@@ -570,7 +571,7 @@ while ($row = mysqli_fetch_assoc($bookingsResult)) {
 
         document.getElementById('smsMessage').addEventListener('input', function() {
             document.getElementById('charCount').textContent = this.value.length;
-            
+
             if (this.value !== 'Your Booking is Approved.') {
                 this.setCustomValidity('Invalid message');
             } else {
@@ -605,7 +606,7 @@ while ($row = mysqli_fetch_assoc($bookingsResult)) {
                 event.preventDefault();
                 event.stopPropagation();
             }
-            
+
             this.classList.add('was-validated');
         }, false);
     </script>
