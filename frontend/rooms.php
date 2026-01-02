@@ -368,7 +368,7 @@ function getRoomFeatures($roomID)
                                                             id="paymentMethodInput<?php echo $row['roomID']; ?>" value="">
 
                                                         <div class="row">
-                                                            <div class="col-12 col-md-7 justify-content-center text-center">
+                                                            <div class="col-12 col-xl-7 justify-content-center text-center">
                                                                 <img src="/HOTEL-MANAGEMENT-SYSTEM/admin/assets/<?php echo htmlspecialchars($row['imagePath']); ?>"
                                                                     alt="<?php echo htmlspecialchars($row['roomName']); ?>"
                                                                     class="img-fluid rounded-3 mb-3">
@@ -391,7 +391,7 @@ function getRoomFeatures($roomID)
                                                                     </p>
                                                                 </div>
                                                             </div>
-                                                            <div class="col-12 col-md-5">
+                                                            <div class="col-12 col-xl-5">
                                                                 <div class="row">
                                                                     <div class="col-12">
                                                                         <p class="text-start fw-bold mb-1">Guest information</p>
