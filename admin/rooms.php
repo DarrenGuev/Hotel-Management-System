@@ -166,8 +166,20 @@ $rooms = executeQuery($getRooms);
 $getRoomTypes = "SELECT * FROM roomtypes";
 $roomTypes = executeQuery($getRoomTypes);
 
-$getFeatures = "SELECT * FROM features ORDER BY featureId";
+$getFeatures = "SELECT * FROM features ORDER BY category, featureId";
 $features = executeQuery($getFeatures);
+
+// Organize features by category
+$featuresByCategory = [];
+while ($feature = mysqli_fetch_assoc($features)) {
+    $cat = $feature['category'] ?? 'General';
+    if (!isset($featuresByCategory[$cat])) {
+        $featuresByCategory[$cat] = [];
+    }
+    $featuresByCategory[$cat][] = $feature;
+}
+// Reset pointer for later use
+mysqli_data_seek($features, 0);
 
 ?>
 
@@ -181,7 +193,7 @@ $features = executeQuery($getFeatures);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="/HOTEL-MANAGEMENT-SYSTEM/css/style.css">
+    <link rel="stylesheet" href="HOTEL-MANAGEMENT-SYSTEM/css/style.css">
 </head>
 
 <body>
@@ -216,19 +228,20 @@ $features = executeQuery($getFeatures);
                         </button>
                     </li>
                 </ul>
-
-                <table class="table table-hover table-bordered">
+                <div class="row">
+                    <div class="col-12 overflow-auto">
+                        <table class="table table-hover table-bordered">
                     <thead class="table-dark">
                         <tr>
-                            <th scope="col">ID</th>
-                            <th scope="col">Room Type</th>
-                            <th scope="col">Room Name</th>
-                            <th scope="col">Max Occupancy</th>
-                            <th scope="col">Features</th>
-                            <th scope="col">Price</th>
-                            <th scope="col">Quantity</th>
-                            <th scope="col">Room Image</th>
-                            <th scope="col"></th>
+                            <th scope="col" class="text-center align-middle">ID</th>
+                            <th scope="col" class="text-center align-middle">Room Type</th>
+                            <th scope="col" class="text-center align-middle">Room Name</th>
+                            <th scope="col" class="text-center align-middle">Max Occupancy</th>
+                            <th scope="col" class="text-center align-middle">Features</th>
+                            <th scope="col" class="text-center align-middle">Price</th>
+                            <th scope="col" class="text-center align-middle">Quantity</th>
+                            <th scope="col" class="text-center align-middle">Room Image</th>
+                            <th scope="col" class="text-center align-middle"></th>
                         </tr>
                     </thead>
                     <tbody id="roomsTableBody">
@@ -240,8 +253,6 @@ $features = executeQuery($getFeatures);
                             while ($feature = mysqli_fetch_assoc($roomFeaturesResult)) {
                                 $roomFeatures[] = $feature['featureName'];
                             }
-                            
-                            // Get feature IDs for this room (for edit modal)
                             $roomFeatureIdsQuery = "SELECT featureID FROM roomfeatures WHERE roomID = " . (int)$row['roomID'];
                             $roomFeatureIdsResult = executeQuery($roomFeatureIdsQuery);
                             $roomFeatureIds = [];
@@ -327,18 +338,23 @@ $features = executeQuery($getFeatures);
                                                         </div>
                                                         <div class="mb-3">
                                                             <label class="form-label">Room Features</label>
-                                                            <div class="row" id="editRoomFeaturesContainer<?php echo $row['roomID']; ?>">
-                                                                <?php
-                                                                mysqli_data_seek($features, 0);
-                                                                while ($feature = mysqli_fetch_assoc($features)) {
-                                                                    $checked = in_array($feature['featureId'], $roomFeatureIds) ? 'checked' : '';
-                                                                ?>
-                                                                    <div class="col-6">
-                                                                        <div class="form-check">
-                                                                            <input class="form-check-input" type="checkbox" name="editFeatures[]" value="<?php echo $feature['featureId']; ?>" id="editFeature<?php echo $row['roomID'] . '_' . $feature['featureId']; ?>" <?php echo $checked; ?>>
-                                                                            <label class="form-check-label" for="editFeature<?php echo $row['roomID'] . '_' . $feature['featureId']; ?>">
-                                                                                <?php echo htmlspecialchars($feature['featureName']); ?>
-                                                                            </label>
+                                                            <div id="editRoomFeaturesContainer<?php echo $row['roomID']; ?>">
+                                                                <?php foreach ($featuresByCategory as $category => $categoryFeatures) { ?>
+                                                                    <div class="mb-3">
+                                                                        <h6 class="text-muted border-bottom pb-1"><i class="bi bi-tag-fill me-1"></i><?php echo htmlspecialchars($category); ?></h6>
+                                                                        <div class="row">
+                                                                            <?php foreach ($categoryFeatures as $feature) { 
+                                                                                $checked = in_array($feature['featureId'], $roomFeatureIds) ? 'checked' : '';
+                                                                            ?>
+                                                                                <div class="col-6">
+                                                                                    <div class="form-check">
+                                                                                        <input class="form-check-input" type="checkbox" name="editFeatures[]" value="<?php echo $feature['featureId']; ?>" id="editFeature<?php echo $row['roomID'] . '_' . $feature['featureId']; ?>" <?php echo $checked; ?>>
+                                                                                        <label class="form-check-label" for="editFeature<?php echo $row['roomID'] . '_' . $feature['featureId']; ?>">
+                                                                                            <?php echo htmlspecialchars($feature['featureName']); ?>
+                                                                                        </label>
+                                                                                    </div>
+                                                                                </div>
+                                                                            <?php } ?>
                                                                         </div>
                                                                     </div>
                                                                 <?php } ?>
@@ -346,8 +362,16 @@ $features = executeQuery($getFeatures);
                                                             <div class="mt-3 border-top pt-3">
                                                                 <label class="form-label text-muted small">Add Custom Feature</label>
                                                                 <div class="input-group">
+                                                                    <select class="form-select" id="customFeatureCategoryInputEdit<?php echo $row['roomID']; ?>" style="max-width: 140px;">
+                                                                        <option value="Beds">Beds</option>
+                                                                        <option value="Rooms">Rooms</option>
+                                                                        <option value="Bathroom">Bathroom</option>
+                                                                        <option value="Amenities">Amenities</option>
+                                                                        <option value="Entertainment">Entertainment</option>
+                                                                        <option value="General" selected>General</option>
+                                                                    </select>
                                                                     <input type="text" class="form-control" id="customFeatureInputEdit<?php echo $row['roomID']; ?>" placeholder="Enter new feature name">
-                                                                    <button type="button" class="btn btn-outline-success" onclick="addCustomFeature('editRoomFeaturesContainer<?php echo $row['roomID']; ?>', 'customFeatureInputEdit<?php echo $row['roomID']; ?>', 'editFeatures[]', '<?php echo $row['roomID']; ?>')">
+                                                                    <button type="button" class="btn btn-outline-success" onclick="addCustomFeature('editRoomFeaturesContainer<?php echo $row['roomID']; ?>', 'customFeatureInputEdit<?php echo $row['roomID']; ?>', 'editFeatures[]', '<?php echo $row['roomID']; ?>', 'customFeatureCategoryInputEdit<?php echo $row['roomID']; ?>')">
                                                                         <i class="bi bi-plus-lg"></i> Add
                                                                     </button>
                                                                 </div>
@@ -367,6 +391,8 @@ $features = executeQuery($getFeatures);
                         <?php } ?>
                     </tbody>
                 </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -427,17 +453,21 @@ $features = executeQuery($getFeatures);
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Room Features</label>
-                                        <div class="row" id="addRoomFeaturesContainer">
-                                            <?php
-                                            mysqli_data_seek($features, 0);
-                                            while ($feature = mysqli_fetch_assoc($features)) {
-                                            ?>
-                                                <div class="col-6">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" name="features[]" value="<?php echo $feature['featureId']; ?>" id="feature<?php echo $feature['featureId']; ?>">
-                                                        <label class="form-check-label" for="feature<?php echo $feature['featureId']; ?>">
-                                                            <?php echo htmlspecialchars($feature['featureName']); ?>
-                                                        </label>
+                                        <div id="addRoomFeaturesContainer">
+                                            <?php foreach ($featuresByCategory as $category => $categoryFeatures) { ?>
+                                                <div class="mb-3">
+                                                    <h6 class="text-muted border-bottom pb-1"><i class="bi bi-tag-fill me-1"></i><?php echo htmlspecialchars($category); ?></h6>
+                                                    <div class="row">
+                                                        <?php foreach ($categoryFeatures as $feature) { ?>
+                                                            <div class="col-6">
+                                                                <div class="form-check">
+                                                                    <input class="form-check-input" type="checkbox" name="features[]" value="<?php echo $feature['featureId']; ?>" id="feature<?php echo $feature['featureId']; ?>">
+                                                                    <label class="form-check-label" for="feature<?php echo $feature['featureId']; ?>">
+                                                                        <?php echo htmlspecialchars($feature['featureName']); ?>
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                        <?php } ?>
                                                     </div>
                                                 </div>
                                             <?php } ?>
@@ -445,8 +475,16 @@ $features = executeQuery($getFeatures);
                                         <div class="mt-3 border-top pt-3">
                                             <label class="form-label text-muted small">Add Custom Feature</label>
                                             <div class="input-group">
+                                                <select class="form-select" id="customFeatureCategoryInput" style="max-width: 140px;">
+                                                    <option value="Beds">Beds</option>
+                                                    <option value="Rooms">Rooms</option>
+                                                    <option value="Bathroom">Bathroom</option>
+                                                    <option value="Amenities">Amenities</option>
+                                                    <option value="Entertainment">Entertainment</option>
+                                                    <option value="General" selected>General</option>
+                                                </select>
                                                 <input type="text" class="form-control" id="customFeatureInput" placeholder="Enter new feature name">
-                                                <button type="button" class="btn btn-outline-success" onclick="addCustomFeature('addRoomFeaturesContainer', 'customFeatureInput', 'features[]')">
+                                                <button type="button" class="btn btn-outline-success" onclick="addCustomFeature('addRoomFeaturesContainer', 'customFeatureInput', 'features[]', null, 'customFeatureCategoryInput')">
                                                     <i class="bi bi-plus-lg"></i> Add
                                                 </button>
                                             </div>
@@ -495,9 +533,18 @@ $features = executeQuery($getFeatures);
         });
 
         // Function to add custom feature via AJAX
-        function addCustomFeature(containerId, inputId, checkboxName, roomId = null) {
+        function addCustomFeature(containerId, inputId, checkboxName, roomId = null, categorySelectId = null) {
             const input = document.getElementById(inputId);
             const featureName = input.value.trim();
+            
+            // Get category from dropdown if provided
+            let category = 'General';
+            if (categorySelectId) {
+                const categorySelect = document.getElementById(categorySelectId);
+                if (categorySelect) {
+                    category = categorySelect.value;
+                }
+            }
             
             if (!featureName) {
                 alert('Please enter a feature name');
@@ -508,6 +555,7 @@ $features = executeQuery($getFeatures);
             // Create FormData
             const formData = new FormData();
             formData.append('featureName', featureName);
+            formData.append('category', category);
             
             // Send AJAX request
             fetch('php/add_feature.php', {
@@ -517,17 +565,17 @@ $features = executeQuery($getFeatures);
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Add new checkbox to the container
-                    addFeatureCheckbox(containerId, data.featureId, data.featureName, checkboxName, roomId, true);
+                    // Add new checkbox to the container under the correct category section
+                    addFeatureCheckboxToCategory(containerId, data.featureId, data.featureName, data.category, checkboxName, roomId, true);
                     
                     // Also add to all other feature containers on the page
-                    addFeatureToAllContainers(data.featureId, data.featureName, containerId);
+                    addFeatureToAllContainers(data.featureId, data.featureName, data.category, containerId);
                     
                     // Clear input
                     input.value = '';
                     
                     // Show success message
-                    showToast('Feature "' + data.featureName + '" added successfully!', 'success');
+                    showToast('Feature "' + data.featureName + '" added to ' + data.category + ' successfully!', 'success');
                 } else if (data.error === 'Feature already exists') {
                     // Feature exists, just check the existing checkbox if available
                     const existingCheckbox = document.querySelector('#' + containerId + ' input[value="' + data.featureId + '"]');
@@ -536,7 +584,7 @@ $features = executeQuery($getFeatures);
                         showToast('Feature already exists. It has been selected.', 'info');
                     } else {
                         // Add the checkbox since it's not in this container
-                        addFeatureCheckbox(containerId, data.featureId, featureName, checkboxName, roomId, true);
+                        addFeatureCheckboxToCategory(containerId, data.featureId, featureName, data.category || 'General', checkboxName, roomId, true);
                         showToast('Feature already exists. It has been added and selected.', 'info');
                     }
                     input.value = '';
@@ -550,8 +598,8 @@ $features = executeQuery($getFeatures);
             });
         }
         
-        // Function to add feature checkbox to a container
-        function addFeatureCheckbox(containerId, featureId, featureName, checkboxName, roomId = null, isChecked = false) {
+        // Function to add feature checkbox to a specific category section
+        function addFeatureCheckboxToCategory(containerId, featureId, featureName, category, checkboxName, roomId = null, isChecked = false) {
             const container = document.getElementById(containerId);
             if (!container) return;
             
@@ -560,6 +608,29 @@ $features = executeQuery($getFeatures);
             if (existingCheckbox) {
                 if (isChecked) existingCheckbox.checked = true;
                 return;
+            }
+            
+            // Find or create the category section
+            let categorySection = container.querySelector('[data-category="' + category + '"]');
+            
+            if (!categorySection) {
+                // Create new category section
+                categorySection = document.createElement('div');
+                categorySection.className = 'mb-3';
+                categorySection.setAttribute('data-category', category);
+                categorySection.innerHTML = `
+                    <h6 class="text-muted border-bottom pb-1"><i class="bi bi-tag-fill me-1"></i>${escapeHtml(category)}</h6>
+                    <div class="row category-features"></div>
+                `;
+                container.appendChild(categorySection);
+            }
+            
+            // Find the row within the category section
+            let featuresRow = categorySection.querySelector('.category-features') || categorySection.querySelector('.row');
+            if (!featuresRow) {
+                featuresRow = document.createElement('div');
+                featuresRow.className = 'row category-features';
+                categorySection.appendChild(featuresRow);
             }
             
             // Create unique ID for the checkbox
@@ -577,21 +648,26 @@ $features = executeQuery($getFeatures);
                 </div>
             `;
             
-            container.appendChild(colDiv);
+            featuresRow.appendChild(colDiv);
+        }
+        
+        // Function to add feature checkbox to a container (legacy - used for simple append)
+        function addFeatureCheckbox(containerId, featureId, featureName, checkboxName, roomId = null, isChecked = false) {
+            addFeatureCheckboxToCategory(containerId, featureId, featureName, 'General', checkboxName, roomId, isChecked);
         }
         
         // Function to add feature to all containers on the page
-        function addFeatureToAllContainers(featureId, featureName, excludeContainerId) {
+        function addFeatureToAllContainers(featureId, featureName, category, excludeContainerId) {
             // Add to main add room container
             if (excludeContainerId !== 'addRoomFeaturesContainer') {
-                addFeatureCheckbox('addRoomFeaturesContainer', featureId, featureName, 'features[]', null, false);
+                addFeatureCheckboxToCategory('addRoomFeaturesContainer', featureId, featureName, category, 'features[]', null, false);
             }
             
             // Add to all edit room containers
             document.querySelectorAll('[id^="editRoomFeaturesContainer"]').forEach(container => {
                 if (container.id !== excludeContainerId) {
                     const roomId = container.id.replace('editRoomFeaturesContainer', '');
-                    addFeatureCheckbox(container.id, featureId, featureName, 'editFeatures[]', roomId, false);
+                    addFeatureCheckboxToCategory(container.id, featureId, featureName, category, 'editFeatures[]', roomId, false);
                 }
             });
         }

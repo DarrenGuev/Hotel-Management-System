@@ -115,7 +115,7 @@ $countPending = count($pendingBookingsData);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="/HOTEL-MANAGEMENT-SYSTEM/css/style.css">
+    <link rel="stylesheet" href="HOTEL-MANAGEMENT-SYSTEM/css/style.css">
     <style>
         .card-dashboard {
             transition: transform 0.2s, box-shadow 0.2s;
@@ -205,7 +205,7 @@ $countPending = count($pendingBookingsData);
         <div class="row">
             <div class="col-12">
                 <div class="card shadow-sm">
-                    <div class="card-header bg-white">
+                    <div class="card-header">
                         <ul class="nav nav-tabs card-header-tabs" id="adminTabs">
                             <li class="nav-item">
                                 <button class="nav-link active" id="tab-reservations" data-table="reservations" onclick="switchTable('reservations')">

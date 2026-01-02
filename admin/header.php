@@ -27,14 +27,16 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
                         class="bi bi-chat-dots me-2"></i>SMS DASHBOARD</a>
                 <!-- Actions inside collapsed menu on small screens -->
                 <div class="d-flex d-lg-none mt-3">
-                    <?php if ($isLoggedIn){ ?>
+                    <?php if ($isLoggedIn) { ?>
                         <div class="dropdown">
                             <button class="btn btn-outline-dark dropdown-toggle me-2" type="button" id="userDropdownMobile" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-person-circle me-1"></i><?php echo htmlspecialchars($username); ?>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdownMobile">
                                 <li><a class="dropdown-item" href="/HOTEL-MANAGEMENT-SYSTEM/index.php"><i class="bi bi-display me-2"></i>User Side</a></li>
-                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
                                 <li><a class="dropdown-item text-danger" href="/HOTEL-MANAGEMENT-SYSTEM/frontend/php/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                             </ul>
                         </div>
@@ -50,14 +52,16 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
         </div>
 
         <div class="d-none d-lg-flex align-items-center ms-auto">
-            <?php if ($isLoggedIn){ ?>
+            <?php if ($isLoggedIn) { ?>
                 <div class="dropdown">
                     <button class="btn btn-outline-dark dropdown-toggle me-2" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-circle me-1"></i><?php echo htmlspecialchars($username); ?>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li><a class="dropdown-item" href="/HOTEL-MANAGEMENT-SYSTEM/index.php"><i class="bi bi-display me-2"></i>User Side</a></li>
-                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
                         <li><a class="dropdown-item text-danger" href="/HOTEL-MANAGEMENT-SYSTEM/frontend/php/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                     </ul>
                 </div>
@@ -78,12 +82,12 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
         document.documentElement.setAttribute('data-bs-theme', newTheme);
 
         // Update the toggle icons
-        document.querySelectorAll('#mode i, #mode-lg i').forEach(function (icon) {
+        document.querySelectorAll('#mode i, #mode-lg i').forEach(function(icon) {
             icon.className = newTheme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
         });
 
         // Text utilities: ensure consistent colors
-        document.querySelectorAll('.text-black, .text-white').forEach(function (el) {
+        document.querySelectorAll('.text-black, .text-white').forEach(function(el) {
             if (newTheme === 'dark') {
                 el.classList.remove('text-black');
                 el.classList.add('text-white');
@@ -94,7 +98,7 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
         });
 
         // Outline buttons
-        document.querySelectorAll('.btn-outline-dark, .btn-outline-light').forEach(function (el) {
+        document.querySelectorAll('.btn-outline-dark, .btn-outline-light').forEach(function(el) {
             if (newTheme === 'dark') {
                 el.classList.remove('btn-outline-dark');
                 el.classList.add('btn-outline-light');
@@ -105,7 +109,7 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
         });
 
         // Badges: set background and foreground explicitly for readability
-        document.querySelectorAll('.badge').forEach(function (badge) {
+        document.querySelectorAll('.badge').forEach(function(badge) {
             if (newTheme === 'light') {
                 badge.classList.remove('bg-light', 'text-dark');
                 badge.classList.add('bg-dark', 'text-white');
@@ -116,7 +120,7 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
         });
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         const stored = localStorage.getItem('siteMode');
         const current = document.documentElement.getAttribute('data-bs-theme') || 'light';
         if (stored && stored !== current) {
@@ -126,17 +130,18 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
                 if (logoAfter) logoAfter.src = stored === 'dark' ? '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoW.png' : '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoB.png';
             } else {
                 document.documentElement.setAttribute('data-bs-theme', stored);
-                document.querySelectorAll('#mode i, #mode-lg i').forEach(function (icon) {
+                document.querySelectorAll('#mode i, #mode-lg i').forEach(function(icon) {
                     icon.className = stored === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
                 });
-                document.querySelectorAll('.text-black, .text-white').forEach(function (el) {
+                document.querySelectorAll('.text-black, .text-white').forEach(function(el) {
                     el.classList.toggle('text-black');
                     el.classList.toggle('text-white');
                 });
-                document.querySelectorAll('.btn-outline-dark, .btn-outline-light').forEach(function (el) {
+                document.querySelectorAll('.btn-outline-dark, .btn-outline-light').forEach(function(el) {
                     el.classList.toggle('btn-outline-dark');
                     el.classList.toggle('btn-outline-light');
                 });
+
                 function applyLogo(theme) {
                     var logo = document.getElementById('site-logo');
                     if (!logo) return;
@@ -145,15 +150,16 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
                 applyLogo(stored);
             }
         }
+
         function updateStoredModeAndLogo() {
-            setTimeout(function () {
+            setTimeout(function() {
                 const now = document.documentElement.getAttribute('data-bs-theme') || 'light';
                 localStorage.setItem('siteMode', now);
                 var logo = document.getElementById('site-logo');
                 if (logo) logo.src = now === 'dark' ? '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoW.png' : '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoB.png';
             }, 10);
         }
-        document.querySelectorAll('#mode, #mode-lg').forEach(function (btn) {
+        document.querySelectorAll('#mode, #mode-lg').forEach(function(btn) {
             btn.addEventListener('click', updateStoredModeAndLogo);
         });
     });
