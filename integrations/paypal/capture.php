@@ -27,6 +27,12 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Content-Type: application/json',
     'Authorization: Bearer ' . $token
 ]);
+
+// DNS resolution settings
+curl_setopt($ch, CURLOPT_DNS_CACHE_TIMEOUT, 120);
+curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
+curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 $response = curl_exec($ch);
 $err = curl_error($ch);
 $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
