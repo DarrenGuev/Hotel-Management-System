@@ -25,6 +25,14 @@ function paypal_get_access_token() {
     curl_setopt($ch, CURLOPT_USERPWD, $clientId . ':' . $secret);
     curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+    
+    // DNS resolution settings
+    curl_setopt($ch, CURLOPT_DNS_CACHE_TIMEOUT, 120);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+    
+    // Use IPv4 only to avoid IPv6 resolution issues
+    curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 
     $response = curl_exec($ch);
     $err = curl_error($ch);
