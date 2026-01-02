@@ -5,7 +5,7 @@ $data = json_decode($rawData, true);
 
 $timestamp = date("Y-m-d H:i:s");
 
-$logFile = __DIR__ . "/sms_log.txt";
+$logFile = __DIR__ . "/sms_log.php";
 file_put_contents($logFile, "[$timestamp]" . $rawData . PHP_EOL, FILE_APPEND);
 
 // Log to database to keep the SMS Dashboard updated

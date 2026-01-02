@@ -379,10 +379,19 @@ function getBookingRoomFeatures($conn, $roomID) {
     <script>
         function changeMode() {
             const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-            document.documentElement.setAttribute('data-bs-theme', isDark ? 'light' : 'dark');
+            const newTheme = isDark ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-bs-theme', newTheme);
+            
             document.querySelectorAll('#mode i, #mode-lg i').forEach(icon => {
-                icon.className = isDark ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+                icon.className = newTheme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
             });
+
+            // Update logos
+            const logoPath = newTheme === 'dark' ? '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoW.png' : '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoB.png';
+            document.querySelectorAll('#site-logo, #footer-logo').forEach(function (logo) {
+                logo.src = logoPath;
+            });
+
             document.querySelectorAll('.btn-outline-dark, .btn-outline-light').forEach(element => {
                 element.classList.toggle('btn-outline-dark');
                 element.classList.toggle('btn-outline-light');

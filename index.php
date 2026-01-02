@@ -58,59 +58,85 @@ include 'dbconnect/connect.php';
 
         </div>
     </div>
-    <div class="col-lg-12 text-center my-4">
+    <div class="col-lg-12 text-center mt-4 mb-5">
         <a href="frontend/rooms.php" class="btn btn-sm btn-outline-dark rounded-0 fw-bold shadow-none">More Rooms
             >>></a>
     </div>
 
-    <div class="container mb-5">
-        <div class="row align-items-center py-2">
-            <div class="col-12 text-black text-md-start">
-                <h2 class="mt-5 pt-4 mb-2 text-center fw-bold h-font">GALLERY</h2>
-                <div class="mx-auto mt-3 mb-5" style="width: 80px; height: 4px; background-color: #FF9900;"></div>
+    <div class="body bg-body-tertiary pb-5">
+        <div class="container mb-5">
+            <div class="row align-items-center py-2">
+                <div class="col-12 text-black text-md-start">
+                    <h2 class="mt-5 mb-2 text-center fw-bold h-font">GALLERY</h2>
+                    <div class="mx-auto mt-3 mb-5" style="width: 80px; height: 4px; background-color: #FF9900;"></div>
+                </div>
             </div>
-        </div>
 
-        <!--bento box-->
-        <div class="container-fluid px-0">
-            <div class="row g-3">
-                <!--left large-->
-                <div class="col-12 col-md-8">
-                    <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
-                        <img src="images/rooms/basic.jpeg" alt="Gallery 1" class="img-fluid object-fit-cover">
+            <!--bento box-->
+            <div class="container-fluid px-0">
+                <div class="row g-3">
+                    <!--left large-->
+                    <div class="col-12 col-md-8">
+                        <div id="galleryCarousel" class="carousel slide h-100" data-bs-ride="carousel">
+                            <div class="carousel-inner h-100 rounded-3">
+                                <div class="carousel-item active h-100">
+                                    <div class="ratio ratio-4x3 h-100">
+                                        <img src="images/rooms/basic.jpeg" class="d-block w-100 object-fit-cover" alt="Gallery 1">
+                                    </div>
+                                </div>
+                                <div class="carousel-item h-100">
+                                    <div class="ratio ratio-4x3 h-100">
+                                        <img src="images/rooms/special(1).jpg" class="d-block w-100 object-fit-cover" alt="Gallery 2">
+                                    </div>
+                                </div>
+                                <div class="carousel-item h-100">
+                                    <div class="ratio ratio-4x3 h-100">
+                                        <img src="images/rooms/twin_room.jpeg" class="d-block w-100 object-fit-cover" alt="Gallery 3">
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <!--right column with 2 stacked images-->
-                <div class="col-12 col-md-4">
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
-                                <img src="images/rooms/basic.jpeg" alt="Gallery 2" class="img-fluid object-fit-cover">
+                    <!--right column with 2 stacked images-->
+                    <div class="col-12 col-md-4">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
+                                    <img src="images/rooms/special(2).jpeg" alt="Gallery 2" class="img-fluid object-fit-cover">
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
+                                    <img src="images/rooms/family_rooms/F(1).jpg" alt="Gallery 3" class="img-fluid object-fit-cover">
+                                </div>
                             </div>
                         </div>
-                        <div class="col-12">
-                            <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
-                                <img src="images/rooms/basic.jpeg" alt="Gallery 3" class="img-fluid object-fit-cover">
-                            </div>
+                    </div>
+                </div>
+                <!--bottom row with 3 images-->
+                <div class="row g-3 mt-0">
+                    <div class="col-12 col-md-4">
+                        <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
+                            <img src="images/rooms/family_rooms/F(3).jpeg" alt="Gallery 4" class="img-fluid object-fit-cover">
                         </div>
                     </div>
-                </div>
-            </div>
-            <!--bottom row with 3 images-->
-            <div class="row g-3 mt-0">
-                <div class="col-12 col-md-4">
-                    <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
-                        <img src="images/rooms/basic.jpeg" alt="Gallery 4" class="img-fluid object-fit-cover">
+                    <div class="col-12 col-md-4">
+                        <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
+                            <img src="images/rooms/single_rooms/(1).jpg" alt="Gallery 5" class="img-fluid object-fit-cover">
+                        </div>
                     </div>
-                </div>
-                <div class="col-12 col-md-4">
-                    <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
-                        <img src="images/rooms/basic.jpeg" alt="Gallery 5" class="img-fluid object-fit-cover">
-                    </div>
-                </div>
-                <div class="col-12 col-md-4">
-                    <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
-                        <img src="images/rooms/basic.jpeg" alt="Gallery 6" class="img-fluid object-fit-cover">
+                    <div class="col-12 col-md-4">
+                        <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
+                            <img src="images/rooms/single_rooms/(2).jpg" alt="Gallery 6" class="img-fluid object-fit-cover">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -129,20 +155,21 @@ include 'dbconnect/connect.php';
     <div class="container mt-5">
         <div class="row">
             <div class="col">
-            <!-- API para sa events nina jana dito ilalagay -->
+                <!-- API para sa events nina jana dito ilalagay -->
             </div>
         </div>
     </div>
 
-    <div class="container">
-        <div class="row">
-            <div class="col">
-                <h2 class="mt-5 pt-4 mb-2 text-center fw-bold h-font">CUSTOMER REVIEWS</h2>
-                <div class="mx-auto mt-3 mb-5" style="width: 80px; height: 4px; background-color: #FF9900;"></div>
+    <div class="body bg-body-tertiary pb-5">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <h2 class="mt-5 pt-4 mb-2 text-center fw-bold h-font">CUSTOMER REVIEWS</h2>
+                    <div class="mx-auto mt-3 mb-5" style="width: 80px; height: 4px; background-color: #FF9900;"></div>
+                </div>
             </div>
         </div>
-    </div>
-<?php /* ?> <!--remove nalang yung line nato pag may database na-->
+        <?php /* ?> <!--remove nalang yung line nato pag may database na-->
 
 <div class="container mt-5">
     <div class="row">
@@ -165,10 +192,11 @@ include 'dbconnect/connect.php';
 
 <?php */ ?> <!--remove nalang yung line nato pag may database na-->
 
-    <div class="col-lg-12 text-center my-4">
-        <button class="btn btn-dark shadow-none" data-bs-toggle="modal" data-bs-target="#addReviewModal">
-            <i class="bi bi-pencil-square me-2"></i>Add Your Review
-        </button>
+        <div class="col-lg-12 text-center my-4">
+            <button class="btn btn-dark shadow-none" data-bs-toggle="modal" data-bs-target="#addReviewModal">
+                <i class="bi bi-pencil-square me-2"></i>Add Your Review
+            </button>
+        </div>
     </div>
 
     <div class="container" id="about">
@@ -187,39 +215,32 @@ include 'dbconnect/connect.php';
             <div class="col-12 col-lg-5">
                 <div
                     class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start text-center text-sm-start">
-                    <div class="rounded-circle overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
+                    <div class="rounded-5 overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
                         style="width: 200px; height: 200px;">
-                        <img src="images/rooms/basic.jpeg" alt="..." class="img-fluid object-fit-cover w-100 h-100"
-                            style="filter: grayscale(100%);">
+                        <img src="images/loginRegisterImg/img.jpg" alt="..." class="img-fluid object-fit-cover w-100 h-100">
                     </div>
                     <div class="ms-sm-4">
                         <h5 class="fw-bold text-uppercase text-secondary mb-3" style="letter-spacing: 2px;">A
                             Little
                             About Us</h5>
-                        <p class="text-muted mb-0">Morbi leo risus, porta ac consectetur ac, vesti bulum at
-                            eros. Fusce
-                            dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum
-                            massa justo
-                            sit amet risus. Lorem ipsum dolor sit amet, consectetur.</p>
+                        <p class="text-muted mb-0">TravelMates is a web-based booking system designed to automate and simplify hotel operations, particularly room reservations. The system allows customers to view available rooms, make bookings online, and receive booking confirmations, while enabling hotel staff and administrators to manage reservations efficiently.</p>
                     </div>
                 </div>
             </div>
             <div class="col-12 col-lg-5">
                 <div
                     class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start text-center text-sm-start">
-                    <div class="rounded-circle overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
+                    <div class="rounded-5 overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
                         style="width: 200px; height: 200px;">
-                        <img src="images/loginRegisterImg/img.jpg" alt="..."
+                        <img src="images/loginRegisterImg/evenzalogo.png" alt="..."
                             class="img-fluid object-fit-cover w-100 h-100" style="filter: grayscale(100%);">
                     </div>
                     <div class="ms-sm-4">
                         <h5 class="fw-bold text-uppercase text-secondary mb-3" style="letter-spacing: 2px;">Our
                             Collaborator</h5>
-                        <p class="text-muted mb-0">Morbi leo risus, porta ac consectetur ac, vesti bulum at
-                            eros. Fusce
-                            dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum
-                            massa justo
-                            sit amet risus. Lorem ipsum dolor sit amet, consectetur.</p>
+                        <p class="text-muted mb-0">EVENZA is a premium event reservation and ticketing platform focused on delivering seamless and well-organized hotel-hosted events. We aim to connect guests with carefully curated experiences through a secure and user-friendly digital system.
+
+                            By combining modern technology with professional event management, EVENZA helps organizers efficiently manage reservations, service packages, and guest experiences while ensuring convenience and reliability for every attendee.</p>
                     </div>
                 </div>
             </div>
@@ -237,14 +258,13 @@ include 'dbconnect/connect.php';
     <script src="js/ourRooms.js"></script>
     <script src="js/members.js"></script>
     <script>
-
         var ourRoomsContainer = document.getElementById("ourRoomsContainer");
         for (var i = 0; i < ourRooms.length; i++) {
             ourRoomsContainer.innerHTML += `
             <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4">
                 <div class="card h-100 bg-transparent shadow rounded-3">
                     <div class="ratio ratio-4x3 overflow-hidden rounded-top-3">
-                        <img src="images/rooms/`+ ourRooms[i].images + `" alt="..." class="img-fluid">
+                        <img src="images/rooms/` + ourRooms[i].images + `" alt="..." class="img-fluid">
                     </div>
                     <div class="card-body">
                         <h5 class="card-title">` + ourRooms[i].name + `</h5>
@@ -262,7 +282,7 @@ include 'dbconnect/connect.php';
                 <div class="card h-100 bg-transparent border-0 rounded-3 align-items-center">
                     <div class="rounded-circle overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
                         style="width: 200px; height: 200px;">
-                        <img src="images/members-img/`+ members[i].images + `" alt="..."
+                        <img src="images/members-img/` + members[i].images + `" alt="..."
                             class="img-fluid object-fit-cover w-100 h-100">
                     </div>
                     <div class="card-body">
@@ -275,9 +295,17 @@ include 'dbconnect/connect.php';
 
         function changeMode() {
             const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-            document.documentElement.setAttribute('data-bs-theme', isDark ? 'light' : 'dark');
+            const newTheme = isDark ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-bs-theme', newTheme);
+
             document.querySelectorAll('#mode i, #mode-lg i').forEach(icon => {
-                icon.className = isDark ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
+                icon.className = newTheme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+            });
+
+            // Update logos
+            const logoPath = newTheme === 'dark' ? '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoW.png' : '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoB.png';
+            document.querySelectorAll('#site-logo, #footer-logo').forEach(function(logo) {
+                logo.src = logoPath;
             });
 
             document.querySelectorAll('.text-black, .text-white').forEach(element => {
