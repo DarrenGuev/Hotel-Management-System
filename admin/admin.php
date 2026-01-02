@@ -100,10 +100,21 @@ while ($booking = mysqli_fetch_assoc($pendingBookingsResult)) {
     $pendingBookingsData[] = $booking;
 }
 
+$getCompletedBookings = "SELECT bookings.*, rooms.roomName, roomtypes.roomType, users.firstName, users.lastName, users.email AS userEmail 
+                        FROM bookings INNER JOIN rooms ON bookings.roomID = rooms.roomID INNER JOIN roomtypes ON rooms.roomTypeId = roomtypes.roomTypeID
+                        INNER JOIN users ON bookings.userID = users.userID WHERE bookings.bookingStatus = 'completed' ORDER BY bookings.createdAt DESC";
+$completedBookingsResult = executeQuery($getCompletedBookings);
+
+$completedBookingsData = [];
+while ($booking = mysqli_fetch_assoc($completedBookingsResult)) {
+    $completedBookingsData[] = $booking;
+}
+
 $countAllBookings = count($allBookingsData);
 $countCustomers = count($customersData);
 $countConfirmed = count($confirmedBookingsData);
 $countPending = count($pendingBookingsData);
+$countCompleted = count($completedBookingsData);
 ?>
 <!doctype html>
 <html lang="en">
@@ -112,99 +123,98 @@ $countPending = count($pendingBookingsData);
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>TravelMates - Admin Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="HOTEL-MANAGEMENT-SYSTEM/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
     <style>
-        .card-dashboard {
-            transition: transform 0.2s, box-shadow 0.2s;
+        .stat-card {
             cursor: pointer;
         }
-        .card-dashboard:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-        .card-dashboard.active {
+        .stat-card.active {
             border: 3px solid #212529 !important;
         }
     </style>
 </head>
 
-<body>
-    <?php include 'header.php'; ?>    
-
-    <?php if (isset($_GET['success'])): ?>
-        <div class="container mt-5 pt-4">
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="bi bi-check-circle me-2"></i><?php echo htmlspecialchars($_GET['success']); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        </div>
-    <?php endif; ?>
-
-    <?php if (isset($_GET['error'])): ?>
-        <div class="container mt-5 pt-4">
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-circle me-2"></i><?php echo htmlspecialchars($_GET['error']); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        </div>
-    <?php endif; ?>
-
-    <!-- Dashboard Cards -->
-    <div class="container mt-5 pt-5">
-        <div class="row mb-4">
-            <div class="col-12">
-                <h2 class="fw-bold">Admin Dashboard</h2>
-                <p class="text-muted">Welcome back, <?php echo htmlspecialchars($_SESSION['firstName']); ?>!</p>
-            </div>
-        </div>
-        <div class="row g-4">
-            <div class="col-6 col-md-3">
-                <div class="card card-dashboard text-bg-primary h-100" data-table="reservations" onclick="switchTable('reservations')">
-                    <div class="card-body text-center py-4">
-                        <i class="bi bi-calendar-check display-4"></i>
-                        <h3 class="fw-bold mt-2"><?php echo $countAllBookings; ?></h3>
-                        <p class="mb-0">All Reservations</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="card card-dashboard text-bg-warning h-100" data-table="customers" onclick="switchTable('customers')">
-                    <div class="card-body text-center py-4">
-                        <i class="bi bi-people display-4"></i>
-                        <h3 class="fw-bold mt-2"><?php echo $countCustomers; ?></h3>
-                        <p class="mb-0">Customers</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="card card-dashboard text-bg-success h-100" data-table="confirmed" onclick="switchTable('confirmed')">
-                    <div class="card-body text-center py-4">
-                        <i class="bi bi-check-circle display-4"></i>
-                        <h3 class="fw-bold mt-2"><?php echo $countConfirmed; ?></h3>
-                        <p class="mb-0">Confirmed</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="card card-dashboard text-bg-danger h-100" data-table="pending" onclick="switchTable('pending')">
-                    <div class="card-body text-center py-4">
-                        <i class="bi bi-clock display-4"></i>
-                        <h3 class="fw-bold mt-2"><?php echo $countPending; ?></h3>
-                        <p class="mb-0">Pending</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Data Table Section -->
-    <div class="container-fluid my-5" id="tableSection">
+<body class="bg-light">
+    <div class="container-fluid">
         <div class="row">
-            <div class="col-12">
-                <div class="card shadow-sm">
+            <?php include 'includes/sidebar.php'; ?>
+
+            <!-- Main Content -->
+            <div class="col-12 col-lg-10 p-3 p-lg-4">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h2>Admin Dashboard</h2>
+                    <p>Welcome back, <?php echo htmlspecialchars($_SESSION['firstName'] ?? 'Admin'); ?>!</p>
+                </div>
+
+                <!-- Alert Messages -->
+                <?php if (isset($_GET['success'])): ?>
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle me-2"></i><?php echo htmlspecialchars($_GET['success']); ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (isset($_GET['error'])): ?>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-circle me-2"></i><?php echo htmlspecialchars($_GET['error']); ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                <?php endif; ?>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-6 col-md-3 col-xl">
+                        <div class="card stat-card text-bg-primary h-100" data-table="reservations" onclick="switchTable('reservations')">
+                            <div class="card-body text-center">
+                                <i class="bi bi-calendar-check display-6"></i>
+                                <h3 class="fw-bold mt-2"><?php echo $countAllBookings; ?></h3>
+                                <small>All Reservations</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 col-xl">
+                        <div class="card stat-card text-bg-warning h-100" data-table="customers" onclick="switchTable('customers')">
+                            <div class="card-body text-center">
+                                <i class="bi bi-people display-6"></i>
+                                <h3 class="fw-bold mt-2"><?php echo $countCustomers; ?></h3>
+                                <small>Customers</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 col-xl">
+                        <div class="card stat-card text-bg-success h-100" data-table="confirmed" onclick="switchTable('confirmed')">
+                            <div class="card-body text-center">
+                                <i class="bi bi-check-circle display-6"></i>
+                                <h3 class="fw-bold mt-2"><?php echo $countConfirmed; ?></h3>
+                                <small>Confirmed</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 col-xl">
+                        <div class="card stat-card text-bg-danger h-100" data-table="pending" onclick="switchTable('pending')">
+                            <div class="card-body text-center">
+                                <i class="bi bi-clock display-6"></i>
+                                <h3 class="fw-bold mt-2"><?php echo $countPending; ?></h3>
+                                <small>Pending</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 col-xl">
+                        <div class="card stat-card text-bg-info h-100" data-table="completed" onclick="switchTable('completed')">
+                            <div class="card-body text-center">
+                                <i class="bi bi-flag display-6"></i>
+                                <h3 class="fw-bold mt-2"><?php echo $countCompleted; ?></h3>
+                                <small>Completed</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Table Section -->
+                <div class="card" id="tableSection">
                     <div class="card-header">
                         <ul class="nav nav-tabs card-header-tabs" id="adminTabs">
                             <li class="nav-item">
@@ -225,6 +235,11 @@ $countPending = count($pendingBookingsData);
                             <li class="nav-item">
                                 <button class="nav-link" id="tab-pending" data-table="pending" onclick="switchTable('pending')">
                                     <i class="bi bi-clock me-1"></i>Pending
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" id="tab-completed" data-table="completed" onclick="switchTable('completed')">
+                                    <i class="bi bi-flag me-1"></i>Completed
                                 </button>
                             </li>
                         </ul>
@@ -321,6 +336,7 @@ $countPending = count($pendingBookingsData);
         const allBookingsData = <?php echo json_encode($allBookingsData); ?>;
         const confirmedBookingsData = <?php echo json_encode($confirmedBookingsData); ?>;
         const pendingBookingsData = <?php echo json_encode($pendingBookingsData); ?>;
+        const completedBookingsData = <?php echo json_encode($completedBookingsData); ?>;
 
         function getStatusBadge(status) {
             const badges = {
@@ -464,6 +480,11 @@ $countPending = count($pendingBookingsData);
                 headers: ['#', 'Guest', 'Room', 'Check-In', 'Check-Out', 'Total', 'Status', 'Payment', 'Actions'],
                 getData: () => pendingBookingsData,
                 renderRow: (booking, index) => tableConfigs.reservations.renderRow(booking, index)
+            },
+            completed: {
+                headers: ['#', 'Guest', 'Room', 'Check-In', 'Check-Out', 'Total', 'Status', 'Payment', 'Actions'],
+                getData: () => completedBookingsData,
+                renderRow: (booking, index) => tableConfigs.reservations.renderRow(booking, index)
             }
         };
 
@@ -485,8 +506,8 @@ $countPending = count($pendingBookingsData);
                 `;
             }
 
-            document.querySelectorAll('.card-dashboard').forEach(card => card.classList.remove('active'));
-            document.querySelector(`.card-dashboard[data-table="${tableType}"]`)?.classList.add('active');
+            document.querySelectorAll('.stat-card').forEach(card => card.classList.remove('active'));
+            document.querySelector(`.stat-card[data-table="${tableType}"]`)?.classList.add('active');
 
             document.querySelectorAll('#adminTabs .nav-link').forEach(tab => tab.classList.remove('active'));
             document.getElementById('tab-' + tableType)?.classList.add('active');

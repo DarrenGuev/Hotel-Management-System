@@ -77,6 +77,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         
         $message = "Booking marked as completed!";
         $messageType = "info";
+    } elseif ($action === 'edit') {
+        $newStatus = $_POST['newStatus'];
+        $newPaymentStatus = $_POST['newPaymentStatus'];
+        
+        // Validate status values
+        $validStatuses = ['pending', 'confirmed', 'cancelled', 'completed'];
+        $validPaymentStatuses = ['pending', 'paid', 'refunded'];
+        
+        if (in_array($newStatus, $validStatuses) && in_array($newPaymentStatus, $validPaymentStatuses)) {
+            $updateBooking = $conn->prepare("UPDATE bookings SET bookingStatus = ?, paymentStatus = ?, updatedAt = NOW() WHERE bookingID = ?");
+            $updateBooking->bind_param("ssi", $newStatus, $newPaymentStatus, $bookingID);
+            $updateBooking->execute();
+            
+            $message = "Booking updated successfully!";
+            $messageType = "success";
+        } else {
+            $message = "Invalid status value!";
+            $messageType = "danger";
+        }
     }
 }
 
@@ -108,67 +127,24 @@ $countCompleted = executeQuery("SELECT COUNT(*) as count FROM bookings WHERE boo
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TravelMates Admin - Manage Bookings</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>TravelMates - Manage Bookings</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <style>
-        body { font-family: 'Poppins', sans-serif; }
-        .sidebar {
-            min-height: 100vh;
-            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-        }
-        .sidebar .nav-link {
-            color: rgba(255,255,255,0.7);
-            padding: 12px 20px;
-            margin: 4px 12px;
-            border-radius: 8px;
-        }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active {
-            color: #fff;
-            background: rgba(255,255,255,0.1);
-        }
-        .stat-card {
-            border-radius: 12px;
-            border: none;
-            transition: transform 0.2s;
-        }
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
 </head>
 
 <body class="bg-light">
     <div class="container-fluid">
         <div class="row">
-            <!-- Sidebar -->
-            <div class="col-12 col-lg-2 px-0 sidebar">
-                <div class="p-4 text-center">
-                    <h4 class="text-white fw-bold">TravelMates</h4>
-                    <small class="text-white-50">Admin Panel</small>
-                </div>
-                <nav class="nav flex-column">
-                    <a class="nav-link" href="admin.php"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
-                    <a class="nav-link" href="rooms.php"><i class="bi bi-door-open me-2"></i>Rooms</a>
-                    <a class="nav-link active" href="manage_bookings.php"><i class="bi bi-calendar-check me-2"></i>Bookings</a>
-                    <a class="nav-link" href="users.php"><i class="bi bi-people me-2"></i>Users</a>
-                    <hr class="text-white-50 mx-3">
-                    <a class="nav-link text-danger" href="../frontend/php/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
-                </nav>
-            </div>
+            <?php include 'includes/sidebar.php'; ?>
 
-            <!-- Main Content -->
-            <div class="col-12 col-lg-10 p-4">
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <h2 class="fw-bold">Manage Bookings</h2>
-                        <p class="text-muted">View and manage all customer bookings</p>
-                    </div>
+            <div class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="page-header">
+                    <h2>Manage Bookings</h2>
+                    <p>View and manage all customer bookings</p>
                 </div>
 
-                <!-- Alert Messages -->
                 <?php if (isset($message)): ?>
                 <div class="row">
                     <div class="col-12">
@@ -180,56 +156,64 @@ $countCompleted = executeQuery("SELECT COUNT(*) as count FROM bookings WHERE boo
                 </div>
                 <?php endif; ?>
 
-                <!-- Stats Cards -->
                 <div class="row g-4 mb-4">
                     <div class="col-6 col-md-3 col-xl">
-                        <div class="card stat-card bg-primary text-white">
-                            <div class="card-body text-center">
-                                <i class="bi bi-calendar3 display-6"></i>
-                                <h3 class="fw-bold mt-2"><?php echo $countAll; ?></h3>
-                                <small>Total Bookings</small>
+                        <a href="?status=all" class="text-decoration-none">
+                            <div class="card stat-card bg-primary text-white <?php echo $statusFilter === 'all' ? 'active' : ''; ?>">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-calendar3 display-6"></i>
+                                    <h3 class="fw-bold mt-2"><?php echo $countAll; ?></h3>
+                                    <small>Total Bookings</small>
+                                </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                     <div class="col-6 col-md-3 col-xl">
-                        <div class="card stat-card bg-warning text-dark">
-                            <div class="card-body text-center">
-                                <i class="bi bi-hourglass-split display-6"></i>
-                                <h3 class="fw-bold mt-2"><?php echo $countPending; ?></h3>
-                                <small>Pending</small>
+                        <a href="?status=pending" class="text-decoration-none">
+                            <div class="card stat-card bg-warning text-dark <?php echo $statusFilter === 'pending' ? 'active' : ''; ?>">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-hourglass-split display-6"></i>
+                                    <h3 class="fw-bold mt-2"><?php echo $countPending; ?></h3>
+                                    <small>Pending</small>
+                                </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                     <div class="col-6 col-md-3 col-xl">
-                        <div class="card stat-card bg-success text-white">
-                            <div class="card-body text-center">
-                                <i class="bi bi-check-circle display-6"></i>
-                                <h3 class="fw-bold mt-2"><?php echo $countConfirmed; ?></h3>
-                                <small>Confirmed</small>
+                        <a href="?status=confirmed" class="text-decoration-none">
+                            <div class="card stat-card bg-success text-white <?php echo $statusFilter === 'confirmed' ? 'active' : ''; ?>">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-check-circle display-6"></i>
+                                    <h3 class="fw-bold mt-2"><?php echo $countConfirmed; ?></h3>
+                                    <small>Confirmed</small>
+                                </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                     <div class="col-6 col-md-3 col-xl">
-                        <div class="card stat-card bg-danger text-white">
-                            <div class="card-body text-center">
-                                <i class="bi bi-x-circle display-6"></i>
-                                <h3 class="fw-bold mt-2"><?php echo $countCancelled; ?></h3>
-                                <small>Cancelled</small>
+                        <a href="?status=cancelled" class="text-decoration-none">
+                            <div class="card stat-card bg-danger text-white <?php echo $statusFilter === 'cancelled' ? 'active' : ''; ?>">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-x-circle display-6"></i>
+                                    <h3 class="fw-bold mt-2"><?php echo $countCancelled; ?></h3>
+                                    <small>Cancelled</small>
+                                </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                     <div class="col-6 col-md-3 col-xl">
-                        <div class="card stat-card bg-info text-white">
-                            <div class="card-body text-center">
-                                <i class="bi bi-flag display-6"></i>
-                                <h3 class="fw-bold mt-2"><?php echo $countCompleted; ?></h3>
-                                <small>Completed</small>
+                        <a href="?status=completed" class="text-decoration-none">
+                            <div class="card stat-card bg-info text-white <?php echo $statusFilter === 'completed' ? 'active' : ''; ?>">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-flag display-6"></i>
+                                    <h3 class="fw-bold mt-2"><?php echo $countCompleted; ?></h3>
+                                    <small>Completed</small>
+                                </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                 </div>
 
-                <!-- Filter Tabs -->
                 <div class="row mb-4">
                     <div class="col-12">
                         <div class="card shadow-sm border-0">
@@ -256,7 +240,6 @@ $countCompleted = executeQuery("SELECT COUNT(*) as count FROM bookings WHERE boo
                     </div>
                 </div>
 
-                <!-- Bookings Table -->
                 <div class="row">
                     <div class="col-12">
                         <div class="card shadow-sm border-0">
@@ -293,26 +276,35 @@ $countCompleted = executeQuery("SELECT COUNT(*) as count FROM bookings WHERE boo
                                                 };
                                             ?>
                                             <tr>
-                                                <td><strong>#<?php echo $booking['bookingID']; ?></strong></td>
+                                                <td>
+                                                    <strong>#<?php echo $booking['bookingID']; ?></strong>
+                                                </td>
+                                                
                                                 <td>
                                                     <div>
                                                         <strong><?php echo htmlspecialchars($booking['firstName'] . ' ' . $booking['lastName']); ?></strong>
                                                         <br><small class="text-muted"><?php echo htmlspecialchars($booking['email']); ?></small>
                                                     </div>
                                                 </td>
+
                                                 <td>
                                                     <div>
                                                         <strong><?php echo htmlspecialchars($booking['roomName']); ?></strong>
                                                         <br><small class="text-muted"><?php echo htmlspecialchars($booking['roomType']); ?></small>
                                                     </div>
                                                 </td>
+
                                                 <td>
                                                     <small>
                                                         <?php echo date('M d', strtotime($booking['checkInDate'])); ?> - 
                                                         <?php echo date('M d, Y', strtotime($booking['checkOutDate'])); ?>
                                                     </small>
                                                 </td>
-                                                <td><strong>₱<?php echo number_format($booking['totalPrice'], 2); ?></strong></td>
+
+                                                <td>
+                                                    <strong>₱<?php echo number_format($booking['totalPrice'], 2); ?></strong>
+                                                </td>
+
                                                 <td>
                                                     <span class="badge <?php echo $paymentBadgeClass; ?>">
                                                         <?php echo ucfirst($booking['paymentStatus']); ?>
@@ -335,11 +327,13 @@ $countCompleted = executeQuery("SELECT COUNT(*) as count FROM bookings WHERE boo
                                                         ?>
                                                     </small>
                                                 </td>
+
                                                 <td>
                                                     <span class="badge <?php echo $statusBadgeClass; ?>">
                                                         <?php echo ucfirst($booking['bookingStatus']); ?>
                                                     </span>
                                                 </td>
+
                                                 <td>
                                                     <div class="btn-group btn-group-sm">
                                                         <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#viewModal<?php echo $booking['bookingID']; ?>">
@@ -370,6 +364,12 @@ $countCompleted = executeQuery("SELECT COUNT(*) as count FROM bookings WHERE boo
                                                                 </button>
                                                             </form>
                                                         <?php endif; ?>
+                                                        <button class="btn btn-outline-secondary" 
+                                                                data-bs-toggle="modal" 
+                                                                data-bs-target="#editModal<?php echo $booking['bookingID']; ?>"
+                                                                title="Edit Booking">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -420,6 +420,62 @@ $countCompleted = executeQuery("SELECT COUNT(*) as count FROM bookings WHERE boo
                                                         <div class="modal-footer">
                                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                                         </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Edit Modal -->
+                                            <div class="modal fade" id="editModal<?php echo $booking['bookingID']; ?>" tabindex="-1">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Edit Booking #<?php echo $booking['bookingID']; ?></h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <form method="POST">
+                                                            <div class="modal-body">
+                                                                <input type="hidden" name="bookingID" value="<?php echo $booking['bookingID']; ?>">
+                                                                <input type="hidden" name="action" value="edit">
+                                                                
+                                                                <div class="mb-3">
+                                                                    <label class="form-label fw-bold">Guest</label>
+                                                                    <p class="form-control-plaintext"><?php echo htmlspecialchars($booking['firstName'] . ' ' . $booking['lastName']); ?></p>
+                                                                </div>
+                                                                
+                                                                <div class="mb-3">
+                                                                    <label class="form-label fw-bold">Room</label>
+                                                                    <p class="form-control-plaintext"><?php echo htmlspecialchars($booking['roomName']); ?> (<?php echo htmlspecialchars($booking['roomType']); ?>)</p>
+                                                                </div>
+                                                                
+                                                                <div class="mb-3">
+                                                                    <label for="newStatus<?php echo $booking['bookingID']; ?>" class="form-label fw-bold">Booking Status</label>
+                                                                    <select class="form-select" id="newStatus<?php echo $booking['bookingID']; ?>" name="newStatus" required>
+                                                                        <option value="pending" <?php echo $booking['bookingStatus'] === 'pending' ? 'selected' : ''; ?>>Pending</option>
+                                                                        <option value="confirmed" <?php echo $booking['bookingStatus'] === 'confirmed' ? 'selected' : ''; ?>>Confirmed</option>
+                                                                        <option value="cancelled" <?php echo $booking['bookingStatus'] === 'cancelled' ? 'selected' : ''; ?>>Cancelled</option>
+                                                                        <option value="completed" <?php echo $booking['bookingStatus'] === 'completed' ? 'selected' : ''; ?>>Completed</option>
+                                                                    </select>
+                                                                </div>
+                                                                
+                                                                <div class="mb-3">
+                                                                    <label for="newPaymentStatus<?php echo $booking['bookingID']; ?>" class="form-label fw-bold">Payment Status</label>
+                                                                    <select class="form-select" id="newPaymentStatus<?php echo $booking['bookingID']; ?>" name="newPaymentStatus" required>
+                                                                        <option value="pending" <?php echo $booking['paymentStatus'] === 'pending' ? 'selected' : ''; ?>>Pending</option>
+                                                                        <option value="paid" <?php echo $booking['paymentStatus'] === 'paid' ? 'selected' : ''; ?>>Paid</option>
+                                                                        <option value="refunded" <?php echo $booking['paymentStatus'] === 'refunded' ? 'selected' : ''; ?>>Refunded</option>
+                                                                    </select>
+                                                                </div>
+                                                                
+                                                                <div class="alert alert-info small mb-0">
+                                                                    <i class="bi bi-info-circle me-1"></i>
+                                                                    Use this to correct accidental status changes. Note: SMS notifications are not sent when editing.
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Save Changes</button>
+                                                            </div>
+                                                        </form>
                                                     </div>
                                                 </div>
                                             </div>

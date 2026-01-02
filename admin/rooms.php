@@ -1,5 +1,12 @@
 <?php
+session_start();
 include 'connect.php';
+
+// Check if user is admin
+if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'admin') {
+    header("Location: ../frontend/login.php?error=Access denied");
+    exit();
+}
 
 // Helper function to handle image upload
 function handleImageUpload($fileInput, $targetFolder = "assets/")
@@ -161,7 +168,7 @@ if (isset($_POST['update_room'])) {
     }
 }
 
-$getRooms = "SELECT rooms.*, roomTypes.roomType AS roomTypeName FROM rooms INNER JOIN roomTypes ON rooms.roomTypeId = roomTypes.roomTypeID";
+$getRooms = "SELECT rooms.*, roomTypes.roomType AS roomTypeName FROM rooms INNER JOIN roomTypes ON rooms.roomTypeId = roomTypes.roomTypeID ORDER BY rooms.roomID ASC";
 $rooms = executeQuery($getRooms);
 
 $getRoomTypes = "SELECT * FROM roomTypes ORDER BY roomTypeID";
@@ -189,71 +196,87 @@ mysqli_data_seek($features, 0);
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Rooms</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <title>TravelMates - Rooms Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="HOTEL-MANAGEMENT-SYSTEM/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
 </head>
 
-<body>
-    <?php include 'header.php'; ?>
-    <div class="container-fluid p-5 mt-5">
+<body class="bg-light">
+    <div class="container-fluid">
         <div class="row">
-            <div class="col-12">
-                <ul class="nav nav-tabs mb-3" id="roomTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" data-room-type="All" type="button" role="tab" onclick="filterRooms('All')">
-                            <h6>All Rooms</h6>
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" data-room-type="Basic" type="button" role="tab" onclick="filterRooms('Basic')">
-                            <h6>Basic Room</h6>
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" data-room-type="Family" type="button" role="tab" onclick="filterRooms('Family')">
-                            <h6>Family Room</h6>
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" data-room-type="Suite" type="button" role="tab" onclick="filterRooms('Suite')">
-                            <h6>Suite Room</h6>
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" data-room-type="Deluxe" type="button" role="tab" onclick="filterRooms('Deluxe')">
-                            <h6>Deluxe Room</h6>
-                        </button>
-                    </li>
-                </ul>
-                <div class="row">
-                    <div class="col-12 overflow-auto">
-                        <table class="table table-hover table-bordered">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th scope="col" class="text-center align-middle">ID</th>
-                                    <th scope="col" class="text-center align-middle">Room Type</th>
-                                    <th scope="col" class="text-center align-middle">Room Name</th>
-                                    <th scope="col" class="text-center align-middle">Max Occupancy</th>
-                                    <th scope="col" class="text-center align-middle">Features</th>
-                                    <th scope="col" class="text-center align-middle">Price</th>
-                                    <th scope="col" class="text-center align-middle">Quantity</th>
-                                    <th scope="col" class="text-center align-middle">Room Image</th>
-                                    <th scope="col" class="text-center align-middle"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="roomsTableBody">
+            <?php include 'includes/sidebar.php'; ?>
+
+            <div class="col-12 col-lg-10 p-3 p-lg-4">
+                <div class="page-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2>Rooms Management</h2>
+                        <p>Manage hotel rooms and their details</p>
+                    </div>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRoomModal">
+                        <i class="bi bi-plus-lg me-2"></i>Add Room
+                    </button>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body p-2">
+                        <ul class="nav nav-pills" id="roomTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" data-room-type="All" type="button" role="tab" onclick="filterRooms('All')">
+                                    All Rooms
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-room-type="Basic" type="button" role="tab" onclick="filterRooms('Basic')">
+                                    Basic
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-room-type="Family" type="button" role="tab" onclick="filterRooms('Family')">
+                                    Family
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-room-type="Suite" type="button" role="tab" onclick="filterRooms('Suite')">
+                                    Suite
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-room-type="Deluxe" type="button" role="tab" onclick="filterRooms('Deluxe')">
+                                    Deluxe
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th class="text-center">ID</th>
+                                        <th class="text-center">Room Type</th>
+                                        <th class="text-center">Room Name</th>
+                                        <th class="text-center">Max Occupancy</th>
+                                        <th class="text-center">Features</th>
+                                        <th class="text-center">Price</th>
+                                        <th class="text-center">Quantity</th>
+                                        <th class="text-center">Image</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="roomsTableBody">
                                 <?php while ($row = mysqli_fetch_assoc($rooms)) {
-                                    // Get features for this room
-                                    $roomFeaturesQuery = "SELECT f.featureName FROM features f INNER JOIN roomFeatures rf ON f.featureId = rf.featureID  WHERE rf.roomID = " . (int)$row['roomID'];
+                                    $roomFeaturesQuery = "SELECT f.featureName FROM features f INNER JOIN roomFeatures rf ON f.featureId = rf.featureID  WHERE rf.roomID = " . (int)$row['roomID'] . " ORDER BY f.featureId";
                                     $roomFeaturesResult = executeQuery($roomFeaturesQuery);
                                     $roomFeatures = [];
                                     while ($feature = mysqli_fetch_assoc($roomFeaturesResult)) {
                                         $roomFeatures[] = $feature['featureName'];
                                     }
-                                    $roomFeatureIdsQuery = "SELECT featureID FROM roomFeatures WHERE roomID = " . (int)$row['roomID'];
+                                    $roomFeatureIdsQuery = "SELECT featureID FROM roomFeatures WHERE roomID = " . (int)$row['roomID'] . " ORDER BY featureID";
                                     $roomFeatureIdsResult = executeQuery($roomFeatureIdsQuery);
                                     $roomFeatureIds = [];
                                     while ($fid = mysqli_fetch_assoc($roomFeatureIdsResult)) {
@@ -261,11 +284,11 @@ mysqli_data_seek($features, 0);
                                     }
                                 ?>
                                     <tr data-room-type="<?php echo htmlspecialchars($row['roomTypeName'], ENT_QUOTES); ?>">
-                                        <td scope="col" class="text-center align-middle"><?php echo $row['roomID'] ?></td>
-                                        <td scope="col" class="text-center align-middle "><?php echo $row['roomTypeName'] ?></td>
-                                        <td scope="col" class="text-center align-middle"><?php echo $row['roomName'] ?></td>
-                                        <td scope="col" class="text-center align-middle"><?php echo $row['capacity'] ?></td>
-                                        <td scope="col" class="align-middle text-center">
+                                        <td class="text-center"><?php echo $row['roomID'] ?></td>
+                                        <td class="text-center"><span class="badge bg-info"><?php echo $row['roomTypeName'] ?></span></td>
+                                        <td class="text-center"><?php echo $row['roomName'] ?></td>
+                                        <td class="text-center"><?php echo $row['capacity'] ?> guests</td>
+                                        <td class="text-center">
                                             <?php if (!empty($roomFeatures)) {
                                                 foreach ($roomFeatures as $featureName) { ?>
                                                     <span class="badge bg-secondary me-1 mb-1"><?php echo htmlspecialchars($featureName); ?></span>
@@ -274,112 +297,126 @@ mysqli_data_seek($features, 0);
                                                 <span class="text-muted">No features</span>
                                             <?php } ?>
                                         </td>
-                                        <td scope="col" class="text-center align-middle">₱<?php echo ($row['base_price']) ?></td>
-                                        <td scope="col" class="text-center align-middle"><?php echo $row['quantity'] ?></td>
-                                        <td scope="col" class="text-center align-middle"><?php echo '<img src="assets/' . $row['imagePath'] . '" style="width:200px;">'; ?></td>
-                                        <td scope="col" class="text-center align-middle">
-                                            <form method="POST" style="display: inline-block;">
-                                                <input type="hidden" value="<?php echo $row['roomID'] ?>" name="deleteID">
-                                                <button class="btn btn-outline-danger btn-sm m-2" type="submit">Delete</button>
-                                            </form>
-                                            <button type="button" class="btn btn-outline-primary btn-sm m-2" data-bs-toggle="modal" data-bs-target="#editModal<?php echo $row['roomID']; ?>">
-                                                Edit
-                                            </button>
+                                        <td class="text-center"><strong>₱<?php echo number_format($row['base_price'], 2) ?></strong></td>
+                                        <td class="text-center"><?php echo $row['quantity'] ?></td>
+                                        <td class="text-center">
+                                            <?php if (!empty($row['imagePath'])) { ?>
+                                                <img src="assets/<?php echo $row['imagePath']; ?>" class="rounded" style="width:100px; height:60px; object-fit:cover;">
+                                            <?php } else { ?>
+                                                <span class="text-muted">No image</span>
+                                            <?php } ?>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm">
+                                                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal<?php echo $row['roomID']; ?>">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <form method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this room?');">
+                                                    <input type="hidden" value="<?php echo $row['roomID'] ?>" name="deleteID">
+                                                    <button class="btn btn-outline-danger btn-sm" type="submit">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
 
                                             <div class="modal fade" id="editModal<?php echo $row['roomID']; ?>" tabindex="-1" aria-labelledby="editModalLabel<?php echo $row['roomID']; ?>" aria-hidden="true">
-                                                <div class="modal-dialog">
+                                                <div class="modal-dialog modal-xl">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
-                                                            <h1 class="modal-title fs-5" id="editModalLabel<?php echo $row['roomID']; ?>">Edit Room Details</h1>
+                                                            <h1 class="modal-title fs-5" id="editModalLabel<?php echo $row['roomID']; ?>"><i class="bi bi-pencil-square me-2"></i>Edit Room Details</h1>
                                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                         </div>
-                                                        <div class="modal-body text-start">
+                                                        <div class="modal-body">
                                                             <form method="POST" enctype="multipart/form-data">
                                                                 <input type="hidden" name="roomID" value="<?php echo $row['roomID']; ?>">
-                                                                <div class="mb-3">
-                                                                    <label for="editRoomName<?php echo $row['roomID']; ?>" class="form-label">Room Name</label>
-                                                                    <input id="editRoomName<?php echo $row['roomID']; ?>" class="form-control" type="text" name="editRoomName" value="<?php echo htmlspecialchars($row['roomName']); ?>" required>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label for="editRoomTypeId<?php echo $row['roomID']; ?>" class="form-label">Room Type</label>
-                                                                    <select id="editRoomTypeId<?php echo $row['roomID']; ?>" class="form-select" name="editRoomTypeId" required>
-                                                                        <?php
-                                                                        mysqli_data_seek($roomTypes, 0);
-                                                                        while ($type = mysqli_fetch_assoc($roomTypes)) {
-                                                                            $selected = ($type['roomTypeID'] == $row['roomTypeId']) ? 'selected' : '';
-                                                                        ?>
-                                                                            <option value="<?php echo $type['roomTypeID']; ?>" <?php echo $selected; ?>><?php echo htmlspecialchars($type['roomType']); ?></option>
-                                                                        <?php } ?>
-                                                                    </select>
-                                                                </div>
-                                                                <div class="row">
-                                                                    <div class="col-md-6 mb-3">
-                                                                        <label for="editCapacity<?php echo $row['roomID']; ?>" class="form-label">Capacity</label>
+                                                                <div class="row align-items-center">
+                                                                    <div class="col-12 col-lg-4 mb-3">
+                                                                        <label for="editRoomName<?php echo $row['roomID']; ?>" class="form-label">Room Name</label>
+                                                                        <input id="editRoomName<?php echo $row['roomID']; ?>" class="form-control" type="text" name="editRoomName" value="<?php echo htmlspecialchars($row['roomName']); ?>" required>
+                                                                    </div>
+                                                                    <div class="col-6 col-lg-4 mb-3">
+                                                                        <label for="editRoomTypeId<?php echo $row['roomID']; ?>" class="form-label">Room Type</label>
+                                                                        <select id="editRoomTypeId<?php echo $row['roomID']; ?>" class="form-select" name="editRoomTypeId" required>
+                                                                            <?php
+                                                                            mysqli_data_seek($roomTypes, 0);
+                                                                            while ($type = mysqli_fetch_assoc($roomTypes)) {
+                                                                                $selected = ($type['roomTypeID'] == $row['roomTypeId']) ? 'selected' : '';
+                                                                            ?>
+                                                                                <option value="<?php echo $type['roomTypeID']; ?>" <?php echo $selected; ?>><?php echo htmlspecialchars($type['roomType']); ?></option>
+                                                                            <?php } ?>
+                                                                        </select>
+                                                                    </div>
+                                                                    <div class="col-6 col-md-6 col-lg-4 mb-3">
+                                                                        <label for="editCapacity<?php echo $row['roomID']; ?>" class="form-label">Guest Capacity</label>
                                                                         <input id="editCapacity<?php echo $row['roomID']; ?>" class="form-control" type="number" name="editCapacity" value="<?php echo $row['capacity']; ?>" required>
                                                                     </div>
-                                                                    <div class="col-md-6 mb-3">
-                                                                        <label for="editQuantity<?php echo $row['roomID']; ?>" class="form-label">Quantity</label>
+                                                                    <div class="col-6 col-md-6 col-lg-3 mb-3">
+                                                                        <label for="editQuantity<?php echo $row['roomID']; ?>" class="form-label">Quantity of Rooms</label>
                                                                         <input id="editQuantity<?php echo $row['roomID']; ?>" class="form-control" type="number" name="editQuantity" value="<?php echo $row['quantity']; ?>" required>
                                                                     </div>
-                                                                </div>
-                                                                <div class="row">
-                                                                    <div class="col-md-6 mb-3">
+                                                                    <div class="col-6 col-md-6 col-lg-3 mb-3">
                                                                         <label for="editBasePrice<?php echo $row['roomID']; ?>" class="form-label">Price (₱)</label>
                                                                         <input id="editBasePrice<?php echo $row['roomID']; ?>" class="form-control" type="number" step="0.01" name="editBasePrice" value="<?php echo $row['base_price']; ?>" required>
                                                                     </div>
-                                                                    <div class="col-md-6 mb-3">
+                                                                    <div class="col-12 col-lg-6 mb-3">
                                                                         <label for="editRoomImage<?php echo $row['roomID']; ?>" class="form-label">Room Image</label>
                                                                         <input id="editRoomImage<?php echo $row['roomID']; ?>" class="form-control" type="file" name="editRoomImage" accept="image/*">
                                                                         <?php if (!empty($row['imagePath'])) { ?>
-                                                                            <small class="text-muted">Current image:</small>
-                                                                            <img src="assets/<?php echo htmlspecialchars($row['imagePath']); ?>" class="img-thumbnail mt-1" style="max-width: 100px; max-height: 60px;">
-                                                                        <?php } ?>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label class="form-label">Room Features</label>
-                                                                    <div id="editRoomFeaturesContainer<?php echo $row['roomID']; ?>">
-                                                                        <?php foreach ($featuresByCategory as $category => $categoryFeatures) { ?>
-                                                                            <div class="mb-3">
-                                                                                <h6 class="text-muted border-bottom pb-1"><i class="bi bi-tag-fill me-1"></i><?php echo htmlspecialchars($category); ?></h6>
-                                                                                <div class="row">
-                                                                                    <?php foreach ($categoryFeatures as $feature) {
-                                                                                        $checked = in_array($feature['featureId'], $roomFeatureIds) ? 'checked' : '';
-                                                                                    ?>
-                                                                                        <div class="col-6">
-                                                                                            <div class="form-check">
-                                                                                                <input class="form-check-input" type="checkbox" name="editFeatures[]" value="<?php echo $feature['featureId']; ?>" id="editFeature<?php echo $row['roomID'] . '_' . $feature['featureId']; ?>" <?php echo $checked; ?>>
-                                                                                                <label class="form-check-label" for="editFeature<?php echo $row['roomID'] . '_' . $feature['featureId']; ?>">
-                                                                                                    <?php echo htmlspecialchars($feature['featureName']); ?>
-                                                                                                </label>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    <?php } ?>
-                                                                                </div>
+                                                                            <div class="mt-2">
+                                                                                <small class="text-muted">Current image:</small>
+                                                                                <img src="assets/<?php echo htmlspecialchars($row['imagePath']); ?>" class="img-thumbnail ms-2" style="max-width: 100px; max-height: 60px;">
                                                                             </div>
                                                                         <?php } ?>
                                                                     </div>
-                                                                    <div class="mt-3 border-top pt-3">
-                                                                        <label class="form-label text-muted small">Add Custom Feature</label>
-                                                                        <div class="input-group">
-                                                                            <select class="form-select" id="customFeatureCategoryInputEdit<?php echo $row['roomID']; ?>" style="max-width: 140px;">
-                                                                                <option value="Beds">Beds</option>
-                                                                                <option value="Rooms">Rooms</option>
-                                                                                <option value="Bathroom">Bathroom</option>
-                                                                                <option value="Amenities">Amenities</option>
-                                                                                <option value="Entertainment">Entertainment</option>
-                                                                                <option value="General" selected>General</option>
-                                                                            </select>
-                                                                            <input type="text" class="form-control" id="customFeatureInputEdit<?php echo $row['roomID']; ?>" placeholder="Enter new feature name">
-                                                                            <button type="button" class="btn btn-outline-success" onclick="addCustomFeature('editRoomFeaturesContainer<?php echo $row['roomID']; ?>', 'customFeatureInputEdit<?php echo $row['roomID']; ?>', 'editFeatures[]', '<?php echo $row['roomID']; ?>', 'customFeatureCategoryInputEdit<?php echo $row['roomID']; ?>')">
-                                                                                <i class="bi bi-plus-lg"></i> Add
-                                                                            </button>
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Room Features</label>
+                                                                        <div id="editRoomFeaturesContainer<?php echo $row['roomID']; ?>">
+                                                                            <div class="row justify-content-center">
+                                                                                <?php foreach ($featuresByCategory as $category => $categoryFeatures) { ?>
+                                                                                <div class="col-12 col-md-6 col-lg-4 mb-3">
+                                                                                    <h6 class="text-muted border-bottom pb-1"><i class="bi bi-tag-fill me-1"></i><?php echo htmlspecialchars($category); ?></h6>
+                                                                                    <div class="row">
+                                                                                        <?php foreach ($categoryFeatures as $feature) {
+                                                                                            $checked = in_array($feature['featureId'], $roomFeatureIds) ? 'checked' : '';
+                                                                                        ?>
+                                                                                            <div class="col-12 col-md-6 col-lg-4">
+                                                                                                <div class="form-check">
+                                                                                                    <input class="form-check-input" type="checkbox" name="editFeatures[]" value="<?php echo $feature['featureId']; ?>" id="editFeature<?php echo $row['roomID'] . '_' . $feature['featureId']; ?>" <?php echo $checked; ?>>
+                                                                                                    <label class="form-check-label" for="editFeature<?php echo $row['roomID'] . '_' . $feature['featureId']; ?>">
+                                                                                                        <?php echo htmlspecialchars($feature['featureName']); ?>
+                                                                                                    </label>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        <?php } ?>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <?php } ?>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row justify-content-center">
+                                                                            <div class="col-12 col-lg-6 m-3 border-top pt-3">
+                                                                                <label class="form-label text-muted small">Add Custom Feature</label>
+                                                                                <div class="input-group">
+                                                                                    <select class="form-select" id="customFeatureCategoryInputEdit<?php echo $row['roomID']; ?>" style="max-width: 140px;">
+                                                                                        <option value="Beds">Beds</option>
+                                                                                        <option value="Rooms">Rooms</option>
+                                                                                        <option value="Bathroom">Bathroom</option>
+                                                                                        <option value="Amenities">Amenities</option>
+                                                                                        <option value="Entertainment">Entertainment</option>
+                                                                                        <option value="General" selected>General</option>
+                                                                                    </select>
+                                                                                    <input type="text" class="form-control" id="customFeatureInputEdit<?php echo $row['roomID']; ?>" placeholder="Enter new feature name">
+                                                                                    <button type="button" class="btn btn-outline-success" onclick="addCustomFeature('editRoomFeaturesContainer<?php echo $row['roomID']; ?>', 'customFeatureInputEdit<?php echo $row['roomID']; ?>', 'editFeatures[]', '<?php echo $row['roomID']; ?>', 'customFeatureCategoryInputEdit<?php echo $row['roomID']; ?>')">
+                                                                                        <i class="bi bi-plus-lg"></i> Add
+                                                                                    </button>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="modal-footer">
+                                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                                            <button type="submit" name="update_room" class="btn btn-primary">Save Changes</button>
                                                                         </div>
                                                                     </div>
-                                                                </div>
-                                                                <div class="modal-footer">
-                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                                    <button type="submit" name="update_room" class="btn btn-primary">Save Changes</button>
                                                                 </div>
                                                             </form>
                                                         </div>
@@ -397,22 +434,14 @@ mysqli_data_seek($features, 0);
         </div>
     </div>
 
-    <div class="container">
-        <div class="row">
-            <div class="col justify-content-center text-center">
-                <!-- Button trigger modal -->
-                <button type="button" class="btn btn-warning mb-4" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                    Click to add more rooms
-                </button>
-
-                <!-- Modal -->
-                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-xl">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h1 class="modal-title fs-5" id="exampleModalLabel">Input Room Details</h1>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
+    <!-- Add Room Modal -->
+    <div class="modal fade" id="addRoomModal" tabindex="-1" aria-labelledby="addRoomModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="addRoomModalLabel"><i class="bi bi-plus-circle me-2"></i>Add New Room</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
                             <div class="modal-body">
                                 <form method="POST" enctype="multipart/form-data">
                                     <div class="row align-items-center">
@@ -492,7 +521,7 @@ mysqli_data_seek($features, 0);
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                <button type="submit" name="add_room" class="btn btn-warning">Save Room</button>
+                                                <button type="submit" name="add_room" class="btn btn-primary">Save Room</button>
                                             </div>
                                         </div>
                                     </div>
@@ -501,13 +530,8 @@ mysqli_data_seek($features, 0);
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         function filterRooms(roomType) {
