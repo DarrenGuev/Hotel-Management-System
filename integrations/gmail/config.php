@@ -1,6 +1,8 @@
 <?php
-$google_client_id = getenv('GOOGLE_CLIENT_ID') ?: '736307995466-d7604ta9oh6ql7monhpqc01asp31j7jo.apps.googleusercontent.com';
-$google_client_secret = getenv('GOOGLE_CLIENT_SECRET') ?: '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';
+require_once __DIR__ . '/../../dbconnect/load_env.php';
+
+$google_client_id = getenv('GOOGLE_CLIENT_ID');
+$google_client_secret = getenv('GOOGLE_CLIENT_SECRET');
 $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
 $google_redirect_uri = $scheme . '://' . $_SERVER['HTTP_HOST'] . '/HOTEL-MANAGEMENT-SYSTEM/integrations/gmail/googleCallback.php';
 

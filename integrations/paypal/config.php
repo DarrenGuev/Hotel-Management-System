@@ -1,8 +1,10 @@
 <?php
+require_once __DIR__ . '/../../dbconnect/load_env.php';
+
 if (!defined('PAYPAL_SANDBOX')) define('PAYPAL_SANDBOX', true);
 
-$paypal_client_id = getenv('PAYPAL_CLIENT_ID') ?: 'AascJ7GmBzGZX7LjWFTm_Rlusxk-UnDmrJfQw8Lq6g57DqoDBH_SXEZ2zu_lRCeaNbH6MNgIQW7OJ5SA';
-$paypal_secret = getenv('PAYPAL_SECRET') ?: 'ELVyLRLYFMppa5rGskT3Wgknal1atlfBLByk3PyU13_zH8Ny93LEsCrw05BTgi2symc67JyL98nFBnkf';
+$paypal_client_id = getenv('PAYPAL_CLIENT_ID');
+$paypal_secret = getenv('PAYPAL_SECRET');
 
 if (!defined('PAYPAL_CLIENT_ID')) define('PAYPAL_CLIENT_ID', $paypal_client_id);
 if (!defined('PAYPAL_SECRET')) define('PAYPAL_SECRET', $paypal_secret);

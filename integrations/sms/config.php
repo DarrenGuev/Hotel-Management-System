@@ -1,6 +1,8 @@
 <?php
+require_once __DIR__ . '/../../dbconnect/load_env.php';
+
 define('IPROG_SMS_API_URL', 'https://www.iprogsms.com/api/v1/sms_messages');
-define('IPROG_SMS_API_TOKEN', '9f54f807fbb18414807524d037dda3171a0c1a7b'); 
+define('IPROG_SMS_API_TOKEN', getenv('IPROG_SMS_API_TOKEN')); 
 
 // Database configuration for SMS logs
 define('SMS_DB_HOST', 'localhost');

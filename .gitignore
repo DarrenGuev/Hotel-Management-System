@@ -1,3 +1,4 @@
 integrations/paypal/config.php
 integrations/gmail/config.php
 integrations/sms/config.php
+.env
