@@ -15,9 +15,9 @@ $params = [
     'client_id' => GOOGLE_CLIENT_ID,
     'redirect_uri' => GOOGLE_REDIRECT_URI,
     'response_type' => 'code',
-    'scope' => 'openid email profile',
+    'scope' => 'https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/gmail.send openid email profile',
     'access_type' => 'offline',
-    'prompt' => 'select_account',
+    'prompt' => 'consent select_account',
     'state' => $state
 ];
 
