@@ -1,14 +1,4 @@
 <?php
-/**
- * EmailService - Gmail Integration for Hotel Management System
- * 
- * Provides Gmail API functionality for sending and receiving emails.
- * Uses OAuth 2.0 for authentication.
- * 
- * @author TravelMates Development Team
- * @version 2.0.0
- */
-
 require_once __DIR__ . '/config.php';
 
 class EmailService
@@ -841,10 +831,6 @@ class EmailService
         
         return $body;
     }
-
-    /**
-     * Decode email body based on encoding
-     */
     private function decodeBody($body, $encoding)
     {
         switch ($encoding) {
@@ -862,9 +848,6 @@ class EmailService
         }
     }
 
-    /**
-     * Get email attachments
-     */
     private function getAttachments($mailbox, $msgNum, $structure)
     {
         $attachments = [];
@@ -890,9 +873,6 @@ class EmailService
         return $attachments;
     }
 
-    /**
-     * Log email to database
-     */
     private function logEmail($data)
     {
         $stmt = $this->conn->prepare(
@@ -925,9 +905,6 @@ class EmailService
         return $stmt->execute();
     }
 
-    /**
-     * Sync email from IMAP to database
-     */
     private function syncEmailToDatabase($email, $folder)
     {
         // Check if already exists
@@ -967,20 +944,12 @@ class EmailService
         
         $stmt->execute();
     }
-
-    /**
-     * Mark email as read in database by message_id
-     */
     private function markAsReadInDatabase($messageId)
     {
         $stmt = $this->conn->prepare("UPDATE email_logs SET is_read = 1 WHERE message_id = ?");
         $stmt->bind_param('s', $messageId);
         return $stmt->execute();
     }
-
-    /**
-     * Log email reply
-     */
     private function logEmailReply($originalEmailId, $replyBody)
     {
         $stmt = $this->conn->prepare(
@@ -989,10 +958,6 @@ class EmailService
         $stmt->bind_param('is', $originalEmailId, $replyBody);
         return $stmt->execute();
     }
-
-    /**
-     * Generate booking receipt HTML
-     */
     private function generateReceiptHtml($booking)
     {
         $html = '
@@ -1101,10 +1066,6 @@ class EmailService
         
         return $html;
     }
-
-    /**
-     * Build reply HTML with quoted original
-     */
     private function buildReplyHtml($replyBody, $original)
     {
         // Handle different key names from database vs API
@@ -1141,10 +1102,6 @@ class EmailService
         
         return $html;
     }
-
-    /**
-     * Close database connection
-     */
     public function __destruct()
     {
         if ($this->conn) {
