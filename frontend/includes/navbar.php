@@ -6,7 +6,7 @@ $isLoggedIn = isset($_SESSION['userID']);
 $username = $isLoggedIn ? $_SESSION['username'] : '';
 $userRole = $isLoggedIn && isset($_SESSION['role']) ? $_SESSION['role'] : '';
 ?>
-<nav class="navbar navbar-expand-lg sticky-top glass bg-body-tertiary shadow animate-nav">
+<nav class="navbar navbar-expand-lg sticky-top glass bg-body-tertiary shadow animate-nav border-bottom">
     <div class="container-fluid px-3 mx-3 px-md-5">
         <a class="navbar-brand fw-bold fs-3" href="/HOTEL-MANAGEMENT-SYSTEM/index.php"><img id="site-logo"
                 src="/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoB.png" style="width: 120px;" alt="logo"></a>
@@ -91,6 +91,12 @@ $userRole = $isLoggedIn && isset($_SESSION['role']) ? $_SESSION['role'] : '';
             icon.className = newTheme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
         });
 
+        // Update logos
+        const logoPath = newTheme === 'dark' ? '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoW.png' : '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoB.png';
+        document.querySelectorAll('#site-logo, #footer-logo').forEach(function (logo) {
+            logo.src = logoPath;
+        });
+
         // Text utilities: ensure consistent colors
         document.querySelectorAll('.text-black, .text-white').forEach(function (el) {
             if (newTheme === 'dark') {
@@ -131,8 +137,6 @@ $userRole = $isLoggedIn && isset($_SESSION['role']) ? $_SESSION['role'] : '';
         if (stored && stored !== current) {
             if (typeof changeMode === 'function') {
                 changeMode();
-                var logoAfter = document.getElementById('site-logo');
-                if (logoAfter) logoAfter.src = stored === 'dark' ? '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoW.png' : '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoB.png';
             } else {
                 document.documentElement.setAttribute('data-bs-theme', stored);
                 document.querySelectorAll('#mode i, #mode-lg i').forEach(function (icon) {
@@ -147,9 +151,10 @@ $userRole = $isLoggedIn && isset($_SESSION['role']) ? $_SESSION['role'] : '';
                     el.classList.toggle('btn-outline-light');
                 });
                 function applyLogo(theme) {
-                    var logo = document.getElementById('site-logo');
-                    if (!logo) return;
-                    logo.src = theme === 'dark' ? '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoW.png' : '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoB.png';
+                    const logoPath = theme === 'dark' ? '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoW.png' : '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoB.png';
+                    document.querySelectorAll('#site-logo, #footer-logo').forEach(function (logo) {
+                        logo.src = logoPath;
+                    });
                 }
                 applyLogo(stored);
             }
@@ -158,8 +163,10 @@ $userRole = $isLoggedIn && isset($_SESSION['role']) ? $_SESSION['role'] : '';
             setTimeout(function () {
                 const now = document.documentElement.getAttribute('data-bs-theme') || 'light';
                 localStorage.setItem('siteMode', now);
-                var logo = document.getElementById('site-logo');
-                if (logo) logo.src = now === 'dark' ? '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoW.png' : '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoB.png';
+                const logoPath = now === 'dark' ? '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoW.png' : '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoB.png';
+                document.querySelectorAll('#site-logo, #footer-logo').forEach(function (logo) {
+                    logo.src = logoPath;
+                });
             }, 10);
         }
         document.querySelectorAll('#mode, #mode-lg').forEach(function (btn) {
