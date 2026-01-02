@@ -1,3 +1,4 @@
 integrations/paypal/config.php
 integrations/gmail/config.php
-integrations/gmail/client_secret.json
+integrations/sms/config.php
+.env

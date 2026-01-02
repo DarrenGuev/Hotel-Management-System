@@ -17,12 +17,14 @@ $username = $isLoggedIn ? $_SESSION['username'] : '';
 
         <div class="collapse navbar-collapse justify-content-center" id="mainNavbar">
             <div class="navbar-nav">
-                <a class="nav-link small text-body me-5" href="/HOTEL-MANAGEMENT-SYSTEM/admin/admin.php">
-                    <i class="bi bi-house-fill me-2"></i>DASHBOARD</a>
-                <a class="nav-link small text-body me-5" href="/HOTEL-MANAGEMENT-SYSTEM/admin/rooms.php">
-                    <i class="bi bi-door-open me-2"></i>ROOMS</a>
-                <a class="nav-link small text-body me-5" href="/HOTEL-MANAGEMENT-SYSTEM/admin/features.php">
-                    <i class="bi bi-flower1 me-2"></i>FEATURES</a>
+                <a class="nav-link small text-body me-5" href="/HOTEL-MANAGEMENT-SYSTEM/admin/admin.php"><i
+                        class="bi bi-house-fill me-2"></i>DASHBOARD</a>
+                <a class="nav-link small text-body me-5" href="/HOTEL-MANAGEMENT-SYSTEM/admin/rooms.php"><i
+                        class="bi bi-door-open me-2"></i>ROOMS</a>
+                <a class="nav-link small text-body me-5" href="/HOTEL-MANAGEMENT-SYSTEM/admin/features.php"><i
+                        class="bi bi-calendar-event me-2"></i>FEATURES</a>
+                <a class="nav-link small text-body me-5" href="/HOTEL-MANAGEMENT-SYSTEM/admin/smsDashboard.php"><i
+                        class="bi bi-chat-dots me-2"></i>SMS DASHBOARD</a>
                 <!-- Actions inside collapsed menu on small screens -->
                 <div class="d-flex d-lg-none mt-3">
                     <?php if ($isLoggedIn) { ?>
