@@ -18,20 +18,52 @@ if (isset($_SESSION['userID'])) {
 $getRoomTypes = "SELECT * FROM roomtypes ORDER BY roomTypeID";
 $roomTypesResult = executeQuery($getRoomTypes);
 
-// Get all unique amenities/features from the database grouped by category
-$getAmenitiesQuery = "SELECT DISTINCT f.featureName, f.category FROM features f 
-                      INNER JOIN roomfeatures rf ON f.featureId = rf.featureID 
-                      ORDER BY f.category, f.featureName";
-$amenitiesResult = executeQuery($getAmenitiesQuery);
-$availableAmenities = [];
-$amenitiesByCategory = [];
-while ($amenity = mysqli_fetch_assoc($amenitiesResult)) {
-    $availableAmenities[] = $amenity['featureName'];
-    $category = $amenity['category'] ?? 'General';
-    if (!isset($amenitiesByCategory[$category])) {
-        $amenitiesByCategory[$category] = [];
+// Get all unique features from the database grouped by category
+// NOTE: Your current query only returns categories that are already linked to at least one room (INNER JOIN roomfeatures).
+// This is why a category like "Kitchen" (present in featureCategories) may not appear.
+// Instead, build categories from featureCategories and then LEFT JOIN features and roomfeatures so all categories show.
+$getCategoriesQuery = "SELECT categoryName FROM featureCategories ORDER BY categoryName";
+$categoriesResult = executeQuery($getCategoriesQuery);
+
+$featuresByCategory = [];
+
+// Initialize categories (so even categories with zero linked features still render)
+if ($categoriesResult) {
+    while ($cat = mysqli_fetch_assoc($categoriesResult)) {
+        $categoryName = $cat['categoryName'] ?? 'General';
+        if (!isset($featuresByCategory[$categoryName])) {
+            $featuresByCategory[$categoryName] = [];
+        }
     }
-    $amenitiesByCategory[$category][] = $amenity['featureName'];
+}
+
+// Load features and attach them to categories (show all features, even if not yet used by a room)
+$getFeatureQuery = "
+    SELECT
+        fc.categoryName AS category,
+        f.featureName
+    FROM featureCategories fc
+    LEFT JOIN features f
+        ON f.category = fc.categoryName
+    WHERE f.featureName IS NOT NULL
+    ORDER BY fc.categoryName, f.featureName
+";
+
+$featureResult = executeQuery($getFeatureQuery);
+
+if ($featureResult) {
+    while ($row = mysqli_fetch_assoc($featureResult)) {
+        $category = $row['category'] ?? 'General';
+        $featureName = $row['featureName'];
+
+        if (!isset($featuresByCategory[$category])) {
+            $featuresByCategory[$category] = [];
+        }
+
+        if ($featureName && !in_array($featureName, $featuresByCategory[$category], true)) {
+            $featuresByCategory[$category][] = $featureName;
+        }
+    }
 }
 
 function getRoomFeatures($roomID)
@@ -53,19 +85,10 @@ function groupFeaturesByCategory($featuresResult) {
     return $grouped;
 }
 
-// Category icons mapping
-function getCategoryIcon($category) {
-    $icons = [
-        'Amenities' => 'bi-stars',
-        'Bathroom' => 'bi-droplet',
-        'Beds' => 'bi-lamp',
-        'Entertainment' => 'bi-tv',
-        'Rooms' => 'bi-door-open',
-        'General' => 'bi-check-circle'
-    ];
-    return $icons[$category] ?? 'bi-check-circle';
-}
+// REMOVE icon helpers to keep all categories visually identical, even if admins add new ones.
+// function getCategoryIcon($category) { ... }  <-- delete or ignore this function if present
 ?>
+
 <!doctype html>
 <html lang="en">
 
@@ -148,37 +171,57 @@ function getCategoryIcon($category) {
                                                 </div>
                                             </div>
 
-                                            <!-- Amenities -->
+                                            <!-- Features -->
                                             <div class="border-bottom pb-3 mb-3">
-                                                <h6 class="fw-semibold mb-3 text-secondary">Amenities</h6>
-                                                <div class="d-flex flex-column gap-2">
-                                                    <?php foreach ($amenitiesByCategory as $category => $amenities) {
-                                                        $categoryId = 'category' . str_replace(' ', '', $category) . 'Mobile';
-                                                        $icon = getCategoryIcon($category);
+                                                <h6 class="fw-semibold mb-3 text-secondary">Features</h6>
+
+                                                <div class="accordion" id="featuresAccordionMobile">
+                                                    <?php
+                                                    $i = 0;
+                                                    foreach ($featuresByCategory as $category => $features) {
+                                                        $i++;
+                                                        $catKey = preg_replace('/[^a-zA-Z0-9_-]/', '', str_replace(' ', '', $category));
+                                                        $headingId = "featuresMobileHeading{$i}_{$catKey}";
+                                                        $collapseId = "featuresMobileCollapse{$i}_{$catKey}";
                                                     ?>
-                                                    <div class="btn-group dropend w-100">
-                                                        <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 d-flex justify-content-between align-items-center" 
-                                                            data-bs-toggle="dropdown" aria-expanded="false">
-                                                            <span><?php echo htmlspecialchars($category); ?></span>
-                                                            <i class="bi <?php echo $icon; ?>"></i>
-                                                        </button>
-                                                        <ul class="dropdown-menu p-2">
-                                                            <?php foreach ($amenities as $amenity) {
-                                                                $amenityId = 'amenity' . str_replace(' ', '', $amenity) . 'Mobile';
-                                                                $amenityValue = strtolower($amenity);
-                                                            ?>
-                                                            <li>
-                                                                <div class="form-check">
-                                                                    <input class="form-check-input filter-checkbox amenity-checkbox" type="checkbox" 
-                                                                        value="<?php echo htmlspecialchars($amenityValue); ?>"
-                                                                        id="<?php echo htmlspecialchars($amenityId); ?>">
-                                                                    <label class="form-check-label small"
-                                                                        for="<?php echo htmlspecialchars($amenityId); ?>"><?php echo htmlspecialchars($amenity); ?></label>
+                                                        <div class="accordion-item">
+                                                            <h2 class="accordion-header" id="<?php echo htmlspecialchars($headingId); ?>">
+                                                                <button class="accordion-button collapsed py-2" type="button"
+                                                                    data-bs-toggle="collapse"
+                                                                    data-bs-target="#<?php echo htmlspecialchars($collapseId); ?>"
+                                                                    aria-expanded="false"
+                                                                    aria-controls="<?php echo htmlspecialchars($collapseId); ?>">
+                                                                    <?php echo htmlspecialchars($category); ?>
+                                                                </button>
+                                                            </h2>
+                                                            <div id="<?php echo htmlspecialchars($collapseId); ?>"
+                                                                class="accordion-collapse collapse"
+                                                                aria-labelledby="<?php echo htmlspecialchars($headingId); ?>"
+                                                                data-bs-parent="#featuresAccordionMobile">
+                                                                <div class="accordion-body pt-2">
+                                                                    <?php if (!empty($features)) { ?>
+                                                                        <div class="d-flex flex-column gap-2">
+                                                                            <?php foreach ($features as $feature) {
+                                                                                $featureId = 'feature' . preg_replace('/[^a-zA-Z0-9_-]/', '', str_replace(' ', '', $feature)) . 'Mobile';
+                                                                                $featureValue = strtolower($feature);
+                                                                            ?>
+                                                                                <div class="form-check">
+                                                                                    <input class="form-check-input filter-checkbox feature-checkbox" type="checkbox"
+                                                                                        value="<?php echo htmlspecialchars($featureValue); ?>"
+                                                                                        id="<?php echo htmlspecialchars($featureId); ?>">
+                                                                                    <label class="form-check-label small"
+                                                                                        for="<?php echo htmlspecialchars($featureId); ?>">
+                                                                                        <?php echo htmlspecialchars($feature); ?>
+                                                                                    </label>
+                                                                                </div>
+                                                                            <?php } ?>
+                                                                        </div>
+                                                                    <?php } else { ?>
+                                                                        <div class="text-muted small">No features available</div>
+                                                                    <?php } ?>
                                                                 </div>
-                                                            </li>
-                                                            <?php } ?>
-                                                        </ul>
-                                                    </div>
+                                                            </div>
+                                                        </div>
                                                     <?php } ?>
                                                 </div>
                                             </div>
@@ -213,7 +256,7 @@ function getCategoryIcon($category) {
                                     $typeId = 'type' . str_replace(' ', '', $type['roomType']);
                                 ?>
                                 <div class="form-check mb-2">
-                                    <input class="form-check-input filter-checkbox" type="checkbox" 
+                                    <input class="form-check-input" type="checkbox" 
                                         value="<?php echo htmlspecialchars($typeValue); ?>" 
                                         id="<?php echo htmlspecialchars($typeId); ?>">
                                     <label class="form-check-label small" for="<?php echo htmlspecialchars($typeId); ?>"><?php echo htmlspecialchars($type['roomType']); ?></label>
@@ -232,37 +275,57 @@ function getCategoryIcon($category) {
                                 </div>
                             </div>
 
-                            <!-- Amenities -->
+                            <!-- Features -->
                             <div class="border-bottom pb-3 mb-3">
-                                <h6 class="fw-semibold mb-3 text-secondary">Amenities</h6>
-                                <div class="d-flex flex-column gap-2">
-                                    <?php foreach ($amenitiesByCategory as $category => $amenities) {
-                                        $categoryId = 'category' . str_replace(' ', '', $category);
-                                        $icon = getCategoryIcon($category);
+                                <h6 class="fw-semibold mb-3 text-secondary">Features</h6>
+
+                                <div class="accordion" id="featuresAccordionDesktop">
+                                    <?php
+                                    $i = 0;
+                                    foreach ($featuresByCategory as $category => $features) {
+                                        $i++;
+                                        $catKey = preg_replace('/[^a-zA-Z0-9_-]/', '', str_replace(' ', '', $category));
+                                        $headingId = "featuresDesktopHeading{$i}_{$catKey}";
+                                        $collapseId = "featuresDesktopCollapse{$i}_{$catKey}";
                                     ?>
-                                    <div class="btn-group dropend w-100">
-                                        <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 d-flex justify-content-between align-items-center" 
-                                            data-bs-toggle="dropdown" aria-expanded="false">
-                                            <span><?php echo htmlspecialchars($category); ?></span>
-                                            <i class="bi <?php echo $icon; ?>"></i>
-                                        </button>
-                                        <ul class="dropdown-menu p-2">
-                                            <?php foreach ($amenities as $amenity) {
-                                                $amenityId = 'amenity' . str_replace(' ', '', $amenity);
-                                                $amenityValue = strtolower($amenity);
-                                            ?>
-                                            <li>
-                                                <div class="form-check">
-                                                    <input class="form-check-input amenity-checkbox" type="checkbox" 
-                                                        value="<?php echo htmlspecialchars($amenityValue); ?>" 
-                                                        id="<?php echo htmlspecialchars($amenityId); ?>">
-                                                    <label class="form-check-label small" 
-                                                        for="<?php echo htmlspecialchars($amenityId); ?>"><?php echo htmlspecialchars($amenity); ?></label>
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="<?php echo htmlspecialchars($headingId); ?>">
+                                                <button class="accordion-button collapsed py-2" type="button"
+                                                    data-bs-toggle="collapse"
+                                                    data-bs-target="#<?php echo htmlspecialchars($collapseId); ?>"
+                                                    aria-expanded="false"
+                                                    aria-controls="<?php echo htmlspecialchars($collapseId); ?>">
+                                                    <?php echo htmlspecialchars($category); ?>
+                                                </button>
+                                            </h2>
+                                            <div id="<?php echo htmlspecialchars($collapseId); ?>"
+                                                class="accordion-collapse collapse"
+                                                aria-labelledby="<?php echo htmlspecialchars($headingId); ?>"
+                                                data-bs-parent="#featuresAccordionDesktop">
+                                                <div class="accordion-body pt-2">
+                                                    <?php if (!empty($features)) { ?>
+                                                        <div class="d-flex flex-column gap-2">
+                                                            <?php foreach ($features as $feature) {
+                                                                $featureId = 'feature' . preg_replace('/[^a-zA-Z0-9_-]/', '', str_replace(' ', '', $feature));
+                                                                $featureValue = strtolower($feature);
+                                                            ?>
+                                                                <div class="form-check">
+                                                                    <input class="form-check-input feature-checkbox" type="checkbox"
+                                                                        value="<?php echo htmlspecialchars($featureValue); ?>"
+                                                                        id="<?php echo htmlspecialchars($featureId); ?>">
+                                                                    <label class="form-check-label small"
+                                                                        for="<?php echo htmlspecialchars($featureId); ?>">
+                                                                        <?php echo htmlspecialchars($feature); ?>
+                                                                    </label>
+                                                                </div>
+                                                            <?php } ?>
+                                                        </div>
+                                                    <?php } else { ?>
+                                                        <div class="text-muted small">No features available</div>
+                                                    <?php } ?>
                                                 </div>
-                                            </li>
-                                            <?php } ?>
-                                        </ul>
-                                    </div>
+                                            </div>
+                                        </div>
                                     <?php } ?>
                                 </div>
                             </div>
@@ -290,9 +353,7 @@ function getCategoryIcon($category) {
                 <div class="mx-auto mt-3 mb-5" style="width: 80px; height: 4px; background-color: #FF9900;"></div>
 
                 <?php
-                // Reset the result pointer before iterating
-                mysqli_data_seek($roomTypesResult, 0);
-                
+                mysqli_data_seek($roomTypesResult, 0);                
                 while ($roomType = mysqli_fetch_assoc($roomTypesResult)) {
                     $getRooms = "SELECT rooms.*, roomtypes.roomType AS roomTypeName FROM rooms 
                                 INNER JOIN roomtypes ON rooms.roomTypeId = roomtypes.roomTypeID 
@@ -657,7 +718,7 @@ function getCategoryIcon($category) {
     <script>
         function initializeFilters() {
             const roomTypeCheckboxes = document.querySelectorAll('input[id^="type"]');
-            const amenityCheckboxes = document.querySelectorAll('.amenity-checkbox');
+            const featureCheckboxes = document.querySelectorAll('.feature-checkbox');
             const priceRanges = document.querySelectorAll('#priceRange, #priceRangeMobile');
             const guestCapacities = document.querySelectorAll('#guestCapacity, #guestCapacityMobile');
             
@@ -695,7 +756,7 @@ function getCategoryIcon($category) {
                 });
             });
             
-            amenityCheckboxes.forEach(checkbox => {
+            featureCheckboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
                     syncCheckboxes(this);
                     updateCategoryBadges();
@@ -715,23 +776,9 @@ function getCategoryIcon($category) {
         
         // Update badge count on category dropdown buttons
         function updateCategoryBadges() {
-            document.querySelectorAll('.btn-group.dropend').forEach(group => {
-                const button = group.querySelector('button.dropdown-toggle');
-                const checkboxes = group.querySelectorAll('.amenity-checkbox:checked');
-                const count = checkboxes.length;
-                
-                // Remove existing badge
-                const existingBadge = button.querySelector('.badge');
-                if (existingBadge) existingBadge.remove();
-                
-                // Add badge if there are selected items
-                if (count > 0) {
-                    const badge = document.createElement('span');
-                    badge.className = 'badge bg-warning text-dark ms-2';
-                    badge.textContent = count;
-                    button.querySelector('span').appendChild(badge);
-                }
-            });
+            // Dropend UI was removed; keeping this function so existing calls don't break.
+            // (If you later re-add a special UI that needs counts, implement it here.)
+            return;
         }
         
         function syncCheckboxes(sourceCheckbox) {
@@ -780,7 +827,7 @@ function getCategoryIcon($category) {
             const selectedTypes = Array.from(document.querySelectorAll('input[id^="type"]:not([id*="Mobile"]):checked'))
                 .map(cb => cb.value.toLowerCase());
             
-            const selectedAmenities = Array.from(document.querySelectorAll('.amenity-checkbox:not([id*="Mobile"]):checked'))
+            const selectedFeatures = Array.from(document.querySelectorAll('.feature-checkbox:not([id*="Mobile"]):checked'))
                 .map(cb => cb.value.toLowerCase());
             
             const priceRange = document.getElementById('priceRange');
@@ -816,12 +863,13 @@ function getCategoryIcon($category) {
                     show = false;
                 }
                 
-                // Filter by amenities (all selected amenities must be present)
-                if (selectedAmenities.length > 0) {
-                    const hasAllAmenities = selectedAmenities.every(amenity => 
-                        cardFeatures.some(feature => feature.toLowerCase().includes(amenity))
+                // Filter by features (all selected features must be present)
+                if (selectedFeatures.length > 0) {
+                    const normalizedCardFeatures = cardFeatures.map(f => f.trim().toLowerCase()).filter(Boolean);
+                    const hasAllFeatures = selectedFeatures.every(selected =>
+                        normalizedCardFeatures.some(cardFeature => cardFeature.includes(selected))
                     );
-                    if (!hasAllAmenities) {
+                    if (!hasAllFeatures) {
                         show = false;
                     }
                 }

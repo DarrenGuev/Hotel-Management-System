@@ -88,8 +88,6 @@ if (isset($_POST['add_room'])) {
 
 if (isset($_POST['deleteID'])) {
     $deleteID = (int)$_POST['deleteID'];
-
-    // Get image path before deleting to remove the file
     $getImageQuery = "SELECT imagePath FROM rooms WHERE roomID = '$deleteID'";
     $imageResult = executeQuery($getImageQuery);
     if ($imageRow = mysqli_fetch_assoc($imageResult)) {
