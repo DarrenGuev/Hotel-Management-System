@@ -211,8 +211,16 @@ if ($feedbackResult) {
                             function renderReviews() {
                                 var container = document.getElementById('reviewsContainer');
                                 container.innerHTML = '';
+                                // Use window.innerWidth for responsive behavior without reload
+                                const screenWidth = window.innerWidth;
+                                if (screenWidth < 768) {
+                                    reviewsPerPage = 1;
+                                } else {
+                                    reviewsPerPage = 3;
+                                }
                                 var start = currentPage * reviewsPerPage;
                                 var end = Math.min(start + reviewsPerPage, allReviews.length);
+                                
 
                                 if (allReviews.length === 0) {
                                     container.innerHTML = '<div class="col-12"><div class="alert alert-info mb-0"> #about-section No customer reviews yet. Be the first to <a href="frontend/userFeedback.php">leave a review</a>.</div></div>';
@@ -281,6 +289,19 @@ if ($feedbackResult) {
 
                             document.addEventListener('DOMContentLoaded', function () {
                                 renderReviews();
+                            });
+
+                            // Re-render reviews on window resize for responsive layout
+                            window.addEventListener('resize', function() {
+                                var newReviewsPerPage = window.innerWidth < 768 ? 1 : 3;
+                                if (newReviewsPerPage !== reviewsPerPage) {
+                                    // Adjust current page to stay within bounds
+                                    var totalPages = Math.ceil(allReviews.length / newReviewsPerPage);
+                                    if (currentPage >= totalPages) {
+                                        currentPage = Math.max(0, totalPages - 1);
+                                    }
+                                    renderReviews();
+                                }
                             });
                         </script>
                     <?php else: ?>
