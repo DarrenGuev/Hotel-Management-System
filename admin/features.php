@@ -6,6 +6,7 @@ if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'admin') {
     exit();
 }
 
+// Handle form submissions and store messages in session
 if (isset($_POST['add_feature'])) {
     $featureName = mysqli_real_escape_string($conn, $_POST['featureName']);
     $category = mysqli_real_escape_string($conn, $_POST['category']);
@@ -13,15 +14,25 @@ if (isset($_POST['add_feature'])) {
     if (!empty($featureName) && !empty($category)) {
         $insertFeatureQuery = "INSERT INTO `features`(`featureName`, `category`) VALUES ('$featureName', '$category')";
         if (executeQuery($insertFeatureQuery)) {
-            echo '<div class="alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 9999;">Feature Added!</div>';
+            $_SESSION['alert'] = ['type' => 'success', 'message' => 'Feature added successfully!'];
+        } else {
+            $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error adding feature.'];
         }
     }
+    header("Location: features.php");
+    exit();
 }
 
 if (isset($_POST['deleteFeatureId'])) {
     $deleteFeatureId = (int)$_POST['deleteFeatureId'];
     $deleteFeatureQuery = "DELETE FROM `features` WHERE `featureId` = '$deleteFeatureId'";
-    executeQuery($deleteFeatureQuery);
+    if (executeQuery($deleteFeatureQuery)) {
+        $_SESSION['alert'] = ['type' => 'success', 'message' => 'Feature deleted successfully!'];
+    } else {
+        $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error deleting feature.'];
+    }
+    header("Location: features.php");
+    exit();
 }
 
 if (isset($_POST['update_feature'])) {
@@ -32,19 +43,13 @@ if (isset($_POST['update_feature'])) {
     if ($featureId && !empty($featureName) && !empty($category)) {
         $updateFeatureQuery = "UPDATE `features` SET `featureName`='$featureName', `category`='$category' WHERE `featureId`='$featureId'";
         if (executeQuery($updateFeatureQuery)) {
-            echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3"
-                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                Feature updated successfully.
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>';
+            $_SESSION['alert'] = ['type' => 'success', 'message' => 'Feature updated successfully!'];
         } else {
-            echo '<div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3"
-                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                Error updating feature.
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>';
+            $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error updating feature.'];
         }
     }
+    header("Location: features.php");
+    exit();
 }
 
 // Handle adding new category
@@ -52,67 +57,49 @@ if (isset($_POST['add_category'])) {
     $newCategory = mysqli_real_escape_string($conn, trim($_POST['newCategory']));
     
     if (!empty($newCategory)) {
-        // Check if category already exists in featureCategories table
         $checkQuery = "SELECT categoryID FROM featureCategories WHERE categoryName = '$newCategory'";
         $checkResult = executeQuery($checkQuery);
         
         if (mysqli_num_rows($checkResult) > 0) {
-            echo '<div class="alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                Category "' . htmlspecialchars($newCategory) . '" already exists!
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>';
+            $_SESSION['alert'] = ['type' => 'warning', 'message' => 'Category "' . htmlspecialchars($newCategory) . '" already exists!'];
         } else {
-            // Insert into featureCategories table
             $insertQuery = "INSERT INTO featureCategories (categoryName) VALUES ('$newCategory')";
             if (executeQuery($insertQuery)) {
-                echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                    role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                    Category "' . htmlspecialchars($newCategory) . '" added successfully!
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>';
+                $_SESSION['alert'] = ['type' => 'success', 'message' => 'Category "' . htmlspecialchars($newCategory) . '" added successfully!'];
             } else {
-                echo '<div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                    role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                    Error adding category. Please try again.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>';
+                $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error adding category. Please try again.'];
             }
         }
     }
+    header("Location: features.php");
+    exit();
 }
 
 // Handle deleting category
 if (isset($_POST['delete_category'])) {
     $deleteCategoryID = (int)$_POST['deleteCategoryID'];
     
-    // Get category name first
     $getCatQuery = "SELECT categoryName FROM featureCategories WHERE categoryID = '$deleteCategoryID'";
     $getCatResult = executeQuery($getCatQuery);
     $catRow = mysqli_fetch_assoc($getCatResult);
     $deleteCategory = $catRow ? $catRow['categoryName'] : '';
     
-    // Count features in this category
     $countQuery = "SELECT COUNT(*) as count FROM features WHERE category = '$deleteCategory'";
     $countResult = executeQuery($countQuery);
     $featureCount = mysqli_fetch_assoc($countResult)['count'];
     
     if ($featureCount > 0) {
-        echo '<div class="alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-            role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-            Cannot delete category "' . htmlspecialchars($deleteCategory) . '". ' . $featureCount . ' feature(s) are using it. Please reassign or delete those features first.
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>';
+        $_SESSION['alert'] = ['type' => 'warning', 'message' => 'Cannot delete category "' . htmlspecialchars($deleteCategory) . '". ' . $featureCount . ' feature(s) are using it.'];
     } else {
         $deleteQuery = "DELETE FROM featureCategories WHERE categoryID = '$deleteCategoryID'";
         if (executeQuery($deleteQuery)) {
-            echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                Category "' . htmlspecialchars($deleteCategory) . '" deleted successfully!
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>';
+            $_SESSION['alert'] = ['type' => 'success', 'message' => 'Category "' . htmlspecialchars($deleteCategory) . '" deleted successfully!'];
+        } else {
+            $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error deleting category.'];
         }
     }
+    header("Location: features.php");
+    exit();
 }
 
 // Handle renaming category
@@ -129,30 +116,20 @@ if (isset($_POST['rename_category'])) {
         $checkResult = executeQuery($checkQuery);
         
         if (mysqli_num_rows($checkResult) > 0) {
-            echo '<div class="alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                Category "' . htmlspecialchars($newCategoryName) . '" already exists!
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>';
+            $_SESSION['alert'] = ['type' => 'warning', 'message' => 'Category "' . htmlspecialchars($newCategoryName) . '" already exists!'];
         } else {
             $updateCatQuery = "UPDATE featureCategories SET categoryName = '$newCategoryName' WHERE categoryID = '$categoryID'";
             $updateFeaturesQuery = "UPDATE features SET category = '$newCategoryName' WHERE category = '$oldCategory'";
             
             if (executeQuery($updateCatQuery) && executeQuery($updateFeaturesQuery)) {
-                echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                    role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                    Category renamed from "' . htmlspecialchars($oldCategory) . '" to "' . htmlspecialchars($newCategoryName) . '" successfully!
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>';
+                $_SESSION['alert'] = ['type' => 'success', 'message' => 'Category renamed from "' . htmlspecialchars($oldCategory) . '" to "' . htmlspecialchars($newCategoryName) . '" successfully!'];
             } else {
-                echo '<div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                    role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                    Error renaming category. Please try again.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>';
+                $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error renaming category. Please try again.'];
             }
         }
     }
+    header("Location: features.php");
+    exit();
 }
 
 $getFeatures = "SELECT * FROM features ORDER BY category, featureId";
@@ -180,6 +157,16 @@ while ($cat = mysqli_fetch_assoc($categoriesResult)) {
 </head>
 
 <body class="bg-light">
+    <!-- Alert Message Container -->
+    <?php if (isset($_SESSION['alert'])): ?>
+        <div class="alert alert-<?php echo $_SESSION['alert']['type']; ?> alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
+            role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);" id="autoAlert">
+            <?php echo $_SESSION['alert']['message']; ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <?php unset($_SESSION['alert']); ?>
+    <?php endif; ?>
+
     <div class="container-fluid">
         <div class="row">
             <?php include 'includes/sidebar.php'; ?>
@@ -273,13 +260,15 @@ while ($cat = mysqli_fetch_assoc($categoriesResult)) {
                                                     <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editFeatureModal<?php echo (int)$row['featureId']; ?>">
                                                         <i class="bi bi-pencil"></i>
                                                     </button>
-                                                    <form method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this feature?');">
-                                                        <input type="hidden" name="deleteFeatureId" value="<?php echo (int)$row['featureId']; ?>">
-                                                        <button class="btn btn-outline-danger btn-sm" type="submit">
-                                                            <i class="bi bi-trash"></i>
-                                                        </button>
-                                                    </form>
+                                                    <button type="button" class="btn btn-outline-danger" onclick="confirmDeleteFeature(<?php echo (int)$row['featureId']; ?>)">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
                                                 </div>
+
+                                                <!-- Hidden delete form -->
+                                                <form method="POST" id="deleteFeatureForm<?php echo (int)$row['featureId']; ?>" style="display:none;">
+                                                    <input type="hidden" name="deleteFeatureId" value="<?php echo (int)$row['featureId']; ?>">
+                                                </form>
 
                                                 <!-- Edit Feature Modal -->
                                                 <div class="modal fade" id="editFeatureModal<?php echo (int)$row['featureId']; ?>" tabindex="-1" aria-hidden="true">
@@ -451,11 +440,13 @@ while ($cat = mysqli_fetch_assoc($categoriesResult)) {
                                             <i class="bi bi-pencil"></i>
                                         </button>
                                         <?php if ($catCount == 0) { ?>
-                                            <form method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete the category: <?php echo htmlspecialchars($catName, ENT_QUOTES); ?>?');">
+                                            <button type="button" class="btn btn-danger" title="Delete" 
+                                                    onclick="confirmDeleteCategory(<?php echo $catID; ?>, '<?php echo htmlspecialchars($catName, ENT_QUOTES); ?>')">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                            <form method="POST" id="deleteCategoryForm<?php echo $catID; ?>" style="display:none;">
                                                 <input type="hidden" name="deleteCategoryID" value="<?php echo $catID; ?>">
-                                                <button type="submit" name="delete_category" class="btn btn-danger" title="Delete">
-                                                    <i class="bi bi-trash"></i> Delete
-                                                </button>
+                                                <input type="hidden" name="delete_category" value="1">
                                             </form>
                                         <?php } else { ?>
                                             <button type="button" class="btn btn-outline-secondary" disabled title="Cannot delete - has <?php echo $catCount; ?> feature(s)">
@@ -501,6 +492,33 @@ while ($cat = mysqli_fetch_assoc($categoriesResult)) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Auto-dismiss alert after 3 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const autoAlert = document.getElementById('autoAlert');
+            if (autoAlert) {
+                setTimeout(function() {
+                    const bsAlert = bootstrap.Alert.getOrCreateInstance(autoAlert);
+                    bsAlert.close();
+                }, 3000);
+            }
+            
+            // Initialize pagination
+            filterFeatures('All');
+        });
+
+        // Confirm delete functions
+        function confirmDeleteFeature(featureId) {
+            if (confirm('Are you sure you want to delete this feature?')) {
+                document.getElementById('deleteFeatureForm' + featureId).submit();
+            }
+        }
+
+        function confirmDeleteCategory(catId, catName) {
+            if (confirm('Are you sure you want to delete the category: ' + catName + '?')) {
+                document.getElementById('deleteCategoryForm' + catId).submit();
+            }
+        }
+
         // Pagination and filter variables
         const featuresPerPage = 7;
         let currentPage = 1;

@@ -187,59 +187,53 @@ $countCompleted = executeQuery("SELECT COUNT(*) as count FROM bookings WHERE boo
 
                 <div class="row g-4 mb-4">
                     <div class="col-6 col-md-3 col-xl">
-                        <a href="?status=all" class="text-decoration-none">
-                            <div class="card stat-card bg-primary text-white <?php echo $statusFilter === 'all' ? 'active' : ''; ?>">
-                                <div class="card-body text-center">
-                                    <i class="bi bi-calendar3 display-6"></i>
-                                    <h3 class="fw-bold mt-2"><?php echo $countAll; ?></h3>
-                                    <small>Total Bookings</small>
-                                </div>
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <i class="bi bi-calendar3 display-6"></i>
+                                <h3 class="fw-bold mt-2"><?php echo $countAll; ?></h3>
+                                <small>Total Bookings</small>
                             </div>
-                        </a>
+                        </div>
                     </div>
+
                     <div class="col-6 col-md-3 col-xl">
-                        <a href="?status=pending" class="text-decoration-none">
-                            <div class="card stat-card bg-warning text-dark <?php echo $statusFilter === 'pending' ? 'active' : ''; ?>">
-                                <div class="card-body text-center">
-                                    <i class="bi bi-hourglass-split display-6"></i>
-                                    <h3 class="fw-bold mt-2"><?php echo $countPending; ?></h3>
-                                    <small>Pending</small>
-                                </div>
+                        <div class="card bg-warning text-dark">
+                            <div class="card-body text-center">
+                                <i class="bi bi-hourglass-split display-6"></i>
+                                <h3 class="fw-bold mt-2"><?php echo $countPending; ?></h3>
+                                <small>Pending</small>
                             </div>
-                        </a>
+                        </div>
                     </div>
+
                     <div class="col-6 col-md-3 col-xl">
-                        <a href="?status=confirmed" class="text-decoration-none">
-                            <div class="card stat-card bg-success text-white <?php echo $statusFilter === 'confirmed' ? 'active' : ''; ?>">
-                                <div class="card-body text-center">
-                                    <i class="bi bi-check-circle display-6"></i>
-                                    <h3 class="fw-bold mt-2"><?php echo $countConfirmed; ?></h3>
-                                    <small>Confirmed</small>
-                                </div>
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <i class="bi bi-check-circle display-6"></i>
+                                <h3 class="fw-bold mt-2"><?php echo $countConfirmed; ?></h3>
+                                <small>Confirmed</small>
                             </div>
-                        </a>
+                        </div>
                     </div>
+
                     <div class="col-6 col-md-3 col-xl">
-                        <a href="?status=cancelled" class="text-decoration-none">
-                            <div class="card stat-card bg-danger text-white <?php echo $statusFilter === 'cancelled' ? 'active' : ''; ?>">
-                                <div class="card-body text-center">
-                                    <i class="bi bi-x-circle display-6"></i>
-                                    <h3 class="fw-bold mt-2"><?php echo $countCancelled; ?></h3>
-                                    <small>Cancelled</small>
-                                </div>
+                        <div class="card bg-danger text-white">
+                            <div class="card-body text-center">
+                                <i class="bi bi-x-circle display-6"></i>
+                                <h3 class="fw-bold mt-2"><?php echo $countCancelled; ?></h3>
+                                <small>Cancelled</small>
                             </div>
-                        </a>
+                        </div>
                     </div>
+
                     <div class="col-6 col-md-3 col-xl">
-                        <a href="?status=completed" class="text-decoration-none">
-                            <div class="card stat-card bg-info text-white <?php echo $statusFilter === 'completed' ? 'active' : ''; ?>">
-                                <div class="card-body text-center">
-                                    <i class="bi bi-flag display-6"></i>
-                                    <h3 class="fw-bold mt-2"><?php echo $countCompleted; ?></h3>
-                                    <small>Completed</small>
-                                </div>
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <i class="bi bi-flag display-6"></i>
+                                <h3 class="fw-bold mt-2"><?php echo $countCompleted; ?></h3>
+                                <small>Completed</small>
                             </div>
-                        </a>
+                        </div>
                     </div>
                 </div>
 
