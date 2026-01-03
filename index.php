@@ -162,93 +162,71 @@ if ($feedbackResult) {
         </div>
     </div>
 
-    <div class="container" id="eventsContainer">
+    <div class="container">
         <div class="row">
             <div class="col">
-                <h2 class="mt-5 pt-4 mb-2 text-center fw-bold h-font">EVENTS</h2>
+                <h2 class="mt-5 pt-4 mb-2 text-center fw-bold h-font">CUSTOMER REVIEWS</h2>
                 <div class="mx-auto mt-3 mb-5" style="width: 80px; height: 4px; background-color: #FF9900;"></div>
             </div>
         </div>
     </div>
 
     <div class="container mt-5">
-        <div class="row">
-            <div class="col">
-                <!-- API para sa events nina jana dito ilalagay -->
-            </div>
-        </div>
-    </div>
+        <div class="d-flex align-items-center">
+            <button class="btn btn-outline-dark rounded-circle me-3 d-none d-md-block" id="prevReview"
+                onclick="changeReviewPage(-1)">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            <div class="row flex-grow-1" id="reviewsContainer">
+                <?php if (isset($reviews) && $reviews->num_rows > 0): ?>
+                    <?php
+                    $reviewsArray = [];
+                    while ($row = mysqli_fetch_assoc($reviews)) {
+                        $reviewsArray[] = $row;
+                    }
+                    ?>
+                    <script>
+                        var allReviews = <?php echo json_encode($reviewsArray); ?>;
+                        var currentPage = 0;
+                        var reviewsPerPage = 3;
 
-    <div class="body bg-body-tertiary pb-5">
-        <div class="container">
-            <div class="row">
-                <div class="col">
-                    <h2 class="mt-5 pt-4 mb-2 text-center fw-bold h-font">CUSTOMER REVIEWS</h2>
-                    <div class="mx-auto mt-3 mb-5" style="width: 80px; height: 4px; background-color: #FF9900;"></div>
-                </div>
-            </div>
-        </div>
+                        function renderReviews() {
+                            var container = document.getElementById('reviewsContainer');
+                            container.innerHTML = '';
+                            var start = currentPage * reviewsPerPage;
+                            var end = Math.min(start + reviewsPerPage, allReviews.length);
 
-        <div class="container mt-5">
-            <div class="d-flex align-items-center">
-                <button class="btn btn-outline-dark rounded-circle me-3 d-none d-md-block" id="prevReview"
-                    onclick="changeReviewPage(-1)">
-                    <i class="bi bi-chevron-left"></i>
-                </button>
-                <div class="row flex-grow-1" id="reviewsContainer">
-                    <?php if (isset($reviews) && $reviews->num_rows > 0): ?>
-                        <?php
-                        $reviewsArray = [];
-                        while ($row = mysqli_fetch_assoc($reviews)) {
-                            $reviewsArray[] = $row;
-                        }
-                        ?>
-                        <script>
-                            var allReviews = <?php echo json_encode($reviewsArray); ?>;
-                            var currentPage = 0;
-                            var reviewsPerPage = 3;
+                            if (allReviews.length === 0) {
+                                container.innerHTML = '<div class="col-12"><div class="alert alert-info mb-0"> #about-section No customer reviews yet. Be the first to <a href="frontend/userFeedback.php">leave a review</a>.</div></div>';
+                                return;
+                            }
 
-                            function renderReviews() {
-                                var container = document.getElementById('reviewsContainer');
-                                container.innerHTML = '';
-                                // Use window.innerWidth for responsive behavior without reload
-                                const screenWidth = window.innerWidth;
-                                if (screenWidth < 768) {
-                                    reviewsPerPage = 1;
+                            for (var i = start; i < end; i++) {
+                                var review = allReviews[i];
+                                var stars = '';
+                                for (var j = 0; j < parseInt(review.rating); j++) {
+                                    stars += '<i class="bi bi-star-fill text-warning"></i>';
+                                }
+                                var date = new Date(review.submittedAt);
+                                var options = {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                };
+                                var formattedDate = new Date(review.submittedAt).toLocaleDateString();
+                                var roomInfo = review.roomName ? ' for ' + escapeHtml(review.roomName) : '';
+                                var reviewText = review.userReview || '';
+                                var seeMore = '<button class="btn btn-link p-0" data-bs-toggle="modal" data-bs-target="#fullReviewModal" onclick="showFullReview(\'' + encodeURIComponent(review.username) + '\', \'' + encodeURIComponent(reviewText) + '\', ' + review.rating + ', \'' + formattedDate + '\', \'' + encodeURIComponent(review.roomName || '') + '\')">see more...</button>';
+                                var finalReviewHtml = '';
+
+                                if (reviewText.length > 30) {
+                                    var truncated = reviewText.slice(0, 30);
+                                    finalReviewHtml = escapeHtml(truncated).replace(/\n/g, '<br>') + seeMore;
                                 } else {
-                                    reviewsPerPage = 3;
-                                }
-                                var start = currentPage * reviewsPerPage;
-                                var end = Math.min(start + reviewsPerPage, allReviews.length);
-                                
-
-                                if (allReviews.length === 0) {
-                                    container.innerHTML = '<div class="col-12"><div class="alert alert-info mb-0"> #about-section No customer reviews yet. Be the first to <a href="frontend/userFeedback.php">leave a review</a>.</div></div>';
-                                    return;
+                                    finalReviewHtml = escapeHtml(reviewText).replace(/\n/g, '<br>');
                                 }
 
-                                for (var i = start; i < end; i++) {
-                                    var review = allReviews[i];
-                                    var stars = '';
-                                    for (var j = 0; j < parseInt(review.rating); j++) {
-                                        stars += '<i class="bi bi-star-fill text-warning"></i>';
-                                    }
-                                    var date = new Date(review.submittedAt);
-                                    var options = { year: 'numeric', month: 'long', day: 'numeric' };
-                                    var formattedDate = new Date(review.submittedAt).toLocaleDateString();
-                                    var roomInfo = review.roomName ? ' for ' + escapeHtml(review.roomName) : '';
-                                    var reviewText = review.userReview || '';
-                                    var seeMore = '<button class="btn btn-link p-0" data-bs-toggle="modal" data-bs-target="#fullReviewModal" onclick="showFullReview(\'' + encodeURIComponent(review.username) + '\', \'' + encodeURIComponent(reviewText) + '\', ' + review.rating + ', \'' + formattedDate + '\', \'' + encodeURIComponent(review.roomName || '') + '\')">see more...</button>';
-                                    var finalReviewHtml = '';
-
-                                    if (reviewText.length > 30) {
-                                        var truncated = reviewText.slice(0, 30);
-                                        finalReviewHtml = escapeHtml(truncated).replace(/\n/g, '<br>') + seeMore;
-                                    } else {
-                                        finalReviewHtml = escapeHtml(reviewText).replace(/\n/g, '<br>');
-                                    }
-
-                                    container.innerHTML += `
+                                container.innerHTML += `
                                         <div class="col-md-4 mb-3">
                                             <div class="card h-100">
                                                 <div class="card-body">
@@ -266,147 +244,68 @@ if ($feedbackResult) {
                                             </div>
                                         </div>
                                     `;
-                                }
-
-                                document.getElementById('prevReview').disabled = currentPage === 0;
-                                document.getElementById('nextReview').disabled = end >= allReviews.length;
                             }
 
-                            function escapeHtml(text) {
-                                if (!text) return '';
-                                var div = document.createElement('div');
-                                div.textContent = text;
-                                return div.innerHTML;
-                            }
+                            document.getElementById('prevReview').disabled = currentPage === 0;
+                            document.getElementById('nextReview').disabled = end >= allReviews.length;
+                        }
 
-                            function changeReviewPage(direction) {
-                                var totalPages = Math.ceil(allReviews.length / reviewsPerPage);
-                                currentPage += direction;
-                                if (currentPage < 0) currentPage = 0;
-                                if (currentPage >= totalPages) currentPage = totalPages - 1;
-                                renderReviews();
-                            }
+                        function escapeHtml(text) {
+                            if (!text) return '';
+                            var div = document.createElement('div');
+                            div.textContent = text;
+                            return div.innerHTML;
+                        }
 
-                            document.addEventListener('DOMContentLoaded', function () {
-                                renderReviews();
-                            });
+                        function changeReviewPage(direction) {
+                            var totalPages = Math.ceil(allReviews.length / reviewsPerPage);
+                            currentPage += direction;
+                            if (currentPage < 0) currentPage = 0;
+                            if (currentPage >= totalPages) currentPage = totalPages - 1;
+                            renderReviews();
+                        }
 
-                            // Re-render reviews on window resize for responsive layout
-                            window.addEventListener('resize', function() {
-                                var newReviewsPerPage = window.innerWidth < 768 ? 1 : 3;
-                                if (newReviewsPerPage !== reviewsPerPage) {
-                                    // Adjust current page to stay within bounds
-                                    var totalPages = Math.ceil(allReviews.length / newReviewsPerPage);
-                                    if (currentPage >= totalPages) {
-                                        currentPage = Math.max(0, totalPages - 1);
-                                    }
-                                    renderReviews();
-                                }
-                            });
-                        </script>
-                    <?php else: ?>
-                        <div class="col-12">
-                            <div class="alert alert-info mb-0">No customer reviews yet. Be the first to <a
-                                    href="frontend/userFeedback.php">leave a review</a>.</div>
-                        </div>
-                    <?php endif; ?>
-                </div>
-                <button class="btn btn-outline-dark rounded-circle ms-3 d-none d-md-block" id="nextReview"
-                    onclick="changeReviewPage(1)">
-                    <i class="bi bi-chevron-right"></i>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            renderReviews();
+                        });
+                    </script>
+                <?php else: ?>
+                    <div class="col-12">
+                        <div class="alert alert-info mb-0">No customer reviews yet. Be the first to <a
+                                href="frontend/userFeedback.php">leave a review</a>.</div>
+                    </div>
+                <?php endif; ?>
+            </div>
+            <button class="btn btn-outline-dark rounded-circle ms-3 d-none d-md-block" id="nextReview"
+                onclick="changeReviewPage(1)">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+        <div class="row mt-3 justify-content-center">
+            <div class="col-6 d-flex justify-content-center">
+                <button class="btn btn-outline-dark rounded-circle me-3 d-block d-md-none"
+                    id="prevReview" onclick="changeReviewPage(-1)">
+                    <i class="bi bi-chevron-left"></i>
                 </button>
             </div>
-            <div class="row mt-3 justify-content-center">
-                <div class="col-6 d-flex justify-content-center">
-                    <button class="btn btn-outline-dark rounded-circle me-3 d-block d-md-none"
-                        id="prevReview" onclick="changeReviewPage(-1)">
-                        <i class="bi bi-chevron-left"></i>
-                    </button>
-                </div>
-                <div class="col-6 d-flex justify-content-center">
-                    <button class="btn btn-outline-dark rounded-circle ms-3 d-block d-md-none"
-                        id="nextReview" onclick="changeReviewPage(1)">
-                        <i class="bi bi-chevron-right"></i>
-                    </button>
-                </div>
+            <div class="col-6 d-flex justify-content-center">
+                <button class="btn btn-outline-dark rounded-circle ms-3 d-block d-md-none"
+                    id="nextReview" onclick="changeReviewPage(1)">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
             </div>
         </div>
 
 
-        <div class="col-lg-12 text-center my-4">
-            <a href="frontend/userFeedback.php" class="btn btn-dark shadow-none">
+        <div class="col-lg-12 text-center my-4 mb-5">
+            <a href="frontend/userFeedback.php" class="btn btn-warning shadow-none">
                 <i class="bi bi-pencil-square me-2"></i>Add Your Review
             </a>
         </div>
     </div>
-
-
-    <div class="container" id="about">
-        <div class="row">
-            <div class="col">
-                <h2 class="mt-5 mb-2 text-center fw-bold h-font">ABOUT US</h2>
-                <div class="mx-auto mt-3 mb-5" style="width: 80px; height: 4px; background-color: #FF9900;">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="about-section" class="container-fluid py-5"
-        style="background: linear-gradient(rgba(245, 240, 230, 0.85), rgba(245, 240, 230, 0.85)), url('images/loginRegisterImg/img.jpg') center/cover no-repeat;">
-        <div class="row justify-content-center g-4">
-            <div class="col-12 col-lg-5">
-                <div
-                    class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start text-center text-sm-start">
-                    <div class="rounded-5 overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
-                        style="width: 200px; height: 200px;">
-                        <img src="images/loginRegisterImg/img.jpg" alt="..."
-                            class="img-fluid object-fit-cover w-100 h-100">
-                    </div>
-                    <div class="ms-sm-4">
-                        <h5 class="fw-bold text-uppercase text-secondary mb-3" style="letter-spacing: 2px;">A
-                            Little
-                            About Us</h5>
-                        <p class="text-muted mb-0">TravelMates is a web-based booking system designed to automate and
-                            simplify hotel operations, particularly room reservations. The system allows customers to
-                            view available rooms, make bookings online, and receive booking confirmations, while
-                            enabling hotel staff and administrators to manage reservations efficiently.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-lg-5">
-                <div
-                    class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start text-center text-sm-start">
-                    <div class="rounded-5 overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
-                        style="width: 200px; height: 200px;">
-                        <img src="images/loginRegisterImg/evenzalogo.png" alt="..."
-                            class="img-fluid object-fit-cover w-100 h-100" style="filter: grayscale(100%);">
-                    </div>
-                    <div class="ms-sm-4">
-                        <h5 class="fw-bold text-uppercase text-secondary mb-3" style="letter-spacing: 2px;">Our
-                            Collaborator</h5>
-                        <p class="text-muted mb-0">EVENZA is a premium event reservation and ticketing platform focused
-                            on delivering seamless and well-organized hotel-hosted events. We aim to connect guests with
-                            carefully curated experiences through a secure and user-friendly digital system.
-
-                            By combining modern technology with professional event management, EVENZA helps organizers
-                            efficiently manage reservations, service packages, and guest experiences while ensuring
-                            convenience and reliability for every attendee.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="container mt-5">
-        <div class="row" id="membersContainer">
-
-        </div>
-    </div>
-
     <?php include 'frontend/includes/footer.php'; ?>
 
     <script src="js/ourRooms.js"></script>
-    <script src="js/members.js"></script>
     <script>
         var ourRoomsContainer = document.getElementById("ourRoomsContainer");
         for (var i = 0; i < ourRooms.length; i++) {
@@ -425,24 +324,6 @@ if ($feedbackResult) {
       `;
         }
 
-        var memberContainer = document.getElementById("membersContainer");
-        for (var i = 0; i < members.length; i++) {
-            memberContainer.innerHTML += `
-            <div class="col-12 col-sm-6 col-md-4 col-lg pb-4 text-center">
-                <div class="card h-100 bg-transparent border-0 rounded-3 align-items-center">
-                    <div class="rounded-circle overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
-                        style="width: 200px; height: 200px;">
-                        <img src="images/members-img/` + members[i].images + `" alt="..."
-                            class="img-fluid object-fit-cover w-100 h-100">
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">` + members[i].name + `</h5>
-                    </div>
-                </div>
-            </div>
-      `;
-        }
-
         function changeMode() {
             const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
             const newTheme = isDark ? 'light' : 'dark';
@@ -454,7 +335,7 @@ if ($feedbackResult) {
 
             // Update logos
             const logoPath = newTheme === 'dark' ? '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoW.png' : '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoB.png';
-            document.querySelectorAll('#site-logo, #footer-logo').forEach(function (logo) {
+            document.querySelectorAll('#site-logo, #footer-logo').forEach(function(logo) {
                 logo.src = logoPath;
             });
 

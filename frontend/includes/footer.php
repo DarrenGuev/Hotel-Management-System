@@ -1,4 +1,4 @@
-<footer class="bg-body-tertiary py-5 border-top mt-5">
+<footer class="bg-body-tertiary py-5 border-top">
     <div class="container">
         <div class="row">
             <!-- Logo and Description -->

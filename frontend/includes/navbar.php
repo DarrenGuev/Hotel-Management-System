@@ -22,9 +22,9 @@ $userRole = $isLoggedIn && isset($_SESSION['role']) ? $_SESSION['role'] : '';
                         class="bi bi-house-fill me-2"></i>HOME</a>
                 <a class="nav-link small text-body me-5" href="/HOTEL-MANAGEMENT-SYSTEM/frontend/rooms.php"><i
                         class="bi bi-door-open me-2"></i>ROOMS</a>
-                <a class="nav-link small text-body me-5" href="/HOTEL-MANAGEMENT-SYSTEM/index.php#eventsContainer"><i
+                <a class="nav-link small text-body me-5" href="/HOTEL-MANAGEMENT-SYSTEM/frontend/events.php"><i
                         class="bi bi-calendar-event me-2"></i>EVENTS</a>
-                <a class="nav-link small text-body me-5" href="/HOTEL-MANAGEMENT-SYSTEM/index.php#about"><i
+                <a class="nav-link small text-body me-5" href="/HOTEL-MANAGEMENT-SYSTEM/frontend/about.php"><i
                         class="bi bi-info-circle me-2"></i>ABOUT</a>
 
                 <div class="d-flex d-lg-none mt-3">
