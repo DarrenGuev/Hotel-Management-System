@@ -18,20 +18,52 @@ if (isset($_SESSION['userID'])) {
 $getRoomTypes = "SELECT * FROM roomtypes ORDER BY roomTypeID";
 $roomTypesResult = executeQuery($getRoomTypes);
 
-// Get all unique amenities/features from the database
-$getAmenitiesQuery = "SELECT DISTINCT f.featureName FROM features f 
+// Get all unique amenities/features from the database grouped by category
+$getAmenitiesQuery = "SELECT DISTINCT f.featureName, f.category FROM features f 
                       INNER JOIN roomfeatures rf ON f.featureId = rf.featureID 
-                      ORDER BY f.featureName";
+                      ORDER BY f.category, f.featureName";
 $amenitiesResult = executeQuery($getAmenitiesQuery);
 $availableAmenities = [];
+$amenitiesByCategory = [];
 while ($amenity = mysqli_fetch_assoc($amenitiesResult)) {
     $availableAmenities[] = $amenity['featureName'];
+    $category = $amenity['category'] ?? 'General';
+    if (!isset($amenitiesByCategory[$category])) {
+        $amenitiesByCategory[$category] = [];
+    }
+    $amenitiesByCategory[$category][] = $amenity['featureName'];
 }
 
 function getRoomFeatures($roomID)
 {
-    $query = "SELECT f.featureName FROM features f INNER JOIN roomfeatures rf ON f.featureId = rf.featureID WHERE rf.roomID = " . (int) $roomID;
+    $query = "SELECT f.featureName, f.category FROM features f INNER JOIN roomfeatures rf ON f.featureId = rf.featureID WHERE rf.roomID = " . (int) $roomID . " ORDER BY f.category, f.featureName";
     return executeQuery($query);
+}
+
+// Helper function to group features by category
+function groupFeaturesByCategory($featuresResult) {
+    $grouped = [];
+    while ($feature = mysqli_fetch_assoc($featuresResult)) {
+        $category = $feature['category'] ?? 'General';
+        if (!isset($grouped[$category])) {
+            $grouped[$category] = [];
+        }
+        $grouped[$category][] = $feature['featureName'];
+    }
+    return $grouped;
+}
+
+// Category icons mapping
+function getCategoryIcon($category) {
+    $icons = [
+        'Amenities' => 'bi-stars',
+        'Bathroom' => 'bi-droplet',
+        'Beds' => 'bi-lamp',
+        'Entertainment' => 'bi-tv',
+        'Rooms' => 'bi-door-open',
+        'General' => 'bi-check-circle'
+    ];
+    return $icons[$category] ?? 'bi-check-circle';
 }
 ?>
 <!doctype html>
@@ -90,27 +122,19 @@ function getRoomFeatures($roomID)
                                             <!-- Room Type -->
                                             <div class="border-bottom pb-3 mb-3">
                                                 <h6 class="fw-semibold mb-3 text-secondary">Room Type</h6>
+                                                <?php 
+                                                mysqli_data_seek($roomTypesResult, 0);
+                                                while ($type = mysqli_fetch_assoc($roomTypesResult)) { 
+                                                    $typeValue = strtolower($type['roomType']);
+                                                    $typeId = 'type' . str_replace(' ', '', $type['roomType']) . 'Mobile';
+                                                ?>
                                                 <div class="form-check mb-2">
-                                                    <input class="form-check-input filter-checkbox" type="checkbox" value="basic"
-                                                        id="typeBasicMobile">
-                                                    <label class="form-check-label small" for="typeBasicMobile">Basic</label>
+                                                    <input class="form-check-input filter-checkbox" type="checkbox" 
+                                                        value="<?php echo htmlspecialchars($typeValue); ?>"
+                                                        id="<?php echo htmlspecialchars($typeId); ?>">
+                                                    <label class="form-check-label small" for="<?php echo htmlspecialchars($typeId); ?>"><?php echo htmlspecialchars($type['roomType']); ?></label>
                                                 </div>
-                                                <div class="form-check mb-2">
-                                                    <input class="form-check-input filter-checkbox" type="checkbox" value="family"
-                                                        id="typeFamilyMobile">
-                                                    <label class="form-check-label small" for="typeFamilyMobile">Family</label>
-                                                </div>
-                                                <div class="form-check mb-2">
-                                                    <input class="form-check-input filter-checkbox" type="checkbox" value="suite"
-                                                        id="typeSuiteMobile">
-                                                    <label class="form-check-label small" for="typeSuiteMobile">Suite</label>
-                                                </div>
-                                                <div class="form-check mb-2">
-                                                    <input class="form-check-input filter-checkbox" type="checkbox" value="deluxe"
-                                                        id="typeDeluxeMobile">
-                                                    <label class="form-check-label small"
-                                                        for="typeDeluxeMobile">Deluxe</label>
-                                                </div>
+                                                <?php } ?>
                                             </div>
 
                                             <!-- Price Range -->
@@ -127,18 +151,36 @@ function getRoomFeatures($roomID)
                                             <!-- Amenities -->
                                             <div class="border-bottom pb-3 mb-3">
                                                 <h6 class="fw-semibold mb-3 text-secondary">Amenities</h6>
-                                                <?php foreach ($availableAmenities as $amenity) {
-                                                    $amenityId = 'amenity' . str_replace(' ', '', $amenity) . 'Mobile';
-                                                    $amenityValue = strtolower($amenity);
-                                                ?>
-                                                <div class="form-check mb-2">
-                                                    <input class="form-check-input filter-checkbox amenity-checkbox" type="checkbox" 
-                                                        value="<?php echo htmlspecialchars($amenityValue); ?>"
-                                                        id="<?php echo htmlspecialchars($amenityId); ?>">
-                                                    <label class="form-check-label small"
-                                                        for="<?php echo htmlspecialchars($amenityId); ?>"><?php echo htmlspecialchars($amenity); ?></label>
+                                                <div class="d-flex flex-column gap-2">
+                                                    <?php foreach ($amenitiesByCategory as $category => $amenities) {
+                                                        $categoryId = 'category' . str_replace(' ', '', $category) . 'Mobile';
+                                                        $icon = getCategoryIcon($category);
+                                                    ?>
+                                                    <div class="btn-group dropend w-100">
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 d-flex justify-content-between align-items-center" 
+                                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                                            <span><?php echo htmlspecialchars($category); ?></span>
+                                                            <i class="bi <?php echo $icon; ?>"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu p-2">
+                                                            <?php foreach ($amenities as $amenity) {
+                                                                $amenityId = 'amenity' . str_replace(' ', '', $amenity) . 'Mobile';
+                                                                $amenityValue = strtolower($amenity);
+                                                            ?>
+                                                            <li>
+                                                                <div class="form-check">
+                                                                    <input class="form-check-input filter-checkbox amenity-checkbox" type="checkbox" 
+                                                                        value="<?php echo htmlspecialchars($amenityValue); ?>"
+                                                                        id="<?php echo htmlspecialchars($amenityId); ?>">
+                                                                    <label class="form-check-label small"
+                                                                        for="<?php echo htmlspecialchars($amenityId); ?>"><?php echo htmlspecialchars($amenity); ?></label>
+                                                                </div>
+                                                            </li>
+                                                            <?php } ?>
+                                                        </ul>
+                                                    </div>
+                                                    <?php } ?>
                                                 </div>
-                                                <?php } ?>
                                             </div>
 
                                             <!-- Guest Capacity -->
@@ -164,22 +206,19 @@ function getRoomFeatures($roomID)
                             <!-- Room Type -->
                             <div class="border-bottom pb-3 mb-3">
                                 <h6 class="fw-semibold mb-3 text-secondary">Room Type</h6>
+                                <?php 
+                                mysqli_data_seek($roomTypesResult, 0);
+                                while ($type = mysqli_fetch_assoc($roomTypesResult)) { 
+                                    $typeValue = strtolower($type['roomType']);
+                                    $typeId = 'type' . str_replace(' ', '', $type['roomType']);
+                                ?>
                                 <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" value="basic" id="typeBasic">
-                                    <label class="form-check-label small" for="typeBasic">Basic</label>
+                                    <input class="form-check-input filter-checkbox" type="checkbox" 
+                                        value="<?php echo htmlspecialchars($typeValue); ?>" 
+                                        id="<?php echo htmlspecialchars($typeId); ?>">
+                                    <label class="form-check-label small" for="<?php echo htmlspecialchars($typeId); ?>"><?php echo htmlspecialchars($type['roomType']); ?></label>
                                 </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" value="family" id="typeFamily">
-                                    <label class="form-check-label small" for="typeFamily">Family</label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" value="suite" id="typeSuite">
-                                    <label class="form-check-label small" for="typeSuite">Suite</label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" value="deluxe" id="typeDeluxe">
-                                    <label class="form-check-label small" for="typeDeluxe">Deluxe</label>
-                                </div>
+                                <?php } ?>
                             </div>
 
                             <!-- Price Range -->
@@ -196,18 +235,36 @@ function getRoomFeatures($roomID)
                             <!-- Amenities -->
                             <div class="border-bottom pb-3 mb-3">
                                 <h6 class="fw-semibold mb-3 text-secondary">Amenities</h6>
-                                <?php foreach ($availableAmenities as $amenity) {
-                                    $amenityId = 'amenity' . str_replace(' ', '', $amenity);
-                                    $amenityValue = strtolower($amenity);
-                                ?>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input amenity-checkbox" type="checkbox" 
-                                        value="<?php echo htmlspecialchars($amenityValue); ?>" 
-                                        id="<?php echo htmlspecialchars($amenityId); ?>">
-                                    <label class="form-check-label small" 
-                                        for="<?php echo htmlspecialchars($amenityId); ?>"><?php echo htmlspecialchars($amenity); ?></label>
+                                <div class="d-flex flex-column gap-2">
+                                    <?php foreach ($amenitiesByCategory as $category => $amenities) {
+                                        $categoryId = 'category' . str_replace(' ', '', $category);
+                                        $icon = getCategoryIcon($category);
+                                    ?>
+                                    <div class="btn-group dropend w-100">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 d-flex justify-content-between align-items-center" 
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                            <span><?php echo htmlspecialchars($category); ?></span>
+                                            <i class="bi <?php echo $icon; ?>"></i>
+                                        </button>
+                                        <ul class="dropdown-menu p-2">
+                                            <?php foreach ($amenities as $amenity) {
+                                                $amenityId = 'amenity' . str_replace(' ', '', $amenity);
+                                                $amenityValue = strtolower($amenity);
+                                            ?>
+                                            <li>
+                                                <div class="form-check">
+                                                    <input class="form-check-input amenity-checkbox" type="checkbox" 
+                                                        value="<?php echo htmlspecialchars($amenityValue); ?>" 
+                                                        id="<?php echo htmlspecialchars($amenityId); ?>">
+                                                    <label class="form-check-label small" 
+                                                        for="<?php echo htmlspecialchars($amenityId); ?>"><?php echo htmlspecialchars($amenity); ?></label>
+                                                </div>
+                                            </li>
+                                            <?php } ?>
+                                        </ul>
+                                    </div>
+                                    <?php } ?>
                                 </div>
-                                <?php } ?>
                             </div>
 
                             <!-- Guest Capacity -->
@@ -233,6 +290,9 @@ function getRoomFeatures($roomID)
                 <div class="mx-auto mt-3 mb-5" style="width: 80px; height: 4px; background-color: #FF9900;"></div>
 
                 <?php
+                // Reset the result pointer before iterating
+                mysqli_data_seek($roomTypesResult, 0);
+                
                 while ($roomType = mysqli_fetch_assoc($roomTypesResult)) {
                     $getRooms = "SELECT rooms.*, roomtypes.roomType AS roomTypeName FROM rooms 
                                 INNER JOIN roomtypes ON rooms.roomTypeId = roomtypes.roomTypeID 
@@ -462,21 +522,23 @@ function getRoomFeatures($roomID)
                                                                 </div>
                                                                 <div class="row">
                                                                     <p class="text-start fw-bold mt-1 mb-1">Booking details</p>
-                                                                    <div class="col-5">
+                                                                    <div class="col-6">
                                                                         <label for="checkIn<?php echo $row['roomID']; ?>"
                                                                             class="form-label mb-0">Check-in</label>
                                                                         <input type="date" name="checkInDate"
                                                                             id="checkIn<?php echo $row['roomID']; ?>"
                                                                             class="form-control mb-1" required>
                                                                     </div>
-                                                                    <div class="col-5">
+                                                                    <div class="col-6">
                                                                         <label for="checkOut<?php echo $row['roomID']; ?>"
                                                                             class="form-label mb-0">Check-out</label>
                                                                         <input type="date" name="checkOutDate"
                                                                             id="checkOut<?php echo $row['roomID']; ?>"
                                                                             class="form-control mb-1" required>
-                                                                    </div>
-                                                                    <div class="col-2">
+                                                                    </div>                                          
+                                                                </div>
+                                                                <div class="row">
+                                                                    <div class="col-3">
                                                                         <label for="guests<?php echo $row['roomID']; ?>"
                                                                             class="form-label mb-0">Guests</label>
                                                                         <input type="number" name="numberOfGuests"
@@ -599,6 +661,17 @@ function getRoomFeatures($roomID)
             const priceRanges = document.querySelectorAll('#priceRange, #priceRangeMobile');
             const guestCapacities = document.querySelectorAll('#guestCapacity, #guestCapacityMobile');
             
+            // Prevent dropdown from closing when clicking on checkboxes inside
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                menu.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('form-check-input') || 
+                        e.target.classList.contains('form-check-label') ||
+                        e.target.closest('.form-check')) {
+                        e.stopPropagation();
+                    }
+                });
+            });
+            
             priceRanges.forEach(priceRange => {
                 if (priceRange) {
                     const priceDisplay = document.createElement('div');
@@ -625,6 +698,7 @@ function getRoomFeatures($roomID)
             amenityCheckboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
                     syncCheckboxes(this);
+                    updateCategoryBadges();
                     applyFilters();
                 });
             });
@@ -635,6 +709,27 @@ function getRoomFeatures($roomID)
                         syncGuestCapacity(this);
                         applyFilters();
                     });
+                }
+            });
+        }
+        
+        // Update badge count on category dropdown buttons
+        function updateCategoryBadges() {
+            document.querySelectorAll('.btn-group.dropend').forEach(group => {
+                const button = group.querySelector('button.dropdown-toggle');
+                const checkboxes = group.querySelectorAll('.amenity-checkbox:checked');
+                const count = checkboxes.length;
+                
+                // Remove existing badge
+                const existingBadge = button.querySelector('.badge');
+                if (existingBadge) existingBadge.remove();
+                
+                // Add badge if there are selected items
+                if (count > 0) {
+                    const badge = document.createElement('span');
+                    badge.className = 'badge bg-warning text-dark ms-2';
+                    badge.textContent = count;
+                    button.querySelector('span').appendChild(badge);
                 }
             });
         }
@@ -741,15 +836,15 @@ function getRoomFeatures($roomID)
             });
             
             document.querySelectorAll('[id$="RoomCards"]').forEach(section => {
-                const visibleCards = section.querySelectorAll('.room-card[style="display: block;"]').length;
-                const heading = section.previousElementSibling;
+                const visibleCards = section.querySelectorAll('.room-card:not([style*="display: none"])').length;
+                const container = section.closest('.container');
                 
                 if (visibleCards > 0) {
                     section.style.display = '';
-                    if (heading) heading.style.display = '';
+                    if (container) container.style.display = '';
                 } else {
                     section.style.display = 'none';
-                    if (heading) heading.style.display = 'none';
+                    if (container) container.style.display = 'none';
                 }
             });
             

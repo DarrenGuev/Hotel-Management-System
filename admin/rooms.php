@@ -231,6 +231,41 @@ if (isset($_POST['delete_room_type'])) {
     }
 }
 
+// Handle updating room type name
+if (isset($_POST['update_room_type'])) {
+    $updateTypeID = (int)$_POST['updateRoomTypeID'];
+    $newTypeName = mysqli_real_escape_string($conn, trim($_POST['updateRoomTypeName']));
+    
+    if (!empty($newTypeName) && $updateTypeID > 0) {
+        // Check if new name already exists (excluding current type)
+        $checkQuery = "SELECT roomTypeID FROM roomTypes WHERE roomType = '$newTypeName' AND roomTypeID != '$updateTypeID'";
+        $checkResult = executeQuery($checkQuery);
+        
+        if (mysqli_num_rows($checkResult) > 0) {
+            echo '<div class="alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
+                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
+                Room type "' . htmlspecialchars($newTypeName) . '" already exists!
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>';
+        } else {
+            $updateQuery = "UPDATE roomTypes SET roomType = '$newTypeName' WHERE roomTypeID = '$updateTypeID'";
+            if (executeQuery($updateQuery)) {
+                echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
+                    role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
+                    Room type updated successfully!
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>';
+            } else {
+                echo '<div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
+                    role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
+                    Error updating room type. Please try again.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>';
+            }
+        }
+    }
+}
+
 $getRooms = "SELECT rooms.*, roomTypes.roomType AS roomTypeName FROM rooms INNER JOIN roomTypes ON rooms.roomTypeId = roomTypes.roomTypeID ORDER BY rooms.roomID ASC";
 $rooms = executeQuery($getRooms);
 
@@ -328,6 +363,11 @@ mysqli_data_seek($features, 0);
                             <li class="nav-item">
                                 <button class="nav-link text-success" type="button" data-bs-toggle="modal" data-bs-target="#addRoomTypeModal">
                                     <i class="bi bi-plus-circle me-1"></i>Add Room Type
+                                </button>
+                            </li>
+                            <li>
+                                <button class="nav-link text-danger" type="button" data-bs-toggle="modal" data-bs-target="#deleteRoomTypeModal">
+                                    <i class="bi bi-dash-circle me-1"></i>Edit room types
                                 </button>
                             </li>
                         </ul>
@@ -649,28 +689,142 @@ mysqli_data_seek($features, 0);
                             $countResult = executeQuery($countQuery);
                             $roomCount = mysqli_fetch_assoc($countResult)['count'];
                         ?>
-                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <i class="bi bi-tag-fill me-2 text-primary"></i>
-                                    <?php echo htmlspecialchars($type['roomType']); ?>
-                                    <span class="badge bg-secondary ms-2"><?php echo $roomCount; ?> room(s)</span>
+                            <div class="list-group-item" id="roomTypeItem<?php echo $type['roomTypeID']; ?>">
+                                <!-- Display Mode -->
+                                <div class="d-flex justify-content-between align-items-center" id="displayMode<?php echo $type['roomTypeID']; ?>">
+                                    <div>
+                                        <i class="bi bi-tag-fill me-2 text-primary"></i>
+                                        <span id="typeName<?php echo $type['roomTypeID']; ?>"><?php echo htmlspecialchars($type['roomType']); ?></span>
+                                        <span class="badge bg-secondary ms-2"><?php echo $roomCount; ?> room(s)</span>
+                                    </div>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-primary" onclick="enableEditMode(<?php echo $type['roomTypeID']; ?>, '<?php echo htmlspecialchars($type['roomType'], ENT_QUOTES); ?>')" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <?php if ($roomCount == 0) { ?>
+                                            <form method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this room type?');">
+                                                <input type="hidden" name="deleteRoomTypeID" value="<?php echo $type['roomTypeID']; ?>">
+                                                <button type="submit" name="delete_room_type" class="btn btn-outline-danger" title="Delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        <?php } else { ?>
+                                            <button type="button" class="btn btn-outline-secondary" disabled title="Cannot delete - <?php echo $roomCount; ?> room(s) using this type">
+                                                <i class="bi bi-lock"></i>
+                                            </button>
+                                        <?php } ?>
+                                    </div>
                                 </div>
-                                <?php if ($roomCount == 0) { ?>
-                                    <form method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this room type?');">
-                                        <input type="hidden" name="deleteRoomTypeID" value="<?php echo $type['roomTypeID']; ?>">
-                                        <button type="submit" name="delete_room_type" class="btn btn-outline-danger btn-sm">
-                                            <i class="bi bi-trash"></i>
+                                <!-- Edit Mode (hidden by default) -->
+                                <div class="d-none" id="editMode<?php echo $type['roomTypeID']; ?>">
+                                    <form method="POST" class="d-flex align-items-center gap-2">
+                                        <input type="hidden" name="updateRoomTypeID" value="<?php echo $type['roomTypeID']; ?>">
+                                        <input type="text" class="form-control form-control-sm" name="updateRoomTypeName" 
+                                               id="editInput<?php echo $type['roomTypeID']; ?>" 
+                                               value="<?php echo htmlspecialchars($type['roomType']); ?>" required>
+                                        <button type="submit" name="update_room_type" class="btn btn-success btn-sm" title="Save">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="cancelEditMode(<?php echo $type['roomTypeID']; ?>)" title="Cancel">
+                                            <i class="bi bi-x-lg"></i>
                                         </button>
                                     </form>
-                                <?php } else { ?>
-                                    <span class="text-muted small" title="Cannot delete - rooms are using this type">
-                                        <i class="bi bi-lock"></i>
-                                    </span>
-                                <?php } ?>
+                                </div>
                             </div>
                         <?php } 
                         mysqli_data_seek($roomTypes, 0);
                         ?>
+                    </div>
+                    
+                    <div class="alert alert-info small mt-3 mb-0">
+                        <i class="bi bi-info-circle me-1"></i>
+                        <strong>Note:</strong> Room types with existing rooms cannot be deleted. You must first reassign or delete those rooms.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete/Edit Room Type Modal -->
+    <div class="modal fade" id="deleteRoomTypeModal" tabindex="-1" aria-labelledby="deleteRoomTypeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h1 class="modal-title fs-5" id="deleteRoomTypeModalLabel">
+                        <i class="bi bi-pencil-square me-2"></i>Edit Room Types
+                    </h1>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">Select a room type to edit its name or delete it (if no rooms are assigned).</p>
+                    
+                    <div class="list-group">
+                        <?php 
+                        mysqli_data_seek($roomTypes, 0);
+                        while ($type = mysqli_fetch_assoc($roomTypes)) { 
+                            // Count rooms using this type
+                            $countQuery = "SELECT COUNT(*) as count FROM rooms WHERE roomTypeId = " . (int)$type['roomTypeID'];
+                            $countResult = executeQuery($countQuery);
+                            $roomCount = mysqli_fetch_assoc($countResult)['count'];
+                        ?>
+                            <div class="list-group-item" id="deleteModalTypeItem<?php echo $type['roomTypeID']; ?>">
+                                <!-- Display Mode -->
+                                <div class="d-flex justify-content-between align-items-center" id="deleteDisplayMode<?php echo $type['roomTypeID']; ?>">
+                                    <div>
+                                        <i class="bi bi-tag-fill me-2 text-primary"></i>
+                                        <span id="deleteTypeName<?php echo $type['roomTypeID']; ?>"><?php echo htmlspecialchars($type['roomType']); ?></span>
+                                        <span class="badge <?php echo $roomCount > 0 ? 'bg-warning text-dark' : 'bg-success'; ?> ms-2">
+                                            <?php echo $roomCount; ?> room(s)
+                                        </span>
+                                    </div>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-primary" onclick="enableDeleteModalEditMode(<?php echo $type['roomTypeID']; ?>, '<?php echo htmlspecialchars($type['roomType'], ENT_QUOTES); ?>')" title="Edit Name">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <?php if ($roomCount == 0) { ?>
+                                            <form method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to permanently delete the room type: <?php echo htmlspecialchars($type['roomType'], ENT_QUOTES); ?>?');">
+                                                <input type="hidden" name="deleteRoomTypeID" value="<?php echo $type['roomTypeID']; ?>">
+                                                <button type="submit" name="delete_room_type" class="btn btn-danger" title="Delete">
+                                                    <i class="bi bi-trash"></i> Delete
+                                                </button>
+                                            </form>
+                                        <?php } else { ?>
+                                            <button type="button" class="btn btn-outline-secondary" disabled title="Cannot delete - has <?php echo $roomCount; ?> room(s)">
+                                                <i class="bi bi-lock"></i> Protected
+                                            </button>
+                                        <?php } ?>
+                                    </div>
+                                </div>
+                                <!-- Edit Mode (hidden by default) -->
+                                <div class="d-none" id="deleteEditMode<?php echo $type['roomTypeID']; ?>">
+                                    <form method="POST" class="d-flex align-items-center gap-2">
+                                        <input type="hidden" name="updateRoomTypeID" value="<?php echo $type['roomTypeID']; ?>">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                                            <input type="text" class="form-control" name="updateRoomTypeName" 
+                                                   id="deleteEditInput<?php echo $type['roomTypeID']; ?>" 
+                                                   value="<?php echo htmlspecialchars($type['roomType']); ?>" required>
+                                        </div>
+                                        <button type="submit" name="update_room_type" class="btn btn-success btn-sm" title="Save Changes">
+                                            <i class="bi bi-check-lg"></i> Save
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="cancelDeleteModalEditMode(<?php echo $type['roomTypeID']; ?>)" title="Cancel">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        <?php } 
+                        mysqli_data_seek($roomTypes, 0);
+                        ?>
+                    </div>
+                    
+                    <div class="alert alert-warning small mt-3 mb-0">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        <strong>Warning:</strong> Deleting a room type is permanent. Room types with assigned rooms are protected and cannot be deleted.
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -683,6 +837,36 @@ mysqli_data_seek($features, 0);
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        // Room Type Edit Functions for Add Room Type Modal
+        function enableEditMode(typeId, currentName) {
+            document.getElementById('displayMode' + typeId).classList.add('d-none');
+            document.getElementById('editMode' + typeId).classList.remove('d-none');
+            const input = document.getElementById('editInput' + typeId);
+            input.value = currentName;
+            input.focus();
+            input.select();
+        }
+        
+        function cancelEditMode(typeId) {
+            document.getElementById('displayMode' + typeId).classList.remove('d-none');
+            document.getElementById('editMode' + typeId).classList.add('d-none');
+        }
+        
+        // Room Type Edit Functions for Delete/Edit Room Type Modal
+        function enableDeleteModalEditMode(typeId, currentName) {
+            document.getElementById('deleteDisplayMode' + typeId).classList.add('d-none');
+            document.getElementById('deleteEditMode' + typeId).classList.remove('d-none');
+            const input = document.getElementById('deleteEditInput' + typeId);
+            input.value = currentName;
+            input.focus();
+            input.select();
+        }
+        
+        function cancelDeleteModalEditMode(typeId) {
+            document.getElementById('deleteDisplayMode' + typeId).classList.remove('d-none');
+            document.getElementById('deleteEditMode' + typeId).classList.add('d-none');
+        }
+
         function filterRooms(roomType) {
             // Update active tab
             document.querySelectorAll('#roomTabs .nav-link').forEach(tab => {

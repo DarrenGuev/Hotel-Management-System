@@ -90,25 +90,30 @@ if ($feedbackResult) {
                             <div class="carousel-inner h-100 rounded-3">
                                 <div class="carousel-item active h-100">
                                     <div class="ratio ratio-4x3 h-100">
-                                        <img src="images/rooms/basic.jpeg" class="d-block w-100 object-fit-cover" alt="Gallery 1">
+                                        <img src="images/rooms/basic.jpeg" class="d-block w-100 object-fit-cover"
+                                            alt="Gallery 1">
                                     </div>
                                 </div>
                                 <div class="carousel-item h-100">
                                     <div class="ratio ratio-4x3 h-100">
-                                        <img src="images/rooms/special(1).jpg" class="d-block w-100 object-fit-cover" alt="Gallery 2">
+                                        <img src="images/rooms/special(1).jpg" class="d-block w-100 object-fit-cover"
+                                            alt="Gallery 2">
                                     </div>
                                 </div>
                                 <div class="carousel-item h-100">
                                     <div class="ratio ratio-4x3 h-100">
-                                        <img src="images/rooms/twin_room.jpeg" class="d-block w-100 object-fit-cover" alt="Gallery 3">
+                                        <img src="images/rooms/twin_room.jpeg" class="d-block w-100 object-fit-cover"
+                                            alt="Gallery 3">
                                     </div>
                                 </div>
                             </div>
-                            <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
+                            <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel"
+                                data-bs-slide="prev">
                                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                                 <span class="visually-hidden">Previous</span>
                             </button>
-                            <button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">
+                            <button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel"
+                                data-bs-slide="next">
                                 <span class="carousel-control-next-icon" aria-hidden="true"></span>
                                 <span class="visually-hidden">Next</span>
                             </button>
@@ -119,12 +124,14 @@ if ($feedbackResult) {
                         <div class="row g-3">
                             <div class="col-12">
                                 <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
-                                    <img src="images/rooms/special(2).jpeg" alt="Gallery 2" class="img-fluid object-fit-cover">
+                                    <img src="images/rooms/special(2).jpeg" alt="Gallery 2"
+                                        class="img-fluid object-fit-cover">
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
-                                    <img src="images/rooms/family_rooms/F(1).jpg" alt="Gallery 3" class="img-fluid object-fit-cover">
+                                    <img src="images/rooms/family_rooms/F(1).jpg" alt="Gallery 3"
+                                        class="img-fluid object-fit-cover">
                                 </div>
                             </div>
                         </div>
@@ -134,17 +141,20 @@ if ($feedbackResult) {
                 <div class="row g-3 mt-0">
                     <div class="col-12 col-md-4">
                         <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
-                            <img src="images/rooms/family_rooms/F(3).jpeg" alt="Gallery 4" class="img-fluid object-fit-cover">
+                            <img src="images/rooms/family_rooms/F(3).jpeg" alt="Gallery 4"
+                                class="img-fluid object-fit-cover">
                         </div>
                     </div>
                     <div class="col-12 col-md-4">
                         <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
-                            <img src="images/rooms/single_rooms/(1).jpg" alt="Gallery 5" class="img-fluid object-fit-cover">
+                            <img src="images/rooms/single_rooms/(1).jpg" alt="Gallery 5"
+                                class="img-fluid object-fit-cover">
                         </div>
                     </div>
                     <div class="col-12 col-md-4">
                         <div class="ratio ratio-4x3 rounded-3 overflow-hidden">
-                            <img src="images/rooms/single_rooms/(2).jpg" alt="Gallery 6" class="img-fluid object-fit-cover">
+                            <img src="images/rooms/single_rooms/(2).jpg" alt="Gallery 6"
+                                class="img-fluid object-fit-cover">
                         </div>
                     </div>
                 </div>
@@ -180,36 +190,124 @@ if ($feedbackResult) {
         </div>
 
         <div class="container mt-5">
-            <div class="row">
-                <?php if (isset($reviews) && $reviews->num_rows > 0): ?>
-                    <?php while ($row = mysqli_fetch_assoc($reviews)) { ?>
-                        <div class="col-md-3 mb-3">
-                            <div class="card h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title fw-bold h-font">
-                                        <?php echo htmlspecialchars($row['username']); ?>
-                                    </h5>
-                                    <?php for ($i = 0; $i < (int)$row['rating']; $i++) {
-                                            echo '<i class="bi bi-star-fill text-warning"></i>';
-                                        } ?>
-                                    <p class="mt-3 card-subtitle mb-2 text-muted">
-                                        Reviewed on <?php echo date("F j, Y", strtotime($row['submittedAt'])); ?>
-                                        <?php if (!empty($row['roomName'])): ?>
-                                            for <?php echo htmlspecialchars($row['roomName']); ?>
-                                        <?php endif; ?>
-                                    </p>
-                                    <h6 class="card-text">
-                                        <?php echo nl2br(htmlspecialchars($row['userReview'])); ?>
-                                    </h6>
-                                </div>
-                            </div>
+            <div class="d-flex align-items-center">
+                <button class="btn btn-outline-dark rounded-circle me-3 d-none d-md-block" id="prevReview"
+                    onclick="changeReviewPage(-1)">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <div class="row flex-grow-1" id="reviewsContainer">
+                    <?php if (isset($reviews) && $reviews->num_rows > 0): ?>
+                        <?php
+                        $reviewsArray = [];
+                        while ($row = mysqli_fetch_assoc($reviews)) {
+                            $reviewsArray[] = $row;
+                        }
+                        ?>
+                        <script>
+                            var allReviews = <?php echo json_encode($reviewsArray); ?>;
+                            var currentPage = 0;
+                            var reviewsPerPage = 3;
+
+                            function renderReviews() {
+                                var container = document.getElementById('reviewsContainer');
+                                container.innerHTML = '';
+                                var start = currentPage * reviewsPerPage;
+                                var end = Math.min(start + reviewsPerPage, allReviews.length);
+
+                                if (allReviews.length === 0) {
+                                    container.innerHTML = '<div class="col-12"><div class="alert alert-info mb-0"> #about-section No customer reviews yet. Be the first to <a href="frontend/userFeedback.php">leave a review</a>.</div></div>';
+                                    return;
+                                }
+
+                                for (var i = start; i < end; i++) {
+                                    var review = allReviews[i];
+                                    var stars = '';
+                                    for (var j = 0; j < parseInt(review.rating); j++) {
+                                        stars += '<i class="bi bi-star-fill text-warning"></i>';
+                                    }
+                                    var date = new Date(review.submittedAt);
+                                    var options = { year: 'numeric', month: 'long', day: 'numeric' };
+                                    var formattedDate = new Date(review.submittedAt).toLocaleDateString();
+                                    var roomInfo = review.roomName ? ' for ' + escapeHtml(review.roomName) : '';
+                                    var reviewText = review.userReview || '';
+                                    var seeMore = '<button class="btn btn-link p-0" data-bs-toggle="modal" data-bs-target="#fullReviewModal" onclick="showFullReview(\'' + encodeURIComponent(review.username) + '\', \'' + encodeURIComponent(reviewText) + '\', ' + review.rating + ', \'' + formattedDate + '\', \'' + encodeURIComponent(review.roomName || '') + '\')">see more...</button>';
+                                    var finalReviewHtml = '';
+
+                                    if (reviewText.length > 30) {
+                                        var truncated = reviewText.slice(0, 30);
+                                        finalReviewHtml = escapeHtml(truncated).replace(/\n/g, '<br>') + seeMore;
+                                    } else {
+                                        finalReviewHtml = escapeHtml(reviewText).replace(/\n/g, '<br>');
+                                    }
+
+                                    container.innerHTML += `
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <h5 class="card-title fw-bold h-font">
+                                                        ${escapeHtml(review.username)}
+                                                    </h5>
+                                                    ${stars}
+                                                    <p class="mt-3 card-subtitle mb-2 text-muted">
+                                                        Reviewed on ${formattedDate}${roomInfo}
+                                                    </p>
+                                                    <h6 class="card-text">
+                                                        ${finalReviewHtml}
+                                                    </h6>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }
+
+                                document.getElementById('prevReview').disabled = currentPage === 0;
+                                document.getElementById('nextReview').disabled = end >= allReviews.length;
+                            }
+
+                            function escapeHtml(text) {
+                                if (!text) return '';
+                                var div = document.createElement('div');
+                                div.textContent = text;
+                                return div.innerHTML;
+                            }
+
+                            function changeReviewPage(direction) {
+                                var totalPages = Math.ceil(allReviews.length / reviewsPerPage);
+                                currentPage += direction;
+                                if (currentPage < 0) currentPage = 0;
+                                if (currentPage >= totalPages) currentPage = totalPages - 1;
+                                renderReviews();
+                            }
+
+                            document.addEventListener('DOMContentLoaded', function () {
+                                renderReviews();
+                            });
+                        </script>
+                    <?php else: ?>
+                        <div class="col-12">
+                            <div class="alert alert-info mb-0">No customer reviews yet. Be the first to <a
+                                    href="frontend/userFeedback.php">leave a review</a>.</div>
                         </div>
-                    <?php } ?>
-                <?php else: ?>
-                    <div class="col-12">
-                        <div class="alert alert-info mb-0">No customer reviews yet. Be the first to <a href="frontend/userFeedback.php">leave a review</a>.</div>
-                    </div>
-                <?php endif; ?>
+                    <?php endif; ?>
+                </div>
+                <button class="btn btn-outline-dark rounded-circle ms-3 d-none d-md-block" id="nextReview"
+                    onclick="changeReviewPage(1)">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+            <div class="row mt-3 justify-content-center">
+                <div class="col-6 d-flex justify-content-center">
+                    <button class="btn btn-outline-dark rounded-circle me-3 d-block d-md-none"
+                        id="prevReview" onclick="changeReviewPage(-1)">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                </div>
+                <div class="col-6 d-flex justify-content-center">
+                    <button class="btn btn-outline-dark rounded-circle ms-3 d-block d-md-none"
+                        id="nextReview" onclick="changeReviewPage(1)">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -220,6 +318,7 @@ if ($feedbackResult) {
             </a>
         </div>
     </div>
+
 
     <div class="container" id="about">
         <div class="row">
@@ -239,13 +338,17 @@ if ($feedbackResult) {
                     class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start text-center text-sm-start">
                     <div class="rounded-5 overflow-hidden border border-3 border-secondary flex-shrink-0 mb-3 mb-sm-0"
                         style="width: 200px; height: 200px;">
-                        <img src="images/loginRegisterImg/img.jpg" alt="..." class="img-fluid object-fit-cover w-100 h-100">
+                        <img src="images/loginRegisterImg/img.jpg" alt="..."
+                            class="img-fluid object-fit-cover w-100 h-100">
                     </div>
                     <div class="ms-sm-4">
                         <h5 class="fw-bold text-uppercase text-secondary mb-3" style="letter-spacing: 2px;">A
                             Little
                             About Us</h5>
-                        <p class="text-muted mb-0">TravelMates is a web-based booking system designed to automate and simplify hotel operations, particularly room reservations. The system allows customers to view available rooms, make bookings online, and receive booking confirmations, while enabling hotel staff and administrators to manage reservations efficiently.</p>
+                        <p class="text-muted mb-0">TravelMates is a web-based booking system designed to automate and
+                            simplify hotel operations, particularly room reservations. The system allows customers to
+                            view available rooms, make bookings online, and receive booking confirmations, while
+                            enabling hotel staff and administrators to manage reservations efficiently.</p>
                     </div>
                 </div>
             </div>
@@ -260,9 +363,13 @@ if ($feedbackResult) {
                     <div class="ms-sm-4">
                         <h5 class="fw-bold text-uppercase text-secondary mb-3" style="letter-spacing: 2px;">Our
                             Collaborator</h5>
-                        <p class="text-muted mb-0">EVENZA is a premium event reservation and ticketing platform focused on delivering seamless and well-organized hotel-hosted events. We aim to connect guests with carefully curated experiences through a secure and user-friendly digital system.
+                        <p class="text-muted mb-0">EVENZA is a premium event reservation and ticketing platform focused
+                            on delivering seamless and well-organized hotel-hosted events. We aim to connect guests with
+                            carefully curated experiences through a secure and user-friendly digital system.
 
-                            By combining modern technology with professional event management, EVENZA helps organizers efficiently manage reservations, service packages, and guest experiences while ensuring convenience and reliability for every attendee.</p>
+                            By combining modern technology with professional event management, EVENZA helps organizers
+                            efficiently manage reservations, service packages, and guest experiences while ensuring
+                            convenience and reliability for every attendee.</p>
                     </div>
                 </div>
             </div>
@@ -326,7 +433,7 @@ if ($feedbackResult) {
 
             // Update logos
             const logoPath = newTheme === 'dark' ? '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoW.png' : '/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoB.png';
-            document.querySelectorAll('#site-logo, #footer-logo').forEach(function(logo) {
+            document.querySelectorAll('#site-logo, #footer-logo').forEach(function (logo) {
                 logo.src = logoPath;
             });
 
@@ -349,7 +456,47 @@ if ($feedbackResult) {
                 }
             }
         }
+
+        function showFullReview(username, reviewText, rating, date, roomName) {
+            document.getElementById('modalReviewUsername').textContent = decodeURIComponent(username);
+            document.getElementById('modalReviewText').innerHTML = decodeURIComponent(reviewText).replace(/\n/g, '<br>');
+            document.getElementById('modalReviewDate').textContent = date;
+
+            var roomInfo = decodeURIComponent(roomName);
+            document.getElementById('modalReviewRoom').textContent = roomInfo ? ' for ' + roomInfo : '';
+
+            var starsHtml = '';
+            for (var i = 0; i < rating; i++) {
+                starsHtml += '<i class="bi bi-star-fill text-warning"></i>';
+            }
+            document.getElementById('modalReviewStars').innerHTML = starsHtml;
+        }
     </script>
+
+    <!-- Full Review Modal -->
+    <div class="modal fade" id="fullReviewModal" tabindex="-1" aria-labelledby="fullReviewModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold h-font" id="fullReviewModalLabel">Customer Review</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h5 class="fw-bold h-font" id="modalReviewUsername"></h5>
+                    <div id="modalReviewStars" class="mb-2"></div>
+                    <p class="text-muted mb-3">
+                        <small>Reviewed on <span id="modalReviewDate"></span><span id="modalReviewRoom"></span></small>
+                    </p>
+                    <p id="modalReviewText" class="mb-0"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
