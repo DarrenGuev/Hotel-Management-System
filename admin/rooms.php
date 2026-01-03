@@ -58,14 +58,8 @@ if (isset($_POST['add_room'])) {
     $fileName = $uploadResult['fileName'];
 
     if (!$uploadResult['success'] && isset($_FILES['roomImage']) && $_FILES['roomImage']['error'] !== UPLOAD_ERR_NO_FILE) {
-        echo '<div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-            role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-            Image upload failed: ' . htmlspecialchars($uploadResult['error']) . '
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>';
-    }
-
-    if (!empty($roomName) && !empty($roomTypeId)) {
+        $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Image upload failed: ' . htmlspecialchars($uploadResult['error'])];
+    } elseif (!empty($roomName) && !empty($roomTypeId)) {
         $postQuery = "INSERT INTO `rooms`(`roomName`, `roomTypeId`, `capacity`, `quantity`, `base_price`, `imagePath`) 
                     VALUES ('$roomName', '$roomTypeId', '$capacity', '$quantity', '$basePrice', '$fileName')";
 
@@ -76,20 +70,17 @@ if (isset($_POST['add_room'])) {
                 $insertFeatureQuery = "INSERT INTO `roomFeatures`(`roomID`, `featureID`) VALUES ('$newRoomID', '$featureId')";
                 executeQuery($insertFeatureQuery);
             }
-
-            echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                Room Added Successfully!
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>';
+            $_SESSION['alert'] = ['type' => 'success', 'message' => 'Room Added Successfully!'];
+        } else {
+            $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error adding room.'];
         }
     }
+    header("Location: rooms.php");
+    exit();
 }
 
 if (isset($_POST['deleteID'])) {
     $deleteID = (int)$_POST['deleteID'];
-
-    // Get image path before deleting to remove the file
     $getImageQuery = "SELECT imagePath FROM rooms WHERE roomID = '$deleteID'";
     $imageResult = executeQuery($getImageQuery);
     if ($imageRow = mysqli_fetch_assoc($imageResult)) {
@@ -100,7 +91,13 @@ if (isset($_POST['deleteID'])) {
     }
 
     $deleteQuery = "DELETE FROM rooms WHERE roomID = '$deleteID'";
-    executeQuery($deleteQuery);
+    if (executeQuery($deleteQuery)) {
+        $_SESSION['alert'] = ['type' => 'success', 'message' => 'Room deleted successfully!'];
+    } else {
+        $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error deleting room.'];
+    }
+    header("Location: rooms.php");
+    exit();
 }
 
 if (isset($_POST['update_room'])) {
@@ -135,11 +132,7 @@ if (isset($_POST['update_room'])) {
 
                 $updateQuery .= ", `imagePath`='" . $uploadResult['fileName'] . "'";
             } else {
-                echo '<div class="alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                    role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                    Image upload failed: ' . htmlspecialchars($uploadResult['error']) . '. Other details were updated.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>';
+                $_SESSION['alert'] = ['type' => 'warning', 'message' => 'Image upload failed: ' . htmlspecialchars($uploadResult['error']) . '. Other details were updated.'];
             }
         }
 
@@ -153,55 +146,38 @@ if (isset($_POST['update_room'])) {
                 $insertFeatureQuery = "INSERT INTO `roomFeatures`(`roomID`, `featureID`) VALUES ('$roomID', '$featureId')";
                 executeQuery($insertFeatureQuery);
             }
-            echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3"
-                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                Room updated successfully.
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>';
+            if (!isset($_SESSION['alert'])) {
+                $_SESSION['alert'] = ['type' => 'success', 'message' => 'Room updated successfully.'];
+            }
         } else {
-            echo '<div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3"
-                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                Error updating room.
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>';
+            $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error updating room.'];
         }
     }
+    header("Location: rooms.php");
+    exit();
 }
-
-// Add this PHP handler after the existing POST handlers (around line 170, before the $getRooms query)
 
 // Handle adding new room type
 if (isset($_POST['add_room_type'])) {
     $newRoomType = mysqli_real_escape_string($conn, trim($_POST['newRoomType']));
     
     if (!empty($newRoomType)) {
-        // Check if room type already exists
         $checkQuery = "SELECT roomTypeID FROM roomTypes WHERE roomType = '$newRoomType'";
         $checkResult = executeQuery($checkQuery);
         
         if (mysqli_num_rows($checkResult) > 0) {
-            echo '<div class="alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                Room type "' . htmlspecialchars($newRoomType) . '" already exists!
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>';
+            $_SESSION['alert'] = ['type' => 'warning', 'message' => 'Room type "' . htmlspecialchars($newRoomType) . '" already exists!'];
         } else {
             $insertQuery = "INSERT INTO roomTypes (roomType) VALUES ('$newRoomType')";
             if (executeQuery($insertQuery)) {
-                echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                    role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                    Room type "' . htmlspecialchars($newRoomType) . '" added successfully!
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>';
+                $_SESSION['alert'] = ['type' => 'success', 'message' => 'Room type "' . htmlspecialchars($newRoomType) . '" added successfully!'];
             } else {
-                echo '<div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                    role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                    Error adding room type. Please try again.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>';
+                $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error adding room type. Please try again.'];
             }
         }
     }
+    header("Location: rooms.php");
+    exit();
 }
 
 // Handle deleting room type
@@ -214,21 +190,17 @@ if (isset($_POST['delete_room_type'])) {
     $roomCount = mysqli_fetch_assoc($checkRoomsResult)['count'];
     
     if ($roomCount > 0) {
-        echo '<div class="alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-            role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-            Cannot delete this room type. ' . $roomCount . ' room(s) are using it.
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>';
+        $_SESSION['alert'] = ['type' => 'warning', 'message' => 'Cannot delete this room type. ' . $roomCount . ' room(s) are using it.'];
     } else {
         $deleteTypeQuery = "DELETE FROM roomTypes WHERE roomTypeID = '$deleteTypeID'";
         if (executeQuery($deleteTypeQuery)) {
-            echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                Room type deleted successfully!
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>';
+            $_SESSION['alert'] = ['type' => 'success', 'message' => 'Room type deleted successfully!'];
+        } else {
+            $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error deleting room type.'];
         }
     }
+    header("Location: rooms.php");
+    exit();
 }
 
 // Handle updating room type name
@@ -242,28 +214,18 @@ if (isset($_POST['update_room_type'])) {
         $checkResult = executeQuery($checkQuery);
         
         if (mysqli_num_rows($checkResult) > 0) {
-            echo '<div class="alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                Room type "' . htmlspecialchars($newTypeName) . '" already exists!
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>';
+            $_SESSION['alert'] = ['type' => 'warning', 'message' => 'Room type "' . htmlspecialchars($newTypeName) . '" already exists!'];
         } else {
             $updateQuery = "UPDATE roomTypes SET roomType = '$newTypeName' WHERE roomTypeID = '$updateTypeID'";
             if (executeQuery($updateQuery)) {
-                echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                    role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                    Room type updated successfully!
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>';
+                $_SESSION['alert'] = ['type' => 'success', 'message' => 'Room type updated successfully!'];
             } else {
-                echo '<div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                    role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                    Error updating room type. Please try again.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>';
+                $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error updating room type. Please try again.'];
             }
         }
     }
+    header("Location: rooms.php");
+    exit();
 }
 
 $getRooms = "SELECT rooms.*, roomTypes.roomType AS roomTypeName FROM rooms INNER JOIN roomTypes ON rooms.roomTypeId = roomTypes.roomTypeID ORDER BY rooms.roomID ASC";
@@ -302,6 +264,16 @@ mysqli_data_seek($features, 0);
 </head>
 
 <body class="bg-light">
+    <!-- Alert Message Container -->
+    <?php if (isset($_SESSION['alert'])): ?>
+        <div class="alert alert-<?php echo $_SESSION['alert']['type']; ?> alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
+            role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);" id="autoAlert">
+            <?php echo $_SESSION['alert']['message']; ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <?php unset($_SESSION['alert']); ?>
+    <?php endif; ?>
+
     <div class="container-fluid">
         <div class="row">
             <?php include 'includes/sidebar.php'; ?>
@@ -376,6 +348,17 @@ mysqli_data_seek($features, 0);
 
                 <div class="card">
                     <div class="card-body">
+                        <!-- Pagination Info & Controls -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="text-muted" id="paginationInfo">
+                                Showing <span id="showingStart">1</span>-<span id="showingEnd">7</span> of <span id="totalRooms">0</span> rooms
+                            </div>
+                            <nav aria-label="Room pagination">
+                                <ul class="pagination pagination-sm mb-0" id="paginationControls">
+                                    <!-- Pagination buttons will be generated by JavaScript -->
+                                </ul>
+                            </nav>
+                        </div>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle">
                                 <thead class="table-dark">
@@ -551,6 +534,17 @@ mysqli_data_seek($features, 0);
                                 <?php } ?>
                             </tbody>
                         </table>
+                    </div>
+                    <!-- Bottom Pagination -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="text-muted" id="paginationInfoBottom">
+                            Showing <span id="showingStartBottom">1</span>-<span id="showingEndBottom">7</span> of <span id="totalRoomsBottom">0</span> rooms
+                        </div>
+                        <nav aria-label="Room pagination bottom">
+                            <ul class="pagination pagination-sm mb-0" id="paginationControlsBottom">
+                                <!-- Pagination buttons will be generated by JavaScript -->
+                            </ul>
+                        </nav>
                     </div>
                 </div>
             </div>
@@ -837,6 +831,17 @@ mysqli_data_seek($features, 0);
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        // Auto-dismiss alert after 3 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const autoAlert = document.getElementById('autoAlert');
+            if (autoAlert) {
+                setTimeout(function() {
+                    const bsAlert = bootstrap.Alert.getOrCreateInstance(autoAlert);
+                    bsAlert.close();
+                }, 3000);
+            }
+        });
+
         // Room Type Edit Functions for Add Room Type Modal
         function enableEditMode(typeId, currentName) {
             document.getElementById('displayMode' + typeId).classList.add('d-none');
@@ -867,7 +872,15 @@ mysqli_data_seek($features, 0);
             document.getElementById('deleteEditMode' + typeId).classList.add('d-none');
         }
 
+        // Pagination variables
+        const roomsPerPage = 7;
+        let currentPage = 1;
+        let currentFilter = 'All';
+
         function filterRooms(roomType) {
+            currentFilter = roomType;
+            currentPage = 1; // Reset to first page when filter changes
+            
             // Update active tab
             document.querySelectorAll('#roomTabs .nav-link').forEach(tab => {
                 tab.classList.remove('active');
@@ -877,16 +890,139 @@ mysqli_data_seek($features, 0);
                 activeTab.classList.add('active');
             }
 
-            // Filter table rows
+            applyPagination();
+        }
+
+        function getFilteredRows() {
             const tableRows = document.querySelectorAll('#roomsTableBody tr');
+            const filtered = [];
             tableRows.forEach(row => {
-                if (roomType === 'All' || row.dataset.roomType === roomType) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
+                if (currentFilter === 'All' || row.dataset.roomType === currentFilter) {
+                    filtered.push(row);
                 }
             });
+            return filtered;
         }
+
+        function applyPagination() {
+            const filteredRows = getFilteredRows();
+            const totalRooms = filteredRows.length;
+            const totalPages = Math.ceil(totalRooms / roomsPerPage);
+            
+            // Ensure current page is valid
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+            
+            const startIndex = (currentPage - 1) * roomsPerPage;
+            const endIndex = Math.min(startIndex + roomsPerPage, totalRooms);
+            
+            // Hide all rows first
+            document.querySelectorAll('#roomsTableBody tr').forEach(row => {
+                row.style.display = 'none';
+            });
+            
+            // Show only rows for current page
+            filteredRows.forEach((row, index) => {
+                if (index >= startIndex && index < endIndex) {
+                    row.style.display = '';
+                }
+            });
+            
+            // Update pagination info (top and bottom)
+            updatePaginationInfo(startIndex + 1, endIndex, totalRooms);
+            
+            // Generate pagination controls
+            generatePaginationControls(totalPages);
+        }
+
+        function updatePaginationInfo(start, end, total) {
+            // Top pagination info
+            document.getElementById('showingStart').textContent = total > 0 ? start : 0;
+            document.getElementById('showingEnd').textContent = end;
+            document.getElementById('totalRooms').textContent = total;
+            
+            // Bottom pagination info
+            document.getElementById('showingStartBottom').textContent = total > 0 ? start : 0;
+            document.getElementById('showingEndBottom').textContent = end;
+            document.getElementById('totalRoomsBottom').textContent = total;
+        }
+
+        function generatePaginationControls(totalPages) {
+            const paginationHTML = generatePaginationHTML(totalPages);
+            document.getElementById('paginationControls').innerHTML = paginationHTML;
+            document.getElementById('paginationControlsBottom').innerHTML = paginationHTML;
+        }
+
+        function generatePaginationHTML(totalPages) {
+            if (totalPages <= 1) {
+                return '';
+            }
+            
+            let html = '';
+            
+            // Previous button
+            html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="goToPage(${currentPage - 1}); return false;" aria-label="Previous">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>`;
+            
+            // Page numbers
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage < maxVisiblePages - 1) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            // First page and ellipsis
+            if (startPage > 1) {
+                html += `<li class="page-item">
+                    <a class="page-link" href="#" onclick="goToPage(1); return false;">1</a>
+                </li>`;
+                if (startPage > 2) {
+                    html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+            }
+            
+            // Page numbers
+            for (let i = startPage; i <= endPage; i++) {
+                html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="goToPage(${i}); return false;">${i}</a>
+                </li>`;
+            }
+            
+            // Last page and ellipsis
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+                html += `<li class="page-item">
+                    <a class="page-link" href="#" onclick="goToPage(${totalPages}); return false;">${totalPages}</a>
+                </li>`;
+            }
+            
+            // Next button
+            html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="goToPage(${currentPage + 1}); return false;" aria-label="Next">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>`;
+            
+            return html;
+        }
+
+        function goToPage(page) {
+            const filteredRows = getFilteredRows();
+            const totalPages = Math.ceil(filteredRows.length / roomsPerPage);
+            
+            if (page < 1 || page > totalPages) return;
+            
+            currentPage = page;
+            applyPagination();
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             filterRooms('All');
         });
