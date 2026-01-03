@@ -3,7 +3,7 @@ $is_embed = isset($_GET['embed']);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['prompt'])) {
 
-    $dataFile = __DIR__ . '/chatbot/data.txt';
+    $dataFile = __DIR__ . '/../chatbot/data.txt';
     $data = file_exists($dataFile) ? file_get_contents($dataFile) : '';
 
     // Prepare the prompt for Ollama
@@ -14,8 +14,9 @@ INSTRUCTIONS:
 2. For greetings (hello, hi, hey, good morning, etc.), respond warmly and ask how you can help
 3. For questions about TravelMates, use ONLY the information provided in the dataset below
 4. Keep responses concise (2-3 sentences maximum)
-5. If asked about something not in the dataset, politely say you don't have that information
+5. If asked about something not in the dataset, politely say you don't have that information only ask about travelMates hotel-related topics
 6. Be case-insensitive when matching questions
+7. When asked for phone number, email, or location, ALWAYS use 'Our' (e.g., 'Our phone number is...', 'Our email is...', 'Our location is...').
 
 DATASET:
 $data

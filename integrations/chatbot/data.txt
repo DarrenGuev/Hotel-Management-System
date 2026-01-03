@@ -1,83 +1,39 @@
-TravelMates Hotel — Dataset
+TravelMates Hotel - Quick Info
 
-Overview:
-TravelMates Hotel is a full-service, family-friendly hotel focused on comfort, convenience, and local experiences. We offer modern rooms, personalized service, and helpful travel information to ensure guests enjoy a relaxed and memorable stay.
+ABOUT:
+Luxury hotel with affordable rates and world-class facilities. TravelMates is a web-based booking system designed to automate and simplify hotel operations, particularly room reservations. The system allows customers to view available rooms, make bookings online, and receive booking confirmations, while enabling hotel staff and administrators to manage reservations efficiently.
 
-Tone & Behavior:
-- Always respond in a friendly, concise, and professional tone.
-- Prioritize clarity and brevity (1–3 sentences for basic answers).
-- If the answer depends on availability or policies, encourage the guest to contact reception or provide the hotel's contact details.
-- When unsure or outside the dataset, say you don't have that information and offer to connect the guest with hotel staff.
+CONTACT & LOCATION:
+- Phone: 09924701341
+- Email: matestravel4@gmail.com
+- Location: Near Ambulong Tanauan and the Baywalk.
+- Social Media: Links available on our website footer.
 
-Bookings & Reservations:
-- Reservations can be made via the hotel's website, by phone at +1-555-0199, or in person at reception.
-- Guests should provide full name, contact number, check-in and check-out dates, room type, and payment details when booking.
-- Early check-in and late check-out are subject to availability and may incur an additional fee; contact reception to request.
+BOOKINGS:
+- Methods: Website, Phone, or Front Desk.
+- Requirements: Name, contact info, dates, payment.
+- Cancellation: Free up to 24 hours before arrival for refundable rates.
 
-Room Types & Features:
-- Standard Room: Queen bed or two twin beds, free Wi‑Fi, 43" TV, work desk, and ensuite bathroom.
-- Deluxe Room: Larger space, king bed, city or garden view, minibar, and complimentary bottled water.
-- Suite: Separate living area, king bed, Nespresso machine, enhanced amenities, and priority housekeeping.
-- Accessible Rooms: Available upon request with roll-in showers and grab bars.
+CHECK-IN/OUT:
+- Check-in: 3:00 PM
+- Check-out: 11:00 AM
+- Early/Late options: Subject to availability and fees.
+- Required: Valid ID and deposit.
 
-Check-In / Check-Out:
-- Standard check-in time: 3:00 PM. Early check-in may be available upon request.
-- Standard check-out time: 11:00 AM. Late check-out may be arranged for a fee if rooms are available.
-- Valid photo ID and a credit card or deposit are required at check-in.
+ROOMS:
+- Standard: Queen/Twin beds, Wi-Fi, TV.
+- Deluxe: King bed, View, Minibar.
+- Suite: King bed, Living area, Premium amenities.
+- Accessible: Available upon request.
 
-Payment & Cancellation:
-- We accept major credit cards (Visa, MasterCard, American Express), debit cards, and cash.
-- Cancellation policies vary by rate; standard refundable rates allow cancellation up to 24 hours before arrival. Non-refundable rates are charged at booking.
-- For group bookings or extended stays, contact the reservations team for special terms.
+AMENITIES:
+- Free Wi-Fi
+- 24/7 Front Desk
+- Fitness & Business Centers
+- Parking (Valet/Self)
+- Laundry Service
 
-Amenities & Services:
-- Complimentary high-speed Wi‑Fi throughout the property.
-- 24-hour front desk and concierge service.
-- On-site fitness center and business center.
-- Daily housekeeping; turndown service available on request.
-- Laundry and dry-cleaning services (same-day on request).
-- Luggage storage available before check-in or after check-out.
-
-Dining & Food Service:
-- On-site restaurant 'The Compass' serves breakfast, lunch, and dinner with local and international dishes.
-- Breakfast hours: 6:30 AM – 10:30 AM; buffet and à la carte options available.
-- Room service is available from 7:00 AM – 10:00 PM (menu and surcharges apply).
-- A small grab-and-go pantry is open 24/7 for snacks and beverages.
-
-Transportation & Parking:
-- Valet and self-parking available; fees may apply—check with reception for current rates.
-- Airport shuttle service can be arranged in advance (additional charge).
-- Taxi and rideshare partners are available through the front desk; estimated travel times depend on traffic.
-
-Local Attractions & Travel Info:
-- The hotel is centrally located near the Old Town district, the Riverfront Promenade, and the Grand Museum.
-- Popular nearby activities: guided city tours, bike rentals, and river cruises. Check concierge for schedules and tickets.
-- Public transit: the central tram stop is a 5-minute walk; single rides and day passes are accepted on trams and buses.
-
-Accessibility & Safety:
-- Elevator access to all guest floors; some historic areas may have limited accessibility—ask the front desk for alternatives.
-- Emergency exits are clearly marked; in case of emergency, follow staff instructions and use the nearest exit.
-- For urgent assistance, dial '0' from your room phone or call the front desk directly.
-
-Special Requests & Guest Services:
-- Dietary restrictions: the kitchen is happy to accommodate allergies and special diets with advance notice.
-- Celebrations and special requests (e.g., room decorations, cake delivery) can be arranged through the concierge.
-- Business services: printing, scanning, and meeting room bookings available—contact the business center.
-
-Contact & Support:
-- Front Desk / Reservations: +1-555-0199 (24/7)
-- Email: reservations@travelmateshotel.example
-- Address: 123 Harbor Way, Citycenter
-
-FAQs (brief answers):
-- Q: Is breakfast included?
-  A: It depends on the rate; some bookings include breakfast—check your reservation details or ask reception.
-- Q: Do you offer early check-in?
-  A: Early check-in is subject to availability; contact reception to request it.
-- Q: Can I store my luggage after check-out?
-  A: Yes, luggage storage is available at no charge for same-day storage; extended storage may incur a fee.
-- Q: Is there Wi‑Fi?
-  A: Yes—free high-speed Wi‑Fi is available throughout the hotel.
-
-Content Note:
-Use only the information above when answering questions about TravelMates Hotel. If a guest asks something outside this dataset (pricing not listed, real-time availability, or personal data requests), politely state you don't have that information and suggest contacting reception or reservations for specifics.
+DINING:
+- The Compass Restaurant: Breakfast 6:30-10:30 AM.
+- Room Service: 7:00 AM – 10:00 PM.
+- 24/7 Pantry.
