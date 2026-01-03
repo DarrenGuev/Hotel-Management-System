@@ -139,8 +139,8 @@
                                                 class="form-control form-control-lg form-control-glass rounded-3"
                                                 placeholder="Password (min 8 chars)" minlength="8" pattern=".{8,}"
                                                 title="Minimum 8 characters" required style="padding-right: 2.5rem;">
-                                            <i class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-3 text-white"
-                                                id="togglePassword" style="cursor: pointer;"></i>
+                                            <i class="bi bi-eye position-absolute end-0 translate-middle-y me-3 text-white"
+                                                id="togglePassword" style="cursor: pointer; top: 24px;"></i>
                                             <div class="invalid-feedback">Please provide a password (minimum 8
                                                 characters).</div>
                                         </div>
@@ -149,8 +149,8 @@
                                                 class="form-control form-control-lg form-control-glass rounded-3"
                                                 placeholder="Confirm Password" minlength="8" required
                                                 style="padding-right: 2.5rem;">
-                                            <i class="bi bi-eye position-absolute top-50 end-0 translate-middle-y me-3 text-white"
-                                                id="toggleConfirmPassword" style="cursor: pointer;"></i>
+                                            <i class="bi bi-eye position-absolute end-0 translate-middle-y me-3 text-white"
+                                                id="toggleConfirmPassword" style="cursor: pointer; top: 24px;"></i>
                                             <div class="invalid-feedback" id="confirmFeedback">Passwords must match.
                                             </div>
                                         </div>
