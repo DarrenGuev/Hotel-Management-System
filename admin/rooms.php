@@ -58,14 +58,8 @@ if (isset($_POST['add_room'])) {
     $fileName = $uploadResult['fileName'];
 
     if (!$uploadResult['success'] && isset($_FILES['roomImage']) && $_FILES['roomImage']['error'] !== UPLOAD_ERR_NO_FILE) {
-        echo '<div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-            role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-            Image upload failed: ' . htmlspecialchars($uploadResult['error']) . '
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>';
-    }
-
-    if (!empty($roomName) && !empty($roomTypeId)) {
+        $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Image upload failed: ' . htmlspecialchars($uploadResult['error'])];
+    } elseif (!empty($roomName) && !empty($roomTypeId)) {
         $postQuery = "INSERT INTO `rooms`(`roomName`, `roomTypeId`, `capacity`, `quantity`, `base_price`, `imagePath`) 
                     VALUES ('$roomName', '$roomTypeId', '$capacity', '$quantity', '$basePrice', '$fileName')";
 
@@ -76,14 +70,13 @@ if (isset($_POST['add_room'])) {
                 $insertFeatureQuery = "INSERT INTO `roomFeatures`(`roomID`, `featureID`) VALUES ('$newRoomID', '$featureId')";
                 executeQuery($insertFeatureQuery);
             }
-
-            echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                Room Added Successfully!
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>';
+            $_SESSION['alert'] = ['type' => 'success', 'message' => 'Room Added Successfully!'];
+        } else {
+            $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error adding room.'];
         }
     }
+    header("Location: rooms.php");
+    exit();
 }
 
 if (isset($_POST['deleteID'])) {
@@ -98,7 +91,13 @@ if (isset($_POST['deleteID'])) {
     }
 
     $deleteQuery = "DELETE FROM rooms WHERE roomID = '$deleteID'";
-    executeQuery($deleteQuery);
+    if (executeQuery($deleteQuery)) {
+        $_SESSION['alert'] = ['type' => 'success', 'message' => 'Room deleted successfully!'];
+    } else {
+        $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error deleting room.'];
+    }
+    header("Location: rooms.php");
+    exit();
 }
 
 if (isset($_POST['update_room'])) {
@@ -133,11 +132,7 @@ if (isset($_POST['update_room'])) {
 
                 $updateQuery .= ", `imagePath`='" . $uploadResult['fileName'] . "'";
             } else {
-                echo '<div class="alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                    role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                    Image upload failed: ' . htmlspecialchars($uploadResult['error']) . '. Other details were updated.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>';
+                $_SESSION['alert'] = ['type' => 'warning', 'message' => 'Image upload failed: ' . htmlspecialchars($uploadResult['error']) . '. Other details were updated.'];
             }
         }
 
@@ -151,19 +146,15 @@ if (isset($_POST['update_room'])) {
                 $insertFeatureQuery = "INSERT INTO `roomFeatures`(`roomID`, `featureID`) VALUES ('$roomID', '$featureId')";
                 executeQuery($insertFeatureQuery);
             }
-            echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3"
-                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                Room updated successfully.
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>';
+            if (!isset($_SESSION['alert'])) {
+                $_SESSION['alert'] = ['type' => 'success', 'message' => 'Room updated successfully.'];
+            }
         } else {
-            echo '<div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3"
-                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                Error updating room.
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>';
+            $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error updating room.'];
         }
     }
+    header("Location: rooms.php");
+    exit();
 }
 
 // Handle adding new room type
@@ -175,28 +166,18 @@ if (isset($_POST['add_room_type'])) {
         $checkResult = executeQuery($checkQuery);
         
         if (mysqli_num_rows($checkResult) > 0) {
-            echo '<div class="alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                Room type "' . htmlspecialchars($newRoomType) . '" already exists!
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>';
+            $_SESSION['alert'] = ['type' => 'warning', 'message' => 'Room type "' . htmlspecialchars($newRoomType) . '" already exists!'];
         } else {
             $insertQuery = "INSERT INTO roomTypes (roomType) VALUES ('$newRoomType')";
             if (executeQuery($insertQuery)) {
-                echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                    role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                    Room type "' . htmlspecialchars($newRoomType) . '" added successfully!
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>';
+                $_SESSION['alert'] = ['type' => 'success', 'message' => 'Room type "' . htmlspecialchars($newRoomType) . '" added successfully!'];
             } else {
-                echo '<div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                    role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                    Error adding room type. Please try again.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>';
+                $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error adding room type. Please try again.'];
             }
         }
     }
+    header("Location: rooms.php");
+    exit();
 }
 
 // Handle deleting room type
@@ -209,21 +190,17 @@ if (isset($_POST['delete_room_type'])) {
     $roomCount = mysqli_fetch_assoc($checkRoomsResult)['count'];
     
     if ($roomCount > 0) {
-        echo '<div class="alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-            role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-            Cannot delete this room type. ' . $roomCount . ' room(s) are using it.
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>';
+        $_SESSION['alert'] = ['type' => 'warning', 'message' => 'Cannot delete this room type. ' . $roomCount . ' room(s) are using it.'];
     } else {
         $deleteTypeQuery = "DELETE FROM roomTypes WHERE roomTypeID = '$deleteTypeID'";
         if (executeQuery($deleteTypeQuery)) {
-            echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                Room type deleted successfully!
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>';
+            $_SESSION['alert'] = ['type' => 'success', 'message' => 'Room type deleted successfully!'];
+        } else {
+            $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error deleting room type.'];
         }
     }
+    header("Location: rooms.php");
+    exit();
 }
 
 // Handle updating room type name
@@ -237,28 +214,18 @@ if (isset($_POST['update_room_type'])) {
         $checkResult = executeQuery($checkQuery);
         
         if (mysqli_num_rows($checkResult) > 0) {
-            echo '<div class="alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                Room type "' . htmlspecialchars($newTypeName) . '" already exists!
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>';
+            $_SESSION['alert'] = ['type' => 'warning', 'message' => 'Room type "' . htmlspecialchars($newTypeName) . '" already exists!'];
         } else {
             $updateQuery = "UPDATE roomTypes SET roomType = '$newTypeName' WHERE roomTypeID = '$updateTypeID'";
             if (executeQuery($updateQuery)) {
-                echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                    role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                    Room type updated successfully!
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>';
+                $_SESSION['alert'] = ['type' => 'success', 'message' => 'Room type updated successfully!'];
             } else {
-                echo '<div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
-                    role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
-                    Error updating room type. Please try again.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>';
+                $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error updating room type. Please try again.'];
             }
         }
     }
+    header("Location: rooms.php");
+    exit();
 }
 
 $getRooms = "SELECT rooms.*, roomTypes.roomType AS roomTypeName FROM rooms INNER JOIN roomTypes ON rooms.roomTypeId = roomTypes.roomTypeID ORDER BY rooms.roomID ASC";
@@ -297,6 +264,16 @@ mysqli_data_seek($features, 0);
 </head>
 
 <body class="bg-light">
+    <!-- Alert Message Container -->
+    <?php if (isset($_SESSION['alert'])): ?>
+        <div class="alert alert-<?php echo $_SESSION['alert']['type']; ?> alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
+            role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);" id="autoAlert">
+            <?php echo $_SESSION['alert']['message']; ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <?php unset($_SESSION['alert']); ?>
+    <?php endif; ?>
+
     <div class="container-fluid">
         <div class="row">
             <?php include 'includes/sidebar.php'; ?>
@@ -854,6 +831,17 @@ mysqli_data_seek($features, 0);
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        // Auto-dismiss alert after 3 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const autoAlert = document.getElementById('autoAlert');
+            if (autoAlert) {
+                setTimeout(function() {
+                    const bsAlert = bootstrap.Alert.getOrCreateInstance(autoAlert);
+                    bsAlert.close();
+                }, 3000);
+            }
+        });
+
         // Room Type Edit Functions for Add Room Type Modal
         function enableEditMode(typeId, currentName) {
             document.getElementById('displayMode' + typeId).classList.add('d-none');
