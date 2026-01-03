@@ -168,6 +168,69 @@ if (isset($_POST['update_room'])) {
     }
 }
 
+// Add this PHP handler after the existing POST handlers (around line 170, before the $getRooms query)
+
+// Handle adding new room type
+if (isset($_POST['add_room_type'])) {
+    $newRoomType = mysqli_real_escape_string($conn, trim($_POST['newRoomType']));
+    
+    if (!empty($newRoomType)) {
+        // Check if room type already exists
+        $checkQuery = "SELECT roomTypeID FROM roomTypes WHERE roomType = '$newRoomType'";
+        $checkResult = executeQuery($checkQuery);
+        
+        if (mysqli_num_rows($checkResult) > 0) {
+            echo '<div class="alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
+                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
+                Room type "' . htmlspecialchars($newRoomType) . '" already exists!
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>';
+        } else {
+            $insertQuery = "INSERT INTO roomTypes (roomType) VALUES ('$newRoomType')";
+            if (executeQuery($insertQuery)) {
+                echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
+                    role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
+                    Room type "' . htmlspecialchars($newRoomType) . '" added successfully!
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>';
+            } else {
+                echo '<div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
+                    role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
+                    Error adding room type. Please try again.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>';
+            }
+        }
+    }
+}
+
+// Handle deleting room type
+if (isset($_POST['delete_room_type'])) {
+    $deleteTypeID = (int)$_POST['deleteRoomTypeID'];
+    
+    // Check if any rooms are using this type
+    $checkRoomsQuery = "SELECT COUNT(*) as count FROM rooms WHERE roomTypeId = '$deleteTypeID'";
+    $checkRoomsResult = executeQuery($checkRoomsQuery);
+    $roomCount = mysqli_fetch_assoc($checkRoomsResult)['count'];
+    
+    if ($roomCount > 0) {
+        echo '<div class="alert alert-warning alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
+            role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
+            Cannot delete this room type. ' . $roomCount . ' room(s) are using it.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>';
+    } else {
+        $deleteTypeQuery = "DELETE FROM roomTypes WHERE roomTypeID = '$deleteTypeID'";
+        if (executeQuery($deleteTypeQuery)) {
+            echo '<div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
+                role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);">
+                Room type deleted successfully!
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>';
+        }
+    }
+}
+
 $getRooms = "SELECT rooms.*, roomTypes.roomType AS roomTypeName FROM rooms INNER JOIN roomTypes ON rooms.roomTypeId = roomTypes.roomTypeID ORDER BY rooms.roomID ASC";
 $rooms = executeQuery($getRooms);
 
@@ -245,6 +308,26 @@ mysqli_data_seek($features, 0);
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" data-room-type="Deluxe" type="button" role="tab" onclick="filterRooms('Deluxe')">
                                     Deluxe
+                                </button>
+                            </li>
+                            <?php 
+                            // Dynamically add tabs for any additional room types beyond the default ones
+                            mysqli_data_seek($roomTypes, 0);
+                            $defaultTypes = ['Basic', 'Family', 'Suite', 'Deluxe'];
+                            while ($type = mysqli_fetch_assoc($roomTypes)) {
+                                if (!in_array($type['roomType'], $defaultTypes)) { ?>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" data-room-type="<?php echo htmlspecialchars($type['roomType']); ?>" type="button" role="tab" onclick="filterRooms('<?php echo htmlspecialchars($type['roomType']); ?>')">
+                                            <?php echo htmlspecialchars($type['roomType']); ?>
+                                        </button>
+                                    </li>
+                            <?php }
+                            }
+                            mysqli_data_seek($roomTypes, 0);
+                            ?>
+                            <li class="nav-item">
+                                <button class="nav-link text-success" type="button" data-bs-toggle="modal" data-bs-target="#addRoomTypeModal">
+                                    <i class="bi bi-plus-circle me-1"></i>Add Room Type
                                 </button>
                             </li>
                         </ul>
@@ -530,6 +613,72 @@ mysqli_data_seek($features, 0);
                         </div>
                     </div>
                 </div>
+
+    <!-- Add Room Type Modal - Add this before </body> -->
+    <div class="modal fade" id="addRoomTypeModal" tabindex="-1" aria-labelledby="addRoomTypeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="addRoomTypeModalLabel">
+                        <i class="bi bi-tags me-2"></i>Manage Room Types
+                    </h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Add New Room Type Form -->
+                    <form method="POST" class="mb-4">
+                        <label for="newRoomType" class="form-label">Add New Room Type</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="newRoomType" name="newRoomType" 
+                                   placeholder="e.g., Presidential, Economy, VIP" required>
+                            <button type="submit" name="add_room_type" class="btn btn-success">
+                                <i class="bi bi-plus-lg me-1"></i>Add
+                            </button>
+                        </div>
+                        <small class="text-muted">Enter a unique name for the new room type</small>
+                    </form>
+
+                    <!-- Existing Room Types List -->
+                    <h6 class="border-bottom pb-2 mb-3">Existing Room Types</h6>
+                    <div class="list-group">
+                        <?php 
+                        mysqli_data_seek($roomTypes, 0);
+                        while ($type = mysqli_fetch_assoc($roomTypes)) { 
+                            // Count rooms using this type
+                            $countQuery = "SELECT COUNT(*) as count FROM rooms WHERE roomTypeId = " . (int)$type['roomTypeID'];
+                            $countResult = executeQuery($countQuery);
+                            $roomCount = mysqli_fetch_assoc($countResult)['count'];
+                        ?>
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-tag-fill me-2 text-primary"></i>
+                                    <?php echo htmlspecialchars($type['roomType']); ?>
+                                    <span class="badge bg-secondary ms-2"><?php echo $roomCount; ?> room(s)</span>
+                                </div>
+                                <?php if ($roomCount == 0) { ?>
+                                    <form method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this room type?');">
+                                        <input type="hidden" name="deleteRoomTypeID" value="<?php echo $type['roomTypeID']; ?>">
+                                        <button type="submit" name="delete_room_type" class="btn btn-outline-danger btn-sm">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                <?php } else { ?>
+                                    <span class="text-muted small" title="Cannot delete - rooms are using this type">
+                                        <i class="bi bi-lock"></i>
+                                    </span>
+                                <?php } ?>
+                            </div>
+                        <?php } 
+                        mysqli_data_seek($roomTypes, 0);
+                        ?>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
