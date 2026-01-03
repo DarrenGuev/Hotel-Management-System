@@ -119,15 +119,12 @@ if (isset($_POST['delete_category'])) {
 if (isset($_POST['rename_category'])) {
     $categoryID = (int)$_POST['categoryID'];
     $newCategoryName = mysqli_real_escape_string($conn, trim($_POST['newCategoryName']));
-    
-    // Get old category name
     $getOldQuery = "SELECT categoryName FROM featureCategories WHERE categoryID = '$categoryID'";
     $oldResult = executeQuery($getOldQuery);
     $oldRow = mysqli_fetch_assoc($oldResult);
     $oldCategory = $oldRow ? $oldRow['categoryName'] : '';
     
     if (!empty($newCategoryName) && $categoryID > 0) {
-        // Check if new name already exists (excluding current category)
         $checkQuery = "SELECT categoryID FROM featureCategories WHERE categoryName = '$newCategoryName' AND categoryID != '$categoryID'";
         $checkResult = executeQuery($checkQuery);
         
@@ -138,9 +135,7 @@ if (isset($_POST['rename_category'])) {
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>';
         } else {
-            // Update featureCategories table
             $updateCatQuery = "UPDATE featureCategories SET categoryName = '$newCategoryName' WHERE categoryID = '$categoryID'";
-            // Also update all features with the old category name
             $updateFeaturesQuery = "UPDATE features SET category = '$newCategoryName' WHERE category = '$oldCategory'";
             
             if (executeQuery($updateCatQuery) && executeQuery($updateFeaturesQuery)) {
@@ -162,8 +157,6 @@ if (isset($_POST['rename_category'])) {
 
 $getFeatures = "SELECT * FROM features ORDER BY category, featureId";
 $features = executeQuery($getFeatures);
-
-// Get all categories from featureCategories table
 $getCategoriesQuery = "SELECT * FROM featureCategories ORDER BY categoryName";
 $categoriesResult = executeQuery($getCategoriesQuery);
 $categoryList = [];
