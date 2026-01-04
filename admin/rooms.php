@@ -1,78 +1,52 @@
 <?php
-session_start();
-include 'connect.php';
+/**
+ * Rooms Management Page
+ * Refactored to use OOP model classes
+ */
+require_once __DIR__ . '/../classes/autoload.php';
 
-// Check if user is admin
-if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../frontend/login.php?error=Access denied");
-    exit();
-}
+Auth::startSession();
+Auth::requireAdmin('../frontend/login.php');
 
-// Helper function to handle image upload
-function handleImageUpload($fileInput, $targetFolder = "assets/")
-{
-    if (!isset($_FILES[$fileInput]) || $_FILES[$fileInput]['error'] !== UPLOAD_ERR_OK) {
-        return ['success' => false, 'fileName' => '', 'error' => 'No file uploaded or upload error'];
-    }
+// Initialize models
+$roomModel = new Room();
+$roomTypeModel = new RoomType();
+$featureModel = new Feature();
 
-    $file = $_FILES[$fileInput];
-    $tempName = $file['tmp_name'];
-    $originalName = $file['name'];
-
-    // Validate file type
-    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    $fileType = mime_content_type($tempName);
-
-    if (!in_array($fileType, $allowedTypes)) {
-        return ['success' => false, 'fileName' => '', 'error' => 'Invalid file type. Only JPG, PNG, GIF, and WEBP are allowed.'];
-    }
-
-    // Generate unique filename to prevent overwrites
-    $extension = pathinfo($originalName, PATHINFO_EXTENSION);
-    $uniqueName = uniqid('room_', true) . '.' . strtolower($extension);
-
-    // Ensure target folder exists
-    if (!is_dir($targetFolder)) {
-        mkdir($targetFolder, 0755, true);
-    }
-
-    $targetPath = $targetFolder . $uniqueName;
-
-    if (move_uploaded_file($tempName, $targetPath)) {
-        return ['success' => true, 'fileName' => $uniqueName, 'error' => ''];
-    } else {
-        return ['success' => false, 'fileName' => '', 'error' => 'Failed to move uploaded file. Check folder permissions.'];
-    }
-}
+// Initialize image upload helper
+$imageUpload = new ImageUpload('assets/');
 
 if (isset($_POST['add_room'])) {
-    $roomName = mysqli_real_escape_string($conn, $_POST['roomName']);
+    $roomName = trim($_POST['roomName']);
     $roomTypeId = (int)$_POST['roomTypeId'];
     $capacity = (int)$_POST['capacity'];
     $quantity = (int)$_POST['quantity'];
     $basePrice = (float)$_POST['base_price'];
     $selectedFeatures = isset($_POST['features']) ? $_POST['features'] : [];
 
-    // Handle image upload
-    $uploadResult = handleImageUpload('roomImage', 'assets/');
+    // Handle image upload using ImageUpload class
+    $uploadResult = $imageUpload->upload('roomImage');
     $fileName = $uploadResult['fileName'];
 
     if (!$uploadResult['success'] && isset($_FILES['roomImage']) && $_FILES['roomImage']['error'] !== UPLOAD_ERR_NO_FILE) {
-        $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Image upload failed: ' . htmlspecialchars($uploadResult['error'])];
+        Auth::setAlert('danger', 'Image upload failed: ' . htmlspecialchars($uploadResult['error']));
     } elseif (!empty($roomName) && !empty($roomTypeId)) {
-        $postQuery = "INSERT INTO `rooms`(`roomName`, `roomTypeId`, `capacity`, `quantity`, `base_price`, `imagePath`) 
-                    VALUES ('$roomName', '$roomTypeId', '$capacity', '$quantity', '$basePrice', '$fileName')";
-
-        if (executeQuery($postQuery)) {
-            $newRoomID = mysqli_insert_id($conn);
-            foreach ($selectedFeatures as $featureId) {
-                $featureId = (int)$featureId;
-                $insertFeatureQuery = "INSERT INTO `roomFeatures`(`roomID`, `featureID`) VALUES ('$newRoomID', '$featureId')";
-                executeQuery($insertFeatureQuery);
-            }
-            $_SESSION['alert'] = ['type' => 'success', 'message' => 'Room Added Successfully!'];
+        $roomData = [
+            'roomName' => $roomName,
+            'roomTypeId' => $roomTypeId,
+            'capacity' => $capacity,
+            'quantity' => $quantity,
+            'base_price' => $basePrice,
+            'imagePath' => $fileName
+        ];
+        
+        $newRoomID = $roomModel->addRoom($roomData);
+        
+        if ($newRoomID) {
+            $roomModel->setFeatures($newRoomID, $selectedFeatures);
+            Auth::setAlert('success', 'Room Added Successfully!');
         } else {
-            $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error adding room.'];
+            Auth::setAlert('danger', 'Error adding room.');
         }
     }
     header("Location: rooms.php");
@@ -81,20 +55,17 @@ if (isset($_POST['add_room'])) {
 
 if (isset($_POST['deleteID'])) {
     $deleteID = (int)$_POST['deleteID'];
-    $getImageQuery = "SELECT imagePath FROM rooms WHERE roomID = '$deleteID'";
-    $imageResult = executeQuery($getImageQuery);
-    if ($imageRow = mysqli_fetch_assoc($imageResult)) {
-        $imagePath = 'assets/' . $imageRow['imagePath'];
-        if (file_exists($imagePath) && !empty($imageRow['imagePath'])) {
-            unlink($imagePath); 
-        }
+    
+    // Get and delete the image
+    $imagePath = $roomModel->getImagePath($deleteID);
+    if ($imagePath) {
+        $imageUpload->delete($imagePath);
     }
 
-    $deleteQuery = "DELETE FROM rooms WHERE roomID = '$deleteID'";
-    if (executeQuery($deleteQuery)) {
-        $_SESSION['alert'] = ['type' => 'success', 'message' => 'Room deleted successfully!'];
+    if ($roomModel->deleteRoom($deleteID)) {
+        Auth::setAlert('success', 'Room deleted successfully!');
     } else {
-        $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error deleting room.'];
+        Auth::setAlert('danger', 'Error deleting room.');
     }
     header("Location: rooms.php");
     exit();
@@ -102,7 +73,7 @@ if (isset($_POST['deleteID'])) {
 
 if (isset($_POST['update_room'])) {
     $roomID = (int)$_POST['roomID'];
-    $roomName = mysqli_real_escape_string($conn, $_POST['editRoomName']);
+    $roomName = trim($_POST['editRoomName']);
     $roomTypeId = (int)$_POST['editRoomTypeId'];
     $capacity = (int)$_POST['editCapacity'];
     $quantity = (int)$_POST['editQuantity'];
@@ -110,47 +81,36 @@ if (isset($_POST['update_room'])) {
     $selectedFeatures = isset($_POST['editFeatures']) ? $_POST['editFeatures'] : [];
 
     if (!empty($roomID) && !empty($roomName) && !empty($roomTypeId) && is_numeric($capacity) && is_numeric($quantity) && is_numeric($basePrice)) {
-        $updateQuery = "UPDATE `rooms` SET 
-                        `roomName`='$roomName', 
-                        `roomTypeId`='$roomTypeId', 
-                        `capacity`='$capacity', 
-                        `quantity`='$quantity', 
-                        `base_price`='$basePrice'";
+        $updateData = [
+            'roomName' => $roomName,
+            'roomTypeId' => $roomTypeId,
+            'capacity' => $capacity,
+            'quantity' => $quantity,
+            'base_price' => $basePrice
+        ];
 
         if (isset($_FILES['editRoomImage']) && $_FILES['editRoomImage']['error'] === UPLOAD_ERR_OK) {
-            $uploadResult = handleImageUpload('editRoomImage', 'assets/');
+            $uploadResult = $imageUpload->upload('editRoomImage');
 
             if ($uploadResult['success']) {
-                $getOldImageQuery = "SELECT imagePath FROM rooms WHERE roomID = '$roomID'";
-                $oldImageResult = executeQuery($getOldImageQuery);
-                if ($oldImageRow = mysqli_fetch_assoc($oldImageResult)) {
-                    $oldImagePath = 'assets/' . $oldImageRow['imagePath'];
-                    if (file_exists($oldImagePath) && !empty($oldImageRow['imagePath'])) {
-                        unlink($oldImagePath);
-                    }
+                // Delete old image
+                $oldImagePath = $roomModel->getImagePath($roomID);
+                if ($oldImagePath) {
+                    $imageUpload->delete($oldImagePath);
                 }
-
-                $updateQuery .= ", `imagePath`='" . $uploadResult['fileName'] . "'";
+                $updateData['imagePath'] = $uploadResult['fileName'];
             } else {
-                $_SESSION['alert'] = ['type' => 'warning', 'message' => 'Image upload failed: ' . htmlspecialchars($uploadResult['error']) . '. Other details were updated.'];
+                Auth::setAlert('warning', 'Image upload failed: ' . htmlspecialchars($uploadResult['error']) . '. Other details were updated.');
             }
         }
 
-        $updateQuery .= " WHERE `roomID`='$roomID'";
-
-        if (executeQuery($updateQuery)) {
-            $deleteFeatures = "DELETE FROM `roomFeatures` WHERE `roomID`='$roomID'";
-            executeQuery($deleteFeatures);
-            foreach ($selectedFeatures as $featureId) {
-                $featureId = (int)$featureId;
-                $insertFeatureQuery = "INSERT INTO `roomFeatures`(`roomID`, `featureID`) VALUES ('$roomID', '$featureId')";
-                executeQuery($insertFeatureQuery);
-            }
-            if (!isset($_SESSION['alert'])) {
-                $_SESSION['alert'] = ['type' => 'success', 'message' => 'Room updated successfully.'];
+        if ($roomModel->updateRoom($roomID, $updateData)) {
+            $roomModel->setFeatures($roomID, $selectedFeatures);
+            if (!Auth::hasAlert()) {
+                Auth::setAlert('success', 'Room updated successfully.');
             }
         } else {
-            $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error updating room.'];
+            Auth::setAlert('danger', 'Error updating room.');
         }
     }
     header("Location: rooms.php");
@@ -159,23 +119,10 @@ if (isset($_POST['update_room'])) {
 
 // Handle adding new room type
 if (isset($_POST['add_room_type'])) {
-    $newRoomType = mysqli_real_escape_string($conn, trim($_POST['newRoomType']));
-    
-    if (!empty($newRoomType)) {
-        $checkQuery = "SELECT roomTypeID FROM roomTypes WHERE roomType = '$newRoomType'";
-        $checkResult = executeQuery($checkQuery);
-        
-        if (mysqli_num_rows($checkResult) > 0) {
-            $_SESSION['alert'] = ['type' => 'warning', 'message' => 'Room type "' . htmlspecialchars($newRoomType) . '" already exists!'];
-        } else {
-            $insertQuery = "INSERT INTO roomTypes (roomType) VALUES ('$newRoomType')";
-            if (executeQuery($insertQuery)) {
-                $_SESSION['alert'] = ['type' => 'success', 'message' => 'Room type "' . htmlspecialchars($newRoomType) . '" added successfully!'];
-            } else {
-                $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error adding room type. Please try again.'];
-            }
-        }
-    }
+    $newRoomType = trim($_POST['newRoomType']);
+    $result = $roomTypeModel->addRoomType($newRoomType);
+    $alertType = $result['success'] ? 'success' : (strpos($result['message'], 'already exists') !== false ? 'warning' : 'danger');
+    Auth::setAlert($alertType, $result['message']);
     header("Location: rooms.php");
     exit();
 }
@@ -183,22 +130,9 @@ if (isset($_POST['add_room_type'])) {
 // Handle deleting room type
 if (isset($_POST['delete_room_type'])) {
     $deleteTypeID = (int)$_POST['deleteRoomTypeID'];
-    
-    // Check if any rooms are using this type
-    $checkRoomsQuery = "SELECT COUNT(*) as count FROM rooms WHERE roomTypeId = '$deleteTypeID'";
-    $checkRoomsResult = executeQuery($checkRoomsQuery);
-    $roomCount = mysqli_fetch_assoc($checkRoomsResult)['count'];
-    
-    if ($roomCount > 0) {
-        $_SESSION['alert'] = ['type' => 'warning', 'message' => 'Cannot delete this room type. ' . $roomCount . ' room(s) are using it.'];
-    } else {
-        $deleteTypeQuery = "DELETE FROM roomTypes WHERE roomTypeID = '$deleteTypeID'";
-        if (executeQuery($deleteTypeQuery)) {
-            $_SESSION['alert'] = ['type' => 'success', 'message' => 'Room type deleted successfully!'];
-        } else {
-            $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error deleting room type.'];
-        }
-    }
+    $result = $roomTypeModel->deleteRoomType($deleteTypeID);
+    $alertType = $result['success'] ? 'success' : (strpos($result['message'], 'Cannot delete') !== false ? 'warning' : 'danger');
+    Auth::setAlert($alertType, $result['message']);
     header("Location: rooms.php");
     exit();
 }
@@ -206,47 +140,18 @@ if (isset($_POST['delete_room_type'])) {
 // Handle updating room type name
 if (isset($_POST['update_room_type'])) {
     $updateTypeID = (int)$_POST['updateRoomTypeID'];
-    $newTypeName = mysqli_real_escape_string($conn, trim($_POST['updateRoomTypeName']));
-    
-    if (!empty($newTypeName) && $updateTypeID > 0) {
-        // Check if new name already exists (excluding current type)
-        $checkQuery = "SELECT roomTypeID FROM roomTypes WHERE roomType = '$newTypeName' AND roomTypeID != '$updateTypeID'";
-        $checkResult = executeQuery($checkQuery);
-        
-        if (mysqli_num_rows($checkResult) > 0) {
-            $_SESSION['alert'] = ['type' => 'warning', 'message' => 'Room type "' . htmlspecialchars($newTypeName) . '" already exists!'];
-        } else {
-            $updateQuery = "UPDATE roomTypes SET roomType = '$newTypeName' WHERE roomTypeID = '$updateTypeID'";
-            if (executeQuery($updateQuery)) {
-                $_SESSION['alert'] = ['type' => 'success', 'message' => 'Room type updated successfully!'];
-            } else {
-                $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error updating room type. Please try again.'];
-            }
-        }
-    }
+    $newTypeName = trim($_POST['updateRoomTypeName']);
+    $result = $roomTypeModel->updateRoomType($updateTypeID, $newTypeName);
+    $alertType = $result['success'] ? 'success' : (strpos($result['message'], 'already exists') !== false ? 'warning' : 'danger');
+    Auth::setAlert($alertType, $result['message']);
     header("Location: rooms.php");
     exit();
 }
 
-$getRooms = "SELECT rooms.*, roomTypes.roomType AS roomTypeName FROM rooms INNER JOIN roomTypes ON rooms.roomTypeId = roomTypes.roomTypeID ORDER BY rooms.roomID ASC";
-$rooms = executeQuery($getRooms);
-
-$getRoomTypes = "SELECT * FROM roomTypes ORDER BY roomTypeID";
-$roomTypes = executeQuery($getRoomTypes);
-
-$getFeatures = "SELECT * FROM features ORDER BY category, featureId";
-$features = executeQuery($getFeatures);
-
-// Organize features by category
-$featuresByCategory = [];
-while ($feature = mysqli_fetch_assoc($features)) {
-    $cat = $feature['category'] ?? 'General';
-    if (!isset($featuresByCategory[$cat])) {
-        $featuresByCategory[$cat] = [];
-    }
-    $featuresByCategory[$cat][] = $feature;
-}
-mysqli_data_seek($features, 0);
+// Get data using model classes
+$rooms = $roomModel->getAllWithType();
+$roomTypes = $roomTypeModel->getAllOrdered();
+$featuresByCategory = $featureModel->getAllGroupedByCategory();
 
 ?>
 
@@ -265,13 +170,12 @@ mysqli_data_seek($features, 0);
 
 <body class="bg-light">
     <!-- Alert Message Container -->
-    <?php if (isset($_SESSION['alert'])): ?>
-        <div class="alert alert-<?php echo $_SESSION['alert']['type']; ?> alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
+    <?php $alert = Auth::getAlert(); if ($alert): ?>
+        <div class="alert alert-<?php echo $alert['type']; ?> alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
             role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);" id="autoAlert">
-            <?php echo $_SESSION['alert']['message']; ?>
+            <?php echo $alert['message']; ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-        <?php unset($_SESSION['alert']); ?>
     <?php endif; ?>
 
     <div class="container-fluid">
@@ -319,9 +223,8 @@ mysqli_data_seek($features, 0);
                             </li>
                             <?php 
                             // Dynamically add tabs for any additional room types beyond the default ones
-                            mysqli_data_seek($roomTypes, 0);
                             $defaultTypes = ['Basic', 'Family', 'Suite', 'Deluxe'];
-                            while ($type = mysqli_fetch_assoc($roomTypes)) {
+                            foreach ($roomTypes as $type) {
                                 if (!in_array($type['roomType'], $defaultTypes)) { ?>
                                     <li class="nav-item" role="presentation">
                                         <button class="nav-link" data-room-type="<?php echo htmlspecialchars($type['roomType']); ?>" type="button" role="tab" onclick="filterRooms('<?php echo htmlspecialchars($type['roomType']); ?>')">
@@ -330,7 +233,6 @@ mysqli_data_seek($features, 0);
                                     </li>
                             <?php }
                             }
-                            mysqli_data_seek($roomTypes, 0);
                             ?>
                             <li class="nav-item">
                                 <button class="nav-link text-success" type="button" data-bs-toggle="modal" data-bs-target="#addRoomTypeModal">
@@ -375,19 +277,11 @@ mysqli_data_seek($features, 0);
                                     </tr>
                                 </thead>
                                 <tbody id="roomsTableBody">
-                                <?php while ($row = mysqli_fetch_assoc($rooms)) {
-                                    $roomFeaturesQuery = "SELECT f.featureName FROM features f INNER JOIN roomFeatures rf ON f.featureId = rf.featureID  WHERE rf.roomID = " . (int)$row['roomID'] . " ORDER BY f.featureId";
-                                    $roomFeaturesResult = executeQuery($roomFeaturesQuery);
-                                    $roomFeatures = [];
-                                    while ($feature = mysqli_fetch_assoc($roomFeaturesResult)) {
-                                        $roomFeatures[] = $feature['featureName'];
-                                    }
-                                    $roomFeatureIdsQuery = "SELECT featureID FROM roomFeatures WHERE roomID = " . (int)$row['roomID'] . " ORDER BY featureID";
-                                    $roomFeatureIdsResult = executeQuery($roomFeatureIdsQuery);
-                                    $roomFeatureIds = [];
-                                    while ($fid = mysqli_fetch_assoc($roomFeatureIdsResult)) {
-                                        $roomFeatureIds[] = $fid['featureID'];
-                                    }
+                                <?php foreach ($rooms as $row) {
+                                    // Get room features using model
+                                    $roomFeatures = $roomModel->getFeatures($row['roomID']);
+                                    $roomFeatureNames = array_column($roomFeatures, 'featureName');
+                                    $roomFeatureIds = array_column($roomFeatures, 'featureId');
                                 ?>
                                     <tr data-room-type="<?php echo htmlspecialchars($row['roomTypeName'], ENT_QUOTES); ?>">
                                         <td class="text-center"><?php echo $row['roomID'] ?></td>
@@ -395,8 +289,8 @@ mysqli_data_seek($features, 0);
                                         <td class="text-center"><?php echo $row['roomName'] ?></td>
                                         <td class="text-center"><?php echo $row['capacity'] ?> guests</td>
                                         <td class="text-center">
-                                            <?php if (!empty($roomFeatures)) {
-                                                foreach ($roomFeatures as $featureName) { ?>
+                                            <?php if (!empty($roomFeatureNames)) {
+                                                foreach ($roomFeatureNames as $featureName) { ?>
                                                     <span class="badge bg-secondary me-1 mb-1"><?php echo htmlspecialchars($featureName); ?></span>
                                                 <?php }
                                             } else { ?>
@@ -444,8 +338,7 @@ mysqli_data_seek($features, 0);
                                                                         <label for="editRoomTypeId<?php echo $row['roomID']; ?>" class="form-label">Room Type</label>
                                                                         <select id="editRoomTypeId<?php echo $row['roomID']; ?>" class="form-select" name="editRoomTypeId" required>
                                                                             <?php
-                                                                            mysqli_data_seek($roomTypes, 0);
-                                                                            while ($type = mysqli_fetch_assoc($roomTypes)) {
+                                                                            foreach ($roomTypes as $type) {
                                                                                 $selected = ($type['roomTypeID'] == $row['roomTypeId']) ? 'selected' : '';
                                                                             ?>
                                                                                 <option value="<?php echo $type['roomTypeID']; ?>" <?php echo $selected; ?>><?php echo htmlspecialchars($type['roomType']); ?></option>
@@ -571,8 +464,7 @@ mysqli_data_seek($features, 0);
                                             <select id="roomTypeId" class="form-select" name="roomTypeId" required>
                                                 <option value="" selected disabled>-- Select Room Type --</option>
                                                 <?php
-                                                mysqli_data_seek($roomTypes, 0);
-                                                while ($type = mysqli_fetch_assoc($roomTypes)) {
+                                                foreach ($roomTypes as $type) {
                                                 ?>
                                                     <option value="<?php echo $type['roomTypeID']; ?>"><?php echo htmlspecialchars($type['roomType']); ?></option>
                                                 <?php } ?>
@@ -676,12 +568,9 @@ mysqli_data_seek($features, 0);
                     <h6 class="border-bottom pb-2 mb-3">Existing Room Types</h6>
                     <div class="list-group">
                         <?php 
-                        mysqli_data_seek($roomTypes, 0);
-                        while ($type = mysqli_fetch_assoc($roomTypes)) { 
+                        foreach ($roomTypes as $type) { 
                             // Count rooms using this type
-                            $countQuery = "SELECT COUNT(*) as count FROM rooms WHERE roomTypeId = " . (int)$type['roomTypeID'];
-                            $countResult = executeQuery($countQuery);
-                            $roomCount = mysqli_fetch_assoc($countResult)['count'];
+                            $roomCount = $roomModel->countByType($type['roomTypeID']);
                         ?>
                             <div class="list-group-item" id="roomTypeItem<?php echo $type['roomTypeID']; ?>">
                                 <!-- Display Mode -->
@@ -725,9 +614,7 @@ mysqli_data_seek($features, 0);
                                     </form>
                                 </div>
                             </div>
-                        <?php } 
-                        mysqli_data_seek($roomTypes, 0);
-                        ?>
+                        <?php } ?>
                     </div>
                     
                     <div class="alert alert-info small mt-3 mb-0">
@@ -757,12 +644,9 @@ mysqli_data_seek($features, 0);
                     
                     <div class="list-group">
                         <?php 
-                        mysqli_data_seek($roomTypes, 0);
-                        while ($type = mysqli_fetch_assoc($roomTypes)) { 
+                        foreach ($roomTypes as $type) { 
                             // Count rooms using this type
-                            $countQuery = "SELECT COUNT(*) as count FROM rooms WHERE roomTypeId = " . (int)$type['roomTypeID'];
-                            $countResult = executeQuery($countQuery);
-                            $roomCount = mysqli_fetch_assoc($countResult)['count'];
+                            $roomCount = $roomModel->countByType($type['roomTypeID']);
                         ?>
                             <div class="list-group-item" id="deleteModalTypeItem<?php echo $type['roomTypeID']; ?>">
                                 <!-- Display Mode -->
@@ -811,9 +695,7 @@ mysqli_data_seek($features, 0);
                                     </form>
                                 </div>
                             </div>
-                        <?php } 
-                        mysqli_data_seek($roomTypes, 0);
-                        ?>
+                        <?php } ?>
                     </div>
                     
                     <div class="alert alert-warning small mt-3 mb-0">

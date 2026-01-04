@@ -4,78 +4,76 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Include class autoloader
+require_once __DIR__ . '/../classes/autoload.php';
+
+// Initialize models
+$userModel = new User();
+$roomModel = new Room();
+$roomTypeModel = new RoomType();
+$featureModel = new Feature();
+$featureCategoryModel = new FeatureCategory();
+
 $userData = null;
 if (isset($_SESSION['userID'])) {
     $userID = (int) $_SESSION['userID'];
-    $getUserQuery = "SELECT firstName, lastName, email, phoneNumber FROM users WHERE userID = $userID";
-    $userResult = executeQuery($getUserQuery);
-    if ($userResult && mysqli_num_rows($userResult) > 0) {
-        $userData = mysqli_fetch_assoc($userResult);
-        $userData['fullName'] = $userData['firstName'] . ' ' . $userData['lastName'];
+    $user = $userModel->find($userID);
+    if ($user) {
+        $userData = [
+            'firstName' => $user['firstName'],
+            'lastName' => $user['lastName'],
+            'email' => $user['email'],
+            'phoneNumber' => $user['phoneNumber'],
+            'fullName' => $user['firstName'] . ' ' . $user['lastName']
+        ];
     }
 }
 
-$getRoomTypes = "SELECT * FROM roomtypes ORDER BY roomTypeID";
-$roomTypesResult = executeQuery($getRoomTypes);
+// Get all room types as array
+$roomTypesData = $roomTypeModel->getAll();
 
 // Get all unique features from the database grouped by category
-// NOTE: Your current query only returns categories that are already linked to at least one room (INNER JOIN roomfeatures).
-// This is why a category like "Kitchen" (present in featureCategories) may not appear.
-// Instead, build categories from featureCategories and then LEFT JOIN features and roomfeatures so all categories show.
-$getCategoriesQuery = "SELECT categoryName FROM featureCategories ORDER BY categoryName";
-$categoriesResult = executeQuery($getCategoriesQuery);
+// Initialize categories from featureCategories so even empty categories show
+$categoriesData = $featureCategoryModel->getAll();
 
 $featuresByCategory = [];
 
 // Initialize categories (so even categories with zero linked features still render)
-if ($categoriesResult) {
-    while ($cat = mysqli_fetch_assoc($categoriesResult)) {
-        $categoryName = $cat['categoryName'] ?? 'General';
-        if (!isset($featuresByCategory[$categoryName])) {
-            $featuresByCategory[$categoryName] = [];
-        }
+foreach ($categoriesData as $cat) {
+    $categoryName = $cat['categoryName'] ?? 'General';
+    if (!isset($featuresByCategory[$categoryName])) {
+        $featuresByCategory[$categoryName] = [];
     }
 }
 
 // Load features and attach them to categories (show all features, even if not yet used by a room)
-$getFeatureQuery = "
-    SELECT
-        fc.categoryName AS category,
-        f.featureName
-    FROM featureCategories fc
-    LEFT JOIN features f
-        ON f.category = fc.categoryName
-    WHERE f.featureName IS NOT NULL
-    ORDER BY fc.categoryName, f.featureName
-";
+$allFeatures = $featureModel->getAll('category, featureName');
 
-$featureResult = executeQuery($getFeatureQuery);
+foreach ($allFeatures as $row) {
+    $category = $row['category'] ?? 'General';
+    $featureName = $row['featureName'];
 
-if ($featureResult) {
-    while ($row = mysqli_fetch_assoc($featureResult)) {
-        $category = $row['category'] ?? 'General';
-        $featureName = $row['featureName'];
+    if (!isset($featuresByCategory[$category])) {
+        $featuresByCategory[$category] = [];
+    }
 
-        if (!isset($featuresByCategory[$category])) {
-            $featuresByCategory[$category] = [];
-        }
-
-        if ($featureName && !in_array($featureName, $featuresByCategory[$category], true)) {
-            $featuresByCategory[$category][] = $featureName;
-        }
+    if ($featureName && !in_array($featureName, $featuresByCategory[$category], true)) {
+        $featuresByCategory[$category][] = $featureName;
     }
 }
 
-function getRoomFeatures($roomID)
+function getRoomFeaturesArray($roomID, $roomModel = null)
 {
-    $query = "SELECT f.featureName, f.category FROM features f INNER JOIN roomfeatures rf ON f.featureId = rf.featureID WHERE rf.roomID = " . (int) $roomID . " ORDER BY f.category, f.featureName";
-    return executeQuery($query);
+    if ($roomModel === null) {
+        $roomModel = new Room();
+    }
+    return $roomModel->getFeatures($roomID);
 }
 
 // Helper function to group features by category
-function groupFeaturesByCategory($featuresResult) {
+function groupFeaturesByCategory($features) {
     $grouped = [];
-    while ($feature = mysqli_fetch_assoc($featuresResult)) {
+    foreach ($features as $feature) {
         $category = $feature['category'] ?? 'General';
         if (!isset($grouped[$category])) {
             $grouped[$category] = [];
@@ -122,10 +120,10 @@ function groupFeaturesByCategory($featuresResult) {
             <!-- Filter Sidebar -->
             <div class="col-12 col-lg-3 col-xl-2 px-0">
                 <div class="sticky-top" style="top:70px; z-index: 10;">
-                    <div class="bg-body-tertiary border p-4">
+                    <div class="bg-body-tertiary border p-4 pt-5 mt-5">
                         <div class="d-lg-none">
                             <div class="accordion" id="filterAccordion">
-                                <div class="accordion-item">
+                                <div class="accordion-item mt-2">
                                     <h2 class="accordion-header">
                                         <button class="accordion-button collapsed" type="button"
                                             data-bs-toggle="collapse" data-bs-target="#collapseFilter"
@@ -139,8 +137,7 @@ function groupFeaturesByCategory($featuresResult) {
                                             <div class="border-bottom pb-3 mb-3">
                                                 <h6 class="fw-semibold mb-3 text-secondary">Room Type</h6>
                                                 <?php 
-                                                mysqli_data_seek($roomTypesResult, 0);
-                                                while ($type = mysqli_fetch_assoc($roomTypesResult)) { 
+                                                foreach ($roomTypesData as $type) { 
                                                     $typeValue = strtolower($type['roomType']);
                                                     $typeId = 'type' . str_replace(' ', '', $type['roomType']) . 'Mobile';
                                                 ?>
@@ -243,8 +240,7 @@ function groupFeaturesByCategory($featuresResult) {
                             <div class="border-bottom pb-3 mb-3">
                                 <h6 class="fw-semibold mb-3 text-secondary">Room Type</h6>
                                 <?php 
-                                mysqli_data_seek($roomTypesResult, 0);
-                                while ($type = mysqli_fetch_assoc($roomTypesResult)) { 
+                                foreach ($roomTypesData as $type) { 
                                     $typeValue = strtolower($type['roomType']);
                                     $typeId = 'type' . str_replace(' ', '', $type['roomType']);
                                 ?>
@@ -341,18 +337,14 @@ function groupFeaturesByCategory($featuresResult) {
             </div>
 
             <!-- Room Listings -->
-            <div class="col-12 col-lg-9 col-xl-10 p-4 mt-5 pt-5">
+            <div class="col-12 col-lg-9 col-xl-10 p-4 mt-5">
                 <h2 class="text-center fw-bold mb-4 fst-italic mt-5">Recommended Rooms</h2>
                 <div class="mx-auto mt-3 mb-5" style="width: 80px; height: 4px; background-color: #FF9900;"></div>
 
                 <?php
-                mysqli_data_seek($roomTypesResult, 0);                
-                while ($roomType = mysqli_fetch_assoc($roomTypesResult)) {
-                    $getRooms = "SELECT rooms.*, roomtypes.roomType AS roomTypeName FROM rooms 
-                                INNER JOIN roomtypes ON rooms.roomTypeId = roomtypes.roomTypeID 
-                                WHERE rooms.roomTypeId = " . (int) $roomType['roomTypeID'];
-                    $roomsResult = executeQuery($getRooms);
-                    if (mysqli_num_rows($roomsResult) > 0) {
+                foreach ($roomTypesData as $roomType) {
+                    $roomsData = $roomModel->getByType($roomType['roomTypeID']);
+                    if (count($roomsData) > 0) {
                         ?>
                         <div class="container">
                             <div class="row mt-5">
@@ -363,15 +355,16 @@ function groupFeaturesByCategory($featuresResult) {
                                 </div>
                             </div>
                             <div class="row" id="<?php echo strtolower($roomType['roomType']); ?>RoomCards">
-                                <?php while ($row = mysqli_fetch_assoc($roomsResult)) {
-                                    $featuresResult = getRoomFeatures($row['roomID']);
+                                <?php foreach ($roomsData as $row) {
+                                    $featuresData = $roomModel->getFeatures($row['roomID']);
                                     $features = [];
-                                    while ($feature = mysqli_fetch_assoc($featuresResult)) {
+                                    foreach ($featuresData as $feature) {
                                         $features[] = $feature['featureName'];
                                     }
+                                    $roomTypeName = $roomType['roomType'];
                                     ?>
                                     <div class="col-12 col-sm-12 col-md-6 col-lg-4 col-xl-3 pb-4 room-card" 
-                                        data-room-type="<?php echo strtolower($row['roomTypeName']); ?>"
+                                        data-room-type="<?php echo strtolower($roomTypeName); ?>"
                                         data-price="<?php echo $row['base_price']; ?>"
                                         data-capacity="<?php echo (int) $row['capacity']; ?>"
                                         data-features="<?php echo strtolower(implode(',', $features)); ?>">
@@ -386,7 +379,7 @@ function groupFeaturesByCategory($featuresResult) {
                                                     <?php echo htmlspecialchars($row['roomName']); ?>
                                                 </h5>
                                                 <p class="text-secondary fst-italic small mb-2">
-                                                    <?php echo htmlspecialchars($row['roomTypeName']); ?> Room • Max
+                                                    <?php echo htmlspecialchars($roomTypeName); ?> Room • Max
                                                     <?php echo (int) $row['capacity']; ?> Guests
                                                 </p>
                                                 <p class="fw-semibold mb-3">₱<?php echo number_format($row['base_price'], 2); ?> /
@@ -767,10 +760,7 @@ function groupFeaturesByCategory($featuresResult) {
             });
         }
         
-        // Update badge count on category dropdown buttons
         function updateCategoryBadges() {
-            // Dropend UI was removed; keeping this function so existing calls don't break.
-            // (If you later re-add a special UI that needs counts, implement it here.)
             return;
         }
         
@@ -816,7 +806,6 @@ function groupFeaturesByCategory($featuresResult) {
         }
         
         function applyFilters() {
-            // Get selected filters (use desktop version as primary)
             const selectedTypes = Array.from(document.querySelectorAll('input[id^="type"]:not([id*="Mobile"]):checked'))
                 .map(cb => cb.value.toLowerCase());
             
@@ -916,11 +905,9 @@ function groupFeaturesByCategory($featuresResult) {
             initializeFilters();
             
             <?php
-            mysqli_data_seek($roomTypesResult, 0);
-            while ($roomType = mysqli_fetch_assoc($roomTypesResult)) {
-                $getRooms = "SELECT * FROM rooms WHERE roomTypeId = " . (int) $roomType['roomTypeID'];
-                $roomsResult = executeQuery($getRooms);
-                while ($room = mysqli_fetch_assoc($roomsResult)) {
+            foreach ($roomTypesData as $roomType) {
+                $roomsForSetup = $roomModel->getByType($roomType['roomTypeID']);
+                foreach ($roomsForSetup as $room) {
                     ?>
                     setupBookingCalculation(<?php echo $room['roomID']; ?>, <?php echo $room['base_price']; ?>);
                     <?php

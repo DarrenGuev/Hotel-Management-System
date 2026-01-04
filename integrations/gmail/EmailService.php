@@ -8,9 +8,7 @@ class EmailService
     private $fromEmail;
     private $fromName;
 
-    /**
-     * Constructor - Initialize email service with configuration
-     */
+    //Constructor - Initialize email service with configuration
     public function __construct()
     {
         $this->tokenFile = __DIR__ . '/tokens.json';
@@ -20,9 +18,7 @@ class EmailService
         $this->initDatabase();
     }
 
-    /**
-     * Initialize database connection
-     */
+    //Initialize database connection
     private function initDatabase()
     {
         $dbHost = defined('EMAIL_DB_HOST') ? EMAIL_DB_HOST : 'localhost';
@@ -39,9 +35,7 @@ class EmailService
         $this->conn->set_charset('utf8mb4');
     }
 
-    /**
-     * Get valid access token, refreshing if necessary
-     */
+    //Get valid access token, refreshing if necessary
     private function getAccessToken()
     {
         if (!file_exists($this->tokenFile)) {
@@ -50,7 +44,7 @@ class EmailService
 
         $tokens = json_decode(file_get_contents($this->tokenFile), true);
         
-        // Check if expired (subtract 60s buffer)
+        // check if expired (subtract 60s buffer)
         if (time() >= ($tokens['created'] + $tokens['expires_in'] - 60)) {
             if (empty($tokens['refresh_token'])) {
                 throw new Exception('Access token expired and no refresh token available. Please reconnect Gmail.');
@@ -61,9 +55,7 @@ class EmailService
         return $tokens['access_token'];
     }
 
-    /**
-     * Refresh OAuth access token
-     */
+    //Refresh OAuth access token
     private function refreshAccessToken($refreshToken)
     {
         $url = 'https://oauth2.googleapis.com/token';
@@ -101,9 +93,7 @@ class EmailService
         return $data['access_token'];
     }
 
-    /**
-     * Make authenticated request to Gmail API
-     */
+    //Make authenticated request to Gmail API
     private function gmailRequest($endpoint, $method = 'GET', $data = null)
     {
         $accessToken = $this->getAccessToken();
@@ -135,9 +125,7 @@ class EmailService
         return json_decode($response, true);
     }
 
-    /**
-     * Send an email using Gmail API
-     */
+    //Send an email using Gmail API
     public function sendEmail($to, $subject, $body, $options = [])
     {
         try {
@@ -201,9 +189,7 @@ class EmailService
         }
     }
 
-    /**
-     * Fetch emails from Gmail API
-     */
+    //Fetch emails from Gmail API
     public function fetchEmails($folder = 'INBOX', $limit = 50, $offset = 0)
     {
         try {
@@ -235,9 +221,7 @@ class EmailService
         }
     }
 
-    /**
-     * Parse Gmail API message response
-     */
+    //Parse Gmail API message response
     private function parseGmailMessage($message)
     {
         $headers = [];
@@ -261,9 +245,7 @@ class EmailService
         ];
     }
 
-    /**
-     * Extract body from payload (recursive)
-     */
+    //Extract body from payload (recursive)
     private function getBodyFromPayload($payload)
     {
         // Direct body data
@@ -317,9 +299,7 @@ class EmailService
         return '';
     }
 
-    /**
-     * Check if email exists in DB
-     */
+    //Check if email exists in DB
     private function emailExists($messageId)
     {
         $stmt = $this->conn->prepare("SELECT id FROM email_logs WHERE message_id = ?");
@@ -328,9 +308,7 @@ class EmailService
         return $stmt->get_result()->num_rows > 0;
     }
 
-    /**
-     * Get single email (from DB or API)
-     */
+    //Get single email (from DB or API)
     public function getEmail($emailId, $folder = 'INBOX')
     {
         // Try DB first
@@ -345,9 +323,7 @@ class EmailService
         return ['success' => false, 'error' => 'Email not found'];
     }
 
-    /**
-     * Reply to email
-     */
+    //Reply to an email
     public function replyToEmail($originalEmailId, $replyBody, $folder = 'INBOX')
     {
         $originalResult = $this->getEmail($originalEmailId);
@@ -384,12 +360,7 @@ class EmailService
         return $result;
     }
 
-    /**
-     * Send booking receipt
-     * 
-     * @param array $booking Booking details
-     * @return array Result
-     */
+    //Send booking receipt email
     public function sendBookingReceipt($booking)
     {
         $to = $booking['email'];
@@ -399,11 +370,7 @@ class EmailService
         return $this->sendEmail($to, $subject, $body);
     }
 
-    /**
-     * Get email statistics
-     * 
-     * @return array Statistics data
-     */
+    //Get email statistics
     public function getStatistics()
     {
         $stats = [
@@ -459,19 +426,18 @@ class EmailService
         return $stats;
     }
 
-    /**
-     * Get emails from database with filters
-     * 
-     * @param array $filters Filter options
-     * @param int $limit Number of results
-     * @param int $offset Offset for pagination
-     * @return array Emails list
-     */
+    //Get emails from database with filters
     public function getEmailsFromDatabase($filters = [], $limit = 50, $offset = 0)
     {
         $where = [];
         $params = [];
         $types = '';
+
+        if (!empty($filters['id'])) {
+            $where[] = 'id = ?';
+            $params[] = $filters['id'];
+            $types .= 'i';
+        }
 
         if (!empty($filters['direction'])) {
             $where[] = 'direction = ?';
@@ -536,12 +502,7 @@ class EmailService
         ];
     }
 
-    /**
-     * Mark email as read in database
-     * 
-     * @param int $emailId Email log ID
-     * @return bool Success status
-     */
+    //Mark email as read
     public function markAsRead($emailId)
     {
         $stmt = $this->conn->prepare("UPDATE email_logs SET is_read = 1 WHERE id = ?");
@@ -549,330 +510,7 @@ class EmailService
         return $stmt->execute();
     }
 
-    // ==================== Private Helper Methods ====================
-
-    /**
-     * Connect to IMAP server
-     */
-    private function connectIMAP($folder = 'INBOX')
-    {
-        if (empty($this->smtpUser) || empty($this->smtpPass)) {
-            throw new Exception('Email credentials not configured');
-        }
-
-        $mailboxPath = '{' . $this->imapHost . ':' . $this->imapPort . '/imap/ssl}' . $folder;
-        
-        $mailbox = @imap_open($mailboxPath, $this->smtpUser, $this->smtpPass);
-        
-        if (!$mailbox) {
-            $error = imap_last_error();
-            throw new Exception('IMAP connection failed: ' . $error);
-        }
-
-        return $mailbox;
-    }
-
-    /**
-     * Send email via SMTP
-     */
-    private function sendViaSMTP($to, $subject, $body, $headers)
-    {
-        // Using fsockopen for SMTP communication
-        $socket = @fsockopen($this->smtpHost, $this->smtpPort, $errno, $errstr, 30);
-        
-        if (!$socket) {
-            throw new Exception("SMTP connection failed: $errstr ($errno)");
-        }
-
-        // Get server greeting
-        $this->getSmtpResponse($socket);
-
-        // EHLO
-        fwrite($socket, "EHLO " . gethostname() . "\r\n");
-        $this->getSmtpResponse($socket);
-
-        // STARTTLS
-        fwrite($socket, "STARTTLS\r\n");
-        $this->getSmtpResponse($socket);
-
-        // Enable TLS
-        stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
-
-        // EHLO again after STARTTLS
-        fwrite($socket, "EHLO " . gethostname() . "\r\n");
-        $this->getSmtpResponse($socket);
-
-        // AUTH LOGIN
-        fwrite($socket, "AUTH LOGIN\r\n");
-        $this->getSmtpResponse($socket);
-
-        // Username
-        fwrite($socket, base64_encode($this->smtpUser) . "\r\n");
-        $this->getSmtpResponse($socket);
-
-        // Password (App Password for Gmail)
-        fwrite($socket, base64_encode($this->smtpPass) . "\r\n");
-        $response = $this->getSmtpResponse($socket);
-        
-        if (strpos($response, '235') === false) {
-            fclose($socket);
-            throw new Exception('SMTP authentication failed. Make sure you are using an App Password for Gmail.');
-        }
-
-        // MAIL FROM
-        fwrite($socket, "MAIL FROM:<{$this->fromEmail}>\r\n");
-        $this->getSmtpResponse($socket);
-
-        // RCPT TO
-        fwrite($socket, "RCPT TO:<$to>\r\n");
-        $this->getSmtpResponse($socket);
-
-        // DATA
-        fwrite($socket, "DATA\r\n");
-        $this->getSmtpResponse($socket);
-
-        // Generate Message-ID
-        $messageId = '<' . uniqid() . '@' . gethostname() . '>';
-
-        // Email content
-        $email = "Message-ID: $messageId\r\n";
-        $email .= "Date: " . date('r') . "\r\n";
-        $email .= "From: {$this->fromName} <{$this->fromEmail}>\r\n";
-        $email .= "To: $to\r\n";
-        $email .= "Subject: $subject\r\n";
-        $email .= $headers;
-        $email .= "\r\n";
-        $email .= $body;
-        $email .= "\r\n.\r\n";
-
-        fwrite($socket, $email);
-        $this->getSmtpResponse($socket);
-
-        // QUIT
-        fwrite($socket, "QUIT\r\n");
-        fclose($socket);
-
-        return [
-            'success' => true,
-            'message_id' => $messageId
-        ];
-    }
-
-    /**
-     * Get SMTP response
-     */
-    private function getSmtpResponse($socket)
-    {
-        $response = '';
-        while ($line = fgets($socket, 515)) {
-            $response .= $line;
-            if (substr($line, 3, 1) == ' ') break;
-        }
-        return $response;
-    }
-
-    /**
-     * Build email headers
-     */
-    private function buildHeaders($options)
-    {
-        $headers = '';
-        
-        if (!empty($options['cc'])) {
-            $headers .= "Cc: " . $options['cc'] . "\r\n";
-        }
-        
-        if (!empty($options['bcc'])) {
-            $headers .= "Bcc: " . $options['bcc'] . "\r\n";
-        }
-        
-        if (!empty($options['replyTo'])) {
-            $headers .= "Reply-To: " . $options['replyTo'] . "\r\n";
-        }
-        
-        if (!empty($options['inReplyTo'])) {
-            $headers .= "In-Reply-To: " . $options['inReplyTo'] . "\r\n";
-        }
-        
-        if (!empty($options['references'])) {
-            $headers .= "References: " . $options['references'] . "\r\n";
-        }
-        
-        return $headers;
-    }
-
-    /**
-     * Build email content with MIME
-     */
-    private function buildEmailContent($body, $boundary)
-    {
-        $content = "--$boundary\r\n";
-        $content .= "Content-Type: text/plain; charset=UTF-8\r\n";
-        $content .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
-        $content .= strip_tags($body) . "\r\n\r\n";
-        
-        $content .= "--$boundary\r\n";
-        $content .= "Content-Type: text/html; charset=UTF-8\r\n";
-        $content .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
-        $content .= $body . "\r\n\r\n";
-        
-        $content .= "--$boundary--";
-        
-        return $content;
-    }
-
-    /**
-     * Extract email address from IMAP object
-     */
-    private function extractEmailAddress($addressObj)
-    {
-        if (!$addressObj) return '';
-        
-        $mailbox = isset($addressObj->mailbox) ? $addressObj->mailbox : '';
-        $host = isset($addressObj->host) ? $addressObj->host : '';
-        
-        return $mailbox . '@' . $host;
-    }
-
-    /**
-     * Extract name from IMAP address object
-     */
-    private function extractName($addressObj)
-    {
-        if (!$addressObj) return '';
-        
-        if (isset($addressObj->personal)) {
-            return $this->decodeMimeString($addressObj->personal);
-        }
-        
-        return $this->extractEmailAddress($addressObj);
-    }
-
-    /**
-     * Decode MIME encoded string
-     */
-    private function decodeMimeString($string)
-    {
-        $elements = imap_mime_header_decode($string);
-        $decoded = '';
-        foreach ($elements as $element) {
-            $decoded .= $element->text;
-        }
-        return $decoded;
-    }
-
-    /**
-     * Decode email subject
-     */
-    private function decodeSubject($subject)
-    {
-        return $this->decodeMimeString($subject);
-    }
-
-    /**
-     * Get email body preview
-     */
-    private function getBodyPreview($mailbox, $msgNum, $structure, $maxLength = 150)
-    {
-        $body = $this->getEmailBody($mailbox, $msgNum, $structure);
-        $body = strip_tags($body);
-        $body = preg_replace('/\s+/', ' ', $body);
-        $body = trim($body);
-        
-        if (strlen($body) > $maxLength) {
-            $body = substr($body, 0, $maxLength) . '...';
-        }
-        
-        return $body;
-    }
-
-    /**
-     * Get full email body
-     */
-    private function getEmailBody($mailbox, $msgNum, $structure)
-    {
-        $body = '';
-        
-        if (!$structure->parts) {
-            // Simple message
-            $body = imap_body($mailbox, $msgNum);
-            $body = $this->decodeBody($body, $structure->encoding);
-        } else {
-            // Multipart message
-            $body = $this->getMultipartBody($mailbox, $msgNum, $structure);
-        }
-        
-        return $body;
-    }
-
-    /**
-     * Get body from multipart message
-     */
-    private function getMultipartBody($mailbox, $msgNum, $structure, $partNum = '')
-    {
-        $body = '';
-        
-        foreach ($structure->parts as $index => $part) {
-            $partNumber = $partNum ? "$partNum." . ($index + 1) : ($index + 1);
-            
-            if ($part->subtype === 'PLAIN' && empty($body)) {
-                $body = imap_fetchbody($mailbox, $msgNum, $partNumber);
-                $body = $this->decodeBody($body, $part->encoding);
-            } elseif ($part->subtype === 'HTML') {
-                $body = imap_fetchbody($mailbox, $msgNum, $partNumber);
-                $body = $this->decodeBody($body, $part->encoding);
-            } elseif (isset($part->parts)) {
-                $nestedBody = $this->getMultipartBody($mailbox, $msgNum, $part, $partNumber);
-                if (!empty($nestedBody)) {
-                    $body = $nestedBody;
-                }
-            }
-        }
-        
-        return $body;
-    }
-    private function decodeBody($body, $encoding)
-    {
-        switch ($encoding) {
-            case 0: // 7BIT
-            case 1: // 8BIT
-                return $body;
-            case 2: // BINARY
-                return $body;
-            case 3: // BASE64
-                return base64_decode($body);
-            case 4: // QUOTED-PRINTABLE
-                return quoted_printable_decode($body);
-            default:
-                return $body;
-        }
-    }
-
-    private function getAttachments($mailbox, $msgNum, $structure)
-    {
-        $attachments = [];
-        
-        if (!isset($structure->parts)) {
-            return $attachments;
-        }
-        
-        foreach ($structure->parts as $index => $part) {
-            if ($part->ifdparameters) {
-                foreach ($part->dparameters as $param) {
-                    if (strtolower($param->attribute) === 'filename') {
-                        $attachments[] = [
-                            'filename' => $param->value,
-                            'part' => $index + 1,
-                            'size' => $part->bytes ?? 0
-                        ];
-                    }
-                }
-            }
-        }
-        
-        return $attachments;
-    }
-
+    //Log email to database
     private function logEmail($data)
     {
         $stmt = $this->conn->prepare(
@@ -905,6 +543,7 @@ class EmailService
         return $stmt->execute();
     }
 
+    //Sync fetched email to database
     private function syncEmailToDatabase($email, $folder)
     {
         // Check if already exists
@@ -944,12 +583,8 @@ class EmailService
         
         $stmt->execute();
     }
-    private function markAsReadInDatabase($messageId)
-    {
-        $stmt = $this->conn->prepare("UPDATE email_logs SET is_read = 1 WHERE message_id = ?");
-        $stmt->bind_param('s', $messageId);
-        return $stmt->execute();
-    }
+
+    //Log email reply
     private function logEmailReply($originalEmailId, $replyBody)
     {
         $stmt = $this->conn->prepare(
@@ -958,6 +593,8 @@ class EmailService
         $stmt->bind_param('is', $originalEmailId, $replyBody);
         return $stmt->execute();
     }
+
+    //Generate booking receipt HTML
     private function generateReceiptHtml($booking)
     {
         $html = '
@@ -1028,44 +665,7 @@ class EmailService
         return $html;
     }
 
-    /**
-     * Generate cancellation email HTML
-     */
-    private function generateCancellationHtml($booking)
-    {
-        $html = '
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: #dc3545; color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-                .content { background: #f9f9f9; padding: 30px; border: 1px solid #ddd; }
-                .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>Booking Cancelled</h1>
-                </div>
-                <div class="content">
-                    <p>Dear ' . htmlspecialchars($booking['customerName'] ?? $booking['firstName'] ?? 'Guest') . ',</p>
-                    <p>Your booking #' . htmlspecialchars($booking['bookingID']) . ' has been cancelled.</p>
-                    <p>If you did not request this cancellation or have any questions, please contact us immediately.</p>
-                    <p>We hope to serve you in the future.</p>
-                </div>
-                <div class="footer">
-                    <p>TravelMates Hotel</p>
-                </div>
-            </div>
-        </body>
-        </html>';
-        
-        return $html;
-    }
+    //Build reply HTML with quoted original message
     private function buildReplyHtml($replyBody, $original)
     {
         // Handle different key names from database vs API
@@ -1102,6 +702,8 @@ class EmailService
         
         return $html;
     }
+
+    //Destructor - Close database connection
     public function __destruct()
     {
         if ($this->conn) {

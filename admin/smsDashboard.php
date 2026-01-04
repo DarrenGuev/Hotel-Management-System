@@ -2,11 +2,16 @@
 session_start();
 include 'connect.php';
 
-if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../frontend/login.php?error=Access denied");
-    exit();
-}
+// Include class autoloader
+require_once __DIR__ . '/../classes/autoload.php';
+
+// Require admin access
+Auth::requireAdmin('../frontend/login.php');
+
 require_once '../integrations/sms/SmsService.php';
+
+// Initialize models
+$bookingModel = new Booking();
 
 $smsService = new SmsService();
 $stats = $smsService->getStatistics();
@@ -59,17 +64,9 @@ $logs = $smsService->getSmsLogs($filters, $limit, $offset);
 $totalCount = $smsService->getTotalCount($filters);
 $totalPages = ceil($totalCount / $limit);
 
-// Get bookings for dropdown
-$bookingsQuery = "SELECT b.bookingID, b.phoneNumber, u.firstName, u.lastName 
-                  FROM bookings b 
-                  INNER JOIN users u ON b.userID = u.userID 
-                  WHERE b.bookingStatus IN ('pending', 'confirmed') 
-                  ORDER BY b.createdAt DESC LIMIT 50";
-$bookingsResult = executeQuery($bookingsQuery);
-$bookings = [];
-while ($row = mysqli_fetch_assoc($bookingsResult)) {
-    $bookings[] = $row;
-}
+// Get bookings for dropdown using Booking model
+$pendingAndConfirmedBookings = $bookingModel->getByStatusWithDetails([Booking::STATUS_PENDING, Booking::STATUS_CONFIRMED]);
+$bookings = array_slice($pendingAndConfirmedBookings, 0, 50);
 ?>
 <!doctype html>
 <html lang="en">

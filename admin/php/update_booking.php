@@ -2,10 +2,15 @@
 session_start();
 include '../connect.php';
 
-if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../../frontend/login.php?error=Access denied");
-    exit();
-}
+// Include class autoloader
+require_once __DIR__ . '/../../classes/autoload.php';
+
+// Require admin access
+Auth::requireAdmin('../../frontend/login.php');
+
+// Initialize models
+$bookingModel = new Booking();
+$userModel = new User();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $bookingID = (int)$_POST['bookingID'];
@@ -13,36 +18,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $paymentStatus = $_POST['paymentStatus'];
     $notes = $_POST['notes'] ?? '';
 
-    $validBookingStatuses = ['pending', 'confirmed', 'cancelled', 'completed'];
-    $validPaymentStatuses = ['pending', 'paid', 'refunded'];
+    $validBookingStatuses = [Booking::STATUS_PENDING, Booking::STATUS_CONFIRMED, Booking::STATUS_CANCELLED, Booking::STATUS_COMPLETED];
+    $validPaymentStatuses = [Booking::PAYMENT_PENDING, Booking::PAYMENT_PAID, Booking::PAYMENT_REFUNDED];
 
     if (!in_array($bookingStatus, $validBookingStatuses) || !in_array($paymentStatus, $validPaymentStatuses)) {
         header("Location: ../admin.php?error=Invalid status");
         exit();
     }
 
-    // Get the current booking status before update
-    $getCurrentStatus = $conn->prepare("SELECT bookingStatus, phoneNumber, checkInDate FROM bookings WHERE bookingID = ?");
-    $getCurrentStatus->bind_param("i", $bookingID);
-    $getCurrentStatus->execute();
-    $currentResult = $getCurrentStatus->get_result();
-    $currentBooking = $currentResult->fetch_assoc();
+    // Get the current booking before update
+    $currentBooking = $bookingModel->find($bookingID);
     $oldStatus = $currentBooking['bookingStatus'] ?? '';
     $phoneNumber = $currentBooking['phoneNumber'] ?? '';
     $checkInDate = $currentBooking['checkInDate'] ?? '';
 
     // Get customer name
-    $getCustomer = $conn->prepare("SELECT u.firstName, u.lastName FROM bookings b INNER JOIN users u ON b.userID = u.userID WHERE b.bookingID = ?");
-    $getCustomer->bind_param("i", $bookingID);
-    $getCustomer->execute();
-    $customerResult = $getCustomer->get_result();
-    $customer = $customerResult->fetch_assoc();
-    $customerName = ($customer['firstName'] ?? '') . ' ' . ($customer['lastName'] ?? '');
+    $customer = $currentBooking ? $userModel->find($currentBooking['userID']) : null;
+    $customerName = $customer ? ($customer['firstName'] ?? '') . ' ' . ($customer['lastName'] ?? '') : '';
 
-    $updateQuery = $conn->prepare("UPDATE bookings SET bookingStatus = ?, paymentStatus = ?, updatedAt = NOW() WHERE bookingID = ?");
-    $updateQuery->bind_param("ssi", $bookingStatus, $paymentStatus, $bookingID);
+    // Update booking status and payment status
+    $updateData = [
+        'bookingStatus' => $bookingStatus,
+        'paymentStatus' => $paymentStatus,
+        'updatedAt' => date('Y-m-d H:i:s')
+    ];
 
-    if ($updateQuery->execute()) {
+    if ($bookingModel->update($bookingID, $updateData)) {
         // Send SMS notification if status changed
         if ($oldStatus !== $bookingStatus && !empty($phoneNumber)) {
             try {
@@ -50,23 +51,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 require_once '../../integrations/gmail/EmailService.php';
                 $smsService = new SmsService();
                 
-                if ($bookingStatus === 'confirmed') {
+                if ($bookingStatus === Booking::STATUS_CONFIRMED) {
                     $smsService->sendBookingApprovalSms($bookingID, $phoneNumber, trim($customerName), $checkInDate);
                     
                     // Send email receipt automatically
                     try {
                         $emailService = new EmailService();
-                        $bookingQuery = $conn->prepare("
-                            SELECT b.*, r.roomName, rt.roomType, u.firstName, u.lastName, u.email
-                            FROM bookings b
-                            INNER JOIN rooms r ON b.roomID = r.roomID
-                            INNER JOIN roomtypes rt ON r.roomTypeId = rt.roomTypeID
-                            INNER JOIN users u ON b.userID = u.userID
-                            WHERE b.bookingID = ?
-                        ");
-                        $bookingQuery->bind_param('i', $bookingID);
-                        $bookingQuery->execute();
-                        $bookingData = $bookingQuery->get_result()->fetch_assoc();
+                        $bookingData = $bookingModel->getByIdWithDetails($bookingID);
                         
                         if ($bookingData && !empty($bookingData['email'])) {
                             $bookingData['customerName'] = trim($bookingData['firstName'] . ' ' . $bookingData['lastName']);
@@ -78,9 +69,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     } catch (Exception $emailEx) {
                         error_log('Email Service Error: ' . $emailEx->getMessage());
                     }
-                } elseif ($bookingStatus === 'cancelled') {
+                } elseif ($bookingStatus === Booking::STATUS_CANCELLED) {
                     $smsService->sendBookingCancelledSms($bookingID, $phoneNumber, trim($customerName));
-                } elseif ($bookingStatus === 'completed') {
+                } elseif ($bookingStatus === Booking::STATUS_COMPLETED) {
                     $smsService->sendBookingCompletedSms($bookingID, $phoneNumber, trim($customerName));
                 }
             } catch (Exception $e) {

@@ -1,7 +1,13 @@
 <?php
 include '../connect.php';
 
+// Include class autoloader
+require_once __DIR__ . '/../../classes/autoload.php';
+
 header('Content-Type: application/json');
+
+// Initialize Feature model
+$featureModel = new Feature();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $featureName = isset($_POST['featureName']) ? trim($_POST['featureName']) : '';
@@ -12,16 +18,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     
-    // Sanitize input
-    $featureName = mysqli_real_escape_string($conn, $featureName);
-    $category = mysqli_real_escape_string($conn, $category);
-    
     // Check if feature already exists
-    $checkQuery = "SELECT featureId, category FROM features WHERE featureName = '$featureName'";
-    $checkResult = executeQuery($checkQuery);
+    $existingFeature = $featureModel->findByName($featureName);
     
-    if (mysqli_num_rows($checkResult) > 0) {
-        $existingFeature = mysqli_fetch_assoc($checkResult);
+    if ($existingFeature) {
         echo json_encode([
             'success' => false, 
             'error' => 'Feature already exists',
@@ -32,20 +32,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     
-    // Insert new feature with category
-    $insertQuery = "INSERT INTO `features`(`featureName`, `category`) VALUES ('$featureName', '$category')";
+    // Insert new feature with category using model
+    $result = $featureModel->addFeature($featureName, $category);
     
-    if (executeQuery($insertQuery)) {
-        $newFeatureId = mysqli_insert_id($conn);
+    if ($result['success'] && $result['id']) {
         echo json_encode([
             'success' => true,
-            'featureId' => $newFeatureId,
+            'featureId' => $result['id'],
             'featureName' => $featureName,
             'category' => $category,
             'message' => 'Feature added successfully'
         ]);
     } else {
-        echo json_encode(['success' => false, 'error' => 'Failed to add feature']);
+        echo json_encode(['success' => false, 'error' => $result['message'] ?? 'Failed to add feature']);
     }
 } else {
     echo json_encode(['success' => false, 'error' => 'Invalid request method']);
