@@ -6,7 +6,8 @@ $isLoggedIn = isset($_SESSION['userID']);
 $username = $isLoggedIn ? $_SESSION['username'] : '';
 $userRole = $isLoggedIn && isset($_SESSION['role']) ? $_SESSION['role'] : '';
 ?>
-<nav class="navbar navbar-expand-lg sticky-top glass bg-body-tertiary shadow animate-nav border-bottom">
+<link rel="stylesheet" href="/HOTEL-MANAGEMENT-SYSTEM/css/navbar.css">
+<nav class="navbar navbar-expand-lg fixed-top glass bg-body-tertiary shadow animate-nav border-bottom">
     <div class="container-fluid px-3 mx-3 px-md-5">
         <a class="navbar-brand fw-bold fs-3" href="/HOTEL-MANAGEMENT-SYSTEM/index.php"><img id="site-logo"
                 src="/HOTEL-MANAGEMENT-SYSTEM/images/logo/logoB.png" style="width: 120px;" alt="logo"></a>

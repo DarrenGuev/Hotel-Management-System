@@ -18,10 +18,10 @@
     <?php include '../integrations/chatbot/chatbotUI.php'; ?>
     <?php include '../frontend/includes/navbar.php'; ?>
 
-    <div class="container" id="eventsContainer">
+    <div class="container pt-5" id="eventsContainer">
         <div class="row">
             <div class="col">
-                <h2 class="mt-5 pt-4 mb-2 text-center fw-bold h-font">EVENTS</h2>
+                <h2 class="mt-5 pt-5 mb-2 text-center fw-bold h-font">EVENTS</h2>
                 <div class="mx-auto mt-3 mb-5" style="width: 80px; height: 4px; background-color: #FF9900;"></div>
             </div>
         </div>
