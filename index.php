@@ -32,6 +32,7 @@ if ($feedbackResult && $feedbackResult->num_rows > 0) {
 </head>
 
 <body>
+    <?php include 'frontend/includes/loader.php'; ?>
     <?php include 'integrations/chatbot/chatbotUI.php'; ?>
     <?php include 'frontend/includes/navbar.php'; ?>
 

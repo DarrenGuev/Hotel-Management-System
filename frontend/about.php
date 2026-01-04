@@ -15,6 +15,7 @@
 </head>
 
 <body>
+    <?php include 'includes/loader.php'; ?>
     <?php include '../integrations/chatbot/chatbotUI.php'; ?>
     <?php include '../frontend/includes/navbar.php'; ?>
 

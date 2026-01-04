@@ -144,6 +144,8 @@ $countCompleted = $bookingModel->countBy('bookingStatus', Booking::STATUS_COMPLE
 </head>
 
 <body class="bg-light">
+    <?php include 'frontend/includes/loader.php'; ?>
+
     <div class="container-fluid">
         <div class="row">
             <?php include 'includes/sidebar.php'; ?>

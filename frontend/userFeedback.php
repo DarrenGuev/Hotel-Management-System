@@ -55,6 +55,7 @@ unset($_SESSION['feedback_success'], $_SESSION['feedback_error']);
 </head>
 
 <body>
+    <?php include 'frontend/includes/loader.php'; ?>
     <?php include '../integrations/chatbot/chatbotUI.php'; ?>
     <?php include 'includes/navbar.php'; ?>
 

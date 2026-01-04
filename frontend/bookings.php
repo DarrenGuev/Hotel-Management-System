@@ -41,6 +41,7 @@ function getBookingRoomFeaturesArray($roomID, $roomModel = null) {
 </head>
 
 <body>
+    <?php include 'frontend/includes/loader.php'; ?>
     <?php include 'includes/navbar.php'; ?>
 
     <!-- Page Header -->

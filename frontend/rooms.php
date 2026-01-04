@@ -111,6 +111,7 @@ function groupFeaturesByCategory($features) {
 </head>
 
 <body>
+    <?php include '../frontend/includes/loader.php'; ?>
     <?php include '../integrations/chatbot/chatbotUI.php'; ?>
     <?php include 'includes/navbar.php'; ?>
 

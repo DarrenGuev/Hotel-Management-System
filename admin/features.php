@@ -96,6 +96,8 @@ $categoryList = $categoryModel->getAllOrdered();
 </head>
 
 <body class="bg-light">
+    <?php include 'frontend/includes/loader.php'; ?>
+
     <!-- Alert Message Container -->
     <?php $alert = Auth::getAlert(); if ($alert): ?>
         <div class="alert alert-<?php echo $alert['type']; ?> alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
