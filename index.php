@@ -34,10 +34,10 @@ if ($feedbackResult) {
     <?php include 'frontend/includes/navbar.php'; ?>
 
     <div id="home" class="position-relative d-flex align-items-center justify-content-center"
-        style="min-height: 95vh; background: url('images/loginRegisterImg/img.jpg') center/cover no-repeat fixed;">
+        style="min-height: 100vh; background: url('images/loginRegisterImg/img.jpg') center/cover no-repeat fixed;">
         <div class="position-absolute top-0 start-0 w-100 h-100 bg-black opacity-50"></div>
         <div class="container position-relative">
-            <div class="row justify-content-center">
+            <div class="row justify-content-center pt-5">
                 <div class="col-12 col-md-10 col-lg-8 text-black text-center">
                     <h1 class="fw-bold mb-3" style="color: white; text-shadow: 0 4px 15px rgba(0,0,0,0.9);">
                         Welcome to
@@ -86,7 +86,7 @@ if ($feedbackResult) {
                 <div class="row g-3">
                     <!--left large-->
                     <div class="col-12 col-md-8">
-                        <div id="galleryCarousel" class="carousel slide h-100" data-bs-ride="carousel">
+                        <div id="galleryCarousel" class="carousel slide h-100" data-bs-ride="carousel" data-bs-interval="2000">
                             <div class="carousel-inner h-100 rounded-3">
                                 <div class="carousel-item active h-100">
                                     <div class="ratio ratio-4x3 h-100">

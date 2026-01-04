@@ -111,10 +111,6 @@ while ($row = mysqli_fetch_assoc($bookingsResult)) {
             transition: transform 0.2s;
         }
 
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
         .sms-log-item {
             transition: background-color 0.2s;
         }

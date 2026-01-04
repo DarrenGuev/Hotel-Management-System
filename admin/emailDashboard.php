@@ -94,7 +94,7 @@ if (!empty($_GET['search'])) {
 }
 
 $page = max(1, (int)($_GET['page'] ?? 1));
-$limit = 20;
+$limit = 10;
 $offset = ($page - 1) * $limit;
 
 $emailsResult = $emailService->getEmailsFromDatabase($filters, $limit, $offset);
@@ -142,26 +142,9 @@ $totalPages = ceil($totalEmails / $limit);
             transition: transform 0.3s;
         }
 
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
         .email-list-item {
             cursor: pointer;
             transition: background-color 0.2s;
-        }
-
-        .email-list-item:hover {
-            background-color: #f8f9fa;
-        }
-
-        .email-list-item.unread {
-            background-color: #e8f4f8;
-            font-weight: 600;
-        }
-
-        .email-list-item.unread:hover {
-            background-color: #d4ebf2;
         }
 
         .email-preview {
@@ -243,69 +226,57 @@ $totalPages = ceil($totalEmails / $limit);
 
                 <!-- Statistics Cards -->
                 <div class="row g-4 mb-4">
-                    <div class="col-xl-2 col-md-4 col-sm-6">
-                        <div class="card stat-card shadow-sm h-100">
-                            <div class="card-body text-center">
-                                <div class="text-primary mb-2">
-                                    <i class="bi bi-envelope-arrow-up fs-2"></i>
-                                </div>
-                                <h3 class="fw-bold mb-0"><?php echo number_format($stats['total_sent']); ?></h3>
-                                <small class="text-muted">Total Sent</small>
+                    <div class="col-6 col-md-3">
+                        <div class="card stat-card bg-success text-white h-100">
+                            <div class="card-body text-center py-3">
+                                <i class="bi bi-envelope-arrow-up display-6"></i>
+                                <h3 class="fw-bold mt-2 mb-0"><?php echo number_format($stats['total_sent']); ?></h3>
+                                <small>Total Sent</small>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-2 col-md-4 col-sm-6">
-                        <div class="card stat-card shadow-sm h-100">
-                            <div class="card-body text-center">
-                                <div class="text-success mb-2">
-                                    <i class="bi bi-envelope-arrow-down fs-2"></i>
-                                </div>
-                                <h3 class="fw-bold mb-0"><?php echo number_format($stats['total_received']); ?></h3>
-                                <small class="text-muted">Total Received</small>
+                        <div class="col-6 col-md-3">
+                        <div class="card stat-card bg-primary text-white h-100">
+                            <div class="card-body text-center py-3">
+                                <i class="bi bi-envelope-arrow-down display-6"></i>
+                                <h3 class="fw-bold mt-2 mb-0"><?php echo number_format($stats['total_received']); ?></h3>
+                                <small>Total Received</small>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-2 col-md-4 col-sm-6">
-                        <div class="card stat-card shadow-sm h-100">
-                            <div class="card-body text-center">
-                                <div class="text-warning mb-2">
-                                    <i class="bi bi-envelope-exclamation fs-2"></i>
-                                </div>
-                                <h3 class="fw-bold mb-0"><?php echo number_format($stats['unread']); ?></h3>
-                                <small class="text-muted">Unread</small>
+                    <div class="col-6 col-md-3">
+                        <div class="card stat-card bg-warning text-dark h-100">
+                            <div class="card-body text-center py-3">
+                                <i class="bi bi-envelope-exclamation display-6"></i>
+                                <h3 class="fw-bold mt-2 mb-0"><?php echo number_format($stats['unread']); ?></h3>
+                                <small>Unread</small>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-2 col-md-4 col-sm-6">
-                        <div class="card stat-card shadow-sm h-100">
-                            <div class="card-body text-center">
-                                <div class="text-info mb-2">
-                                    <i class="bi bi-send fs-2"></i>
-                                </div>
-                                <h3 class="fw-bold mb-0"><?php echo number_format($stats['sent_today']); ?></h3>
-                                <small class="text-muted">Sent Today</small>
+                    <div class="col-6 col-md-3">
+                        <div class="card stat-card bg-info text-white h-100">
+                            <div class="card-body text-center py-3">
+                                <i class="bi bi-send display-6"></i>
+                                <h3 class="fw-bold mt-2 mb-0"><?php echo number_format($stats['sent_today']); ?></h3>
+                                <small>Sent Today</small>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-2 col-md-4 col-sm-6">
-                        <div class="card stat-card shadow-sm h-100">
-                            <div class="card-body text-center">
-                                <div class="text-secondary mb-2">
-                                    <i class="bi bi-inbox fs-2"></i>
-                                </div>
-                                <h3 class="fw-bold mb-0"><?php echo number_format($stats['received_today']); ?></h3>
-                                <small class="text-muted">Received Today</small>
+                    <div class="col-6 col-md-3">
+                        <div class="card stat-card bg-secondary text-white h-100">
+                            <div class="card-body text-center py-3">
+                                <i class="bi bi-inbox display-6"></i>
+                                <h3 class="fw-bold mt-2 mb-0"><?php echo number_format($stats['received_today']); ?></h3>
+                                <small>Received Today</small>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-2 col-md-4 col-sm-6">
-                        <div class="card stat-card shadow-sm h-100">
-                            <div class="card-body text-center">
-                                <div class="text-danger mb-2">
-                                    <i class="bi bi-x-circle fs-2"></i>
-                                </div>
-                                <h3 class="fw-bold mb-0"><?php echo number_format($stats['failed']); ?></h3>
-                                <small class="text-muted">Failed</small>
+                    <div class="col-6 col-md-3">
+                        <div class="card stat-card bg-danger text-white h-100">
+                            <div class="card-body text-center py-3">
+                                <i class="bi bi-x-circle display-6"></i>
+                                <h3 class="fw-bold mt-2 mb-0"><?php echo number_format($stats['failed']); ?></h3>
+                                <small>Failed</small>
                             </div>
                         </div>
                     </div>

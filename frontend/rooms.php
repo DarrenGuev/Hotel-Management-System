@@ -109,13 +109,6 @@ function groupFeaturesByCategory($featuresResult) {
             height: 200px;
             object-fit: cover;
         }
-
-        @media (min-width: 768px) {
-            .room-card-img {
-                height: 100%;
-                min-height: 200px;
-            }
-        }
     </style>
 </head>
 
@@ -348,7 +341,7 @@ function groupFeaturesByCategory($featuresResult) {
             </div>
 
             <!-- Room Listings -->
-            <div class="col-12 col-lg-9 col-xl-10 p-4">
+            <div class="col-12 col-lg-9 col-xl-10 p-4 mt-5 pt-5">
                 <h2 class="text-center fw-bold mb-4 fst-italic mt-5">Recommended Rooms</h2>
                 <div class="mx-auto mt-3 mb-5" style="width: 80px; height: 4px; background-color: #FF9900;"></div>
 
