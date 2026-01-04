@@ -176,7 +176,7 @@ $totalPages = ceil($totalEmails / $limit);
 </head>
 
 <body class="bg-light">
-    <?php include 'frontend/includes/loader.php'; ?>
+    <?php include '../frontend/includes/loader.php'; ?>
 
     <div class="container-fluid">
         <div class="row">

@@ -143,7 +143,7 @@ $bookings = array_slice($pendingAndConfirmedBookings, 0, 50);
 </head>
 
 <body class="bg-light">
-    <?php include 'frontend/includes/loader.php'; ?>
+    <?php include '../frontend/includes/loader.php'; ?>
 
     <div class="container-fluid">
         <div class="row">

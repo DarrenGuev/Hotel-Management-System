@@ -96,7 +96,7 @@ $categoryList = $categoryModel->getAllOrdered();
 </head>
 
 <body class="bg-light">
-    <?php include 'frontend/includes/loader.php'; ?>
+    <?php include '../frontend/includes/loader.php'; ?>
 
     <!-- Alert Message Container -->
     <?php $alert = Auth::getAlert(); if ($alert): ?>
@@ -145,7 +145,7 @@ $categoryList = $categoryModel->getAllOrdered();
                                 $count = isset($categoriesWithCount[$catName]) ? $categoriesWithCount[$catName] : 0;
                             ?>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link" data-category="<?php echo htmlspecialchars($catName); ?>" type="button" role="tab" onclick="filterFeatures('<?php echo htmlspecialchars($catName); ?>')">
+                                    <button class="nav-link" data-category="<?php echo htmlspecialchars($catName, ENT_QUOTES); ?>" type="button" role="tab" onclick="filterFeatures(this.getAttribute('data-category'))">
                                         <?php echo htmlspecialchars($catName); ?>
                                         <span class="badge bg-secondary ms-1"><?php echo $count; ?></span>
                                     </button>
@@ -489,12 +489,12 @@ $categoryList = $categoryModel->getAllOrdered();
             
             // Update active tab
             document.querySelectorAll('#categoryTabs .nav-link').forEach(tab => {
-                tab.classList.remove('active');
+                if (tab.getAttribute('data-category') === category) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
             });
-            const activeTab = document.querySelector(`#categoryTabs [data-category="${category}"]`);
-            if (activeTab) {
-                activeTab.classList.add('active');
-            }
 
             applyPagination();
         }

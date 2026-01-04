@@ -169,7 +169,7 @@ $featuresByCategory = $featureModel->getAllGroupedByCategory();
 </head>
 
 <body class="bg-light">
-    <?php include 'frontend/includes/loader.php'; ?>
+    <?php include '../frontend/includes/loader.php'; ?>
 
     <!-- Alert Message Container -->
     <?php $alert = Auth::getAlert(); if ($alert): ?>

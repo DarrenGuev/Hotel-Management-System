@@ -60,7 +60,7 @@
 </head>
 
 <body>
-    <?php include 'frontend/includes/loader.php'; ?>
+    <?php include 'includes/loader.php'; ?>
 
     <div class="login-page d-flex align-items-center justify-content-center py-5">
         <div class="container position-relative" style="z-index: 1;">
