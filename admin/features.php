@@ -1,23 +1,25 @@
 <?php
-session_start();
-include 'connect.php';
-if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../frontend/login.php?error=Access denied");
-    exit();
-}
+/**
+ * Features Management Page
+ * Refactored to use OOP model classes
+ */
+require_once __DIR__ . '/../classes/autoload.php';
+
+Auth::startSession();
+Auth::requireAdmin('../frontend/login.php');
+
+// Initialize models
+$featureModel = new Feature();
+$categoryModel = new FeatureCategory();
 
 // Handle form submissions and store messages in session
 if (isset($_POST['add_feature'])) {
-    $featureName = mysqli_real_escape_string($conn, $_POST['featureName']);
-    $category = mysqli_real_escape_string($conn, $_POST['category']);
+    $featureName = trim($_POST['featureName']);
+    $category = trim($_POST['category']);
 
     if (!empty($featureName) && !empty($category)) {
-        $insertFeatureQuery = "INSERT INTO `features`(`featureName`, `category`) VALUES ('$featureName', '$category')";
-        if (executeQuery($insertFeatureQuery)) {
-            $_SESSION['alert'] = ['type' => 'success', 'message' => 'Feature added successfully!'];
-        } else {
-            $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error adding feature.'];
-        }
+        $result = $featureModel->addFeature($featureName, $category);
+        Auth::setAlert($result['success'] ? 'success' : 'danger', $result['message']);
     }
     header("Location: features.php");
     exit();
@@ -25,28 +27,20 @@ if (isset($_POST['add_feature'])) {
 
 if (isset($_POST['deleteFeatureId'])) {
     $deleteFeatureId = (int)$_POST['deleteFeatureId'];
-    $deleteFeatureQuery = "DELETE FROM `features` WHERE `featureId` = '$deleteFeatureId'";
-    if (executeQuery($deleteFeatureQuery)) {
-        $_SESSION['alert'] = ['type' => 'success', 'message' => 'Feature deleted successfully!'];
-    } else {
-        $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error deleting feature.'];
-    }
+    $result = $featureModel->deleteFeature($deleteFeatureId);
+    Auth::setAlert($result['success'] ? 'success' : 'danger', $result['message']);
     header("Location: features.php");
     exit();
 }
 
 if (isset($_POST['update_feature'])) {
     $featureId = (int)$_POST['featureId'];
-    $featureName = mysqli_real_escape_string($conn, $_POST['editFeatureName']);
-    $category = mysqli_real_escape_string($conn, $_POST['editCategory']);
+    $featureName = trim($_POST['editFeatureName']);
+    $category = trim($_POST['editCategory']);
 
     if ($featureId && !empty($featureName) && !empty($category)) {
-        $updateFeatureQuery = "UPDATE `features` SET `featureName`='$featureName', `category`='$category' WHERE `featureId`='$featureId'";
-        if (executeQuery($updateFeatureQuery)) {
-            $_SESSION['alert'] = ['type' => 'success', 'message' => 'Feature updated successfully!'];
-        } else {
-            $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error updating feature.'];
-        }
+        $result = $featureModel->updateFeature($featureId, $featureName, $category);
+        Auth::setAlert($result['success'] ? 'success' : 'danger', $result['message']);
     }
     header("Location: features.php");
     exit();
@@ -54,23 +48,9 @@ if (isset($_POST['update_feature'])) {
 
 // Handle adding new category
 if (isset($_POST['add_category'])) {
-    $newCategory = mysqli_real_escape_string($conn, trim($_POST['newCategory']));
-    
-    if (!empty($newCategory)) {
-        $checkQuery = "SELECT categoryID FROM featureCategories WHERE categoryName = '$newCategory'";
-        $checkResult = executeQuery($checkQuery);
-        
-        if (mysqli_num_rows($checkResult) > 0) {
-            $_SESSION['alert'] = ['type' => 'warning', 'message' => 'Category "' . htmlspecialchars($newCategory) . '" already exists!'];
-        } else {
-            $insertQuery = "INSERT INTO featureCategories (categoryName) VALUES ('$newCategory')";
-            if (executeQuery($insertQuery)) {
-                $_SESSION['alert'] = ['type' => 'success', 'message' => 'Category "' . htmlspecialchars($newCategory) . '" added successfully!'];
-            } else {
-                $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error adding category. Please try again.'];
-            }
-        }
-    }
+    $newCategory = trim($_POST['newCategory']);
+    $result = $categoryModel->addCategory($newCategory);
+    Auth::setAlert($result['success'] ? 'success' : ($result['message'] === "Category \"{$newCategory}\" already exists!" ? 'warning' : 'danger'), $result['message']);
     header("Location: features.php");
     exit();
 }
@@ -78,26 +58,9 @@ if (isset($_POST['add_category'])) {
 // Handle deleting category
 if (isset($_POST['delete_category'])) {
     $deleteCategoryID = (int)$_POST['deleteCategoryID'];
-    
-    $getCatQuery = "SELECT categoryName FROM featureCategories WHERE categoryID = '$deleteCategoryID'";
-    $getCatResult = executeQuery($getCatQuery);
-    $catRow = mysqli_fetch_assoc($getCatResult);
-    $deleteCategory = $catRow ? $catRow['categoryName'] : '';
-    
-    $countQuery = "SELECT COUNT(*) as count FROM features WHERE category = '$deleteCategory'";
-    $countResult = executeQuery($countQuery);
-    $featureCount = mysqli_fetch_assoc($countResult)['count'];
-    
-    if ($featureCount > 0) {
-        $_SESSION['alert'] = ['type' => 'warning', 'message' => 'Cannot delete category "' . htmlspecialchars($deleteCategory) . '". ' . $featureCount . ' feature(s) are using it.'];
-    } else {
-        $deleteQuery = "DELETE FROM featureCategories WHERE categoryID = '$deleteCategoryID'";
-        if (executeQuery($deleteQuery)) {
-            $_SESSION['alert'] = ['type' => 'success', 'message' => 'Category "' . htmlspecialchars($deleteCategory) . '" deleted successfully!'];
-        } else {
-            $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error deleting category.'];
-        }
-    }
+    $result = $categoryModel->deleteCategory($deleteCategoryID);
+    $alertType = $result['success'] ? 'success' : (strpos($result['message'], 'Cannot delete') !== false ? 'warning' : 'danger');
+    Auth::setAlert($alertType, $result['message']);
     header("Location: features.php");
     exit();
 }
@@ -105,41 +68,17 @@ if (isset($_POST['delete_category'])) {
 // Handle renaming category
 if (isset($_POST['rename_category'])) {
     $categoryID = (int)$_POST['categoryID'];
-    $newCategoryName = mysqli_real_escape_string($conn, trim($_POST['newCategoryName']));
-    $getOldQuery = "SELECT categoryName FROM featureCategories WHERE categoryID = '$categoryID'";
-    $oldResult = executeQuery($getOldQuery);
-    $oldRow = mysqli_fetch_assoc($oldResult);
-    $oldCategory = $oldRow ? $oldRow['categoryName'] : '';
-    
-    if (!empty($newCategoryName) && $categoryID > 0) {
-        $checkQuery = "SELECT categoryID FROM featureCategories WHERE categoryName = '$newCategoryName' AND categoryID != '$categoryID'";
-        $checkResult = executeQuery($checkQuery);
-        
-        if (mysqli_num_rows($checkResult) > 0) {
-            $_SESSION['alert'] = ['type' => 'warning', 'message' => 'Category "' . htmlspecialchars($newCategoryName) . '" already exists!'];
-        } else {
-            $updateCatQuery = "UPDATE featureCategories SET categoryName = '$newCategoryName' WHERE categoryID = '$categoryID'";
-            $updateFeaturesQuery = "UPDATE features SET category = '$newCategoryName' WHERE category = '$oldCategory'";
-            
-            if (executeQuery($updateCatQuery) && executeQuery($updateFeaturesQuery)) {
-                $_SESSION['alert'] = ['type' => 'success', 'message' => 'Category renamed from "' . htmlspecialchars($oldCategory) . '" to "' . htmlspecialchars($newCategoryName) . '" successfully!'];
-            } else {
-                $_SESSION['alert'] = ['type' => 'danger', 'message' => 'Error renaming category. Please try again.'];
-            }
-        }
-    }
+    $newCategoryName = trim($_POST['newCategoryName']);
+    $result = $categoryModel->renameCategory($categoryID, $newCategoryName);
+    $alertType = $result['success'] ? 'success' : (strpos($result['message'], 'already exists') !== false ? 'warning' : 'danger');
+    Auth::setAlert($alertType, $result['message']);
     header("Location: features.php");
     exit();
 }
 
-$getFeatures = "SELECT * FROM features ORDER BY category, featureId";
-$features = executeQuery($getFeatures);
-$getCategoriesQuery = "SELECT * FROM featureCategories ORDER BY categoryName";
-$categoriesResult = executeQuery($getCategoriesQuery);
-$categoryList = [];
-while ($cat = mysqli_fetch_assoc($categoriesResult)) {
-    $categoryList[] = $cat;
-}
+// Get all features and categories
+$features = $featureModel->getAllOrdered();
+$categoryList = $categoryModel->getAllOrdered();
 
 ?>
 
@@ -158,13 +97,12 @@ while ($cat = mysqli_fetch_assoc($categoriesResult)) {
 
 <body class="bg-light">
     <!-- Alert Message Container -->
-    <?php if (isset($_SESSION['alert'])): ?>
-        <div class="alert alert-<?php echo $_SESSION['alert']['type']; ?> alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
+    <?php $alert = Auth::getAlert(); if ($alert): ?>
+        <div class="alert alert-<?php echo $alert['type']; ?> alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" 
             role="alert" style="z-index: 99999; max-width: 600px; width: calc(100% - 2rem);" id="autoAlert">
-            <?php echo $_SESSION['alert']['message']; ?>
+            <?php echo $alert['message']; ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-        <?php unset($_SESSION['alert']); ?>
     <?php endif; ?>
 
     <div class="container-fluid">
@@ -192,12 +130,12 @@ while ($cat = mysqli_fetch_assoc($categoriesResult)) {
                                 </button>
                             </li>
                             <?php 
-                            // Get categories with feature counts
-                            $catCountQuery = "SELECT category, COUNT(*) as count FROM features GROUP BY category ORDER BY category";
-                            $catCountResult = executeQuery($catCountQuery);
+                            // Get categories with feature counts using Feature model
+                            $allFeaturesList = $featureModel->getAll('category');
                             $categoriesWithCount = [];
-                            while ($catRow = mysqli_fetch_assoc($catCountResult)) {
-                                $categoriesWithCount[$catRow['category']] = $catRow['count'];
+                            foreach ($allFeaturesList as $feat) {
+                                $cat = $feat['category'] ?? 'General';
+                                $categoriesWithCount[$cat] = ($categoriesWithCount[$cat] ?? 0) + 1;
                             }
                             
                             foreach ($categoryList as $cat) { 
@@ -250,7 +188,7 @@ while ($cat = mysqli_fetch_assoc($categoriesResult)) {
                                     </tr>
                                 </thead>
                                 <tbody id="featuresTableBody">
-                                    <?php while ($row = mysqli_fetch_assoc($features)) { ?>
+                                    <?php foreach ($features as $row) { ?>
                                         <tr data-category="<?php echo htmlspecialchars($row['category'] ?? 'General', ENT_QUOTES); ?>">
                                             <td class="text-center"><?php echo (int)$row['featureId']; ?></td>
                                             <td class="text-center"><span class="badge bg-info"><?php echo htmlspecialchars($row['category'] ?? 'General'); ?></span></td>
@@ -413,15 +351,19 @@ while ($cat = mysqli_fetch_assoc($categoriesResult)) {
                     
                     <div class="list-group">
                         <?php 
-                        // Fetch all categories with feature counts
-                        $catModalQuery = "SELECT fc.categoryID, fc.categoryName, 
-                                          (SELECT COUNT(*) FROM features WHERE category = fc.categoryName) as count 
-                                          FROM featureCategories fc ORDER BY fc.categoryName";
-                        $catModalResult = executeQuery($catModalQuery);
-                        while ($catRow = mysqli_fetch_assoc($catModalResult)) { 
+                        // Fetch all categories with feature counts using models
+                        $catListForModal = $featureCategoryModel->getAll('categoryName');
+                        // Count features per category
+                        $featureCounts = [];
+                        foreach ($allFeaturesList as $feat) {
+                            $cat = $feat['category'] ?? 'General';
+                            $featureCounts[$cat] = ($featureCounts[$cat] ?? 0) + 1;
+                        }
+                        
+                        foreach ($catListForModal as $catRow) { 
                             $catID = $catRow['categoryID'];
                             $catName = $catRow['categoryName'];
-                            $catCount = $catRow['count'];
+                            $catCount = $featureCounts[$catName] ?? 0;
                         ?>
                             <div class="list-group-item" id="categoryItem<?php echo $catID; ?>">
                                 <!-- Display Mode -->

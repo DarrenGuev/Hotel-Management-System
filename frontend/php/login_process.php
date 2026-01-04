@@ -2,24 +2,20 @@
 session_start();
 include '../../dbconnect/connect.php';
 
+// Include class autoloader
+require_once __DIR__ . '/../../classes/autoload.php';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = mysqli_real_escape_string($conn, $_POST['username']);
-    $password = $_POST['password'];
+    $username = trim($_POST['username'] ?? '');
+    $password = $_POST['password'] ?? '';
 
-    $hashedPassword = md5($password);
+    // Use the User model for authentication
+    $userModel = new User();
+    $user = $userModel->authenticate($username, $password);
 
-    $loginQuery = "SELECT * FROM users WHERE username = '$username' AND password = '$hashedPassword'";
-    $result = executeQuery($loginQuery);
-
-    if (mysqli_num_rows($result) === 1) {
-        $user = mysqli_fetch_assoc($result);
-
-        $_SESSION['userID'] = $user['userID'];
-        $_SESSION['firstName'] = $user['firstName'];
-        $_SESSION['lastName'] = $user['lastName'];
-        $_SESSION['email'] = $user['email'];
-        $_SESSION['username'] = $user['username'];
-        $_SESSION['role'] = $user['role'];
+    if ($user) {
+        // Use Auth class to log in the user
+        Auth::login($user);
 
         if ($user['role'] === 'admin') {
             header("Location: ../../admin/admin.php");

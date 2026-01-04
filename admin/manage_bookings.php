@@ -2,10 +2,15 @@
 session_start();
 include 'connect.php';
 
-if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../frontend/login.php?error=Access denied");
-    exit();
-}
+// Include class autoloader
+require_once __DIR__ . '/../classes/autoload.php';
+
+// Require admin access
+Auth::requireAdmin('../frontend/login.php');
+
+// Initialize models
+$bookingModel = new Booking();
+$userModel = new User();
 
 // Include SMS Service
 require_once '../integrations/sms/SmsService.php';
@@ -18,21 +23,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $action = $_POST['action'];
     
     // Get booking details for SMS
-    $getBookingDetails = $conn->prepare("SELECT b.phoneNumber, b.checkInDate, u.firstName, u.lastName 
-                                          FROM bookings b 
-                                          INNER JOIN users u ON b.userID = u.userID 
-                                          WHERE b.bookingID = ?");
-    $getBookingDetails->bind_param("i", $bookingID);
-    $getBookingDetails->execute();
-    $bookingDetails = $getBookingDetails->get_result()->fetch_assoc();
-    $phoneNumber = $bookingDetails['phoneNumber'] ?? '';
-    $checkInDate = $bookingDetails['checkInDate'] ?? '';
-    $customerName = trim(($bookingDetails['firstName'] ?? '') . ' ' . ($bookingDetails['lastName'] ?? ''));
+    $booking = $bookingModel->find($bookingID);
+    $customer = $booking ? $userModel->find($booking['userID']) : null;
+    $phoneNumber = $booking['phoneNumber'] ?? '';
+    $checkInDate = $booking['checkInDate'] ?? '';
+    $customerName = $customer ? trim(($customer['firstName'] ?? '') . ' ' . ($customer['lastName'] ?? '')) : '';
     
     if ($action === 'confirm') {
-        $updateBooking = $conn->prepare("UPDATE bookings SET bookingStatus = 'confirmed', updatedAt = NOW() WHERE bookingID = ?");
-        $updateBooking->bind_param("i", $bookingID);
-        $updateBooking->execute();
+        $bookingModel->confirm($bookingID);
         
         // Send SMS notification
         if (!empty($phoneNumber)) {
@@ -47,17 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         // Send email receipt automatically
         try {
             $emailService = new EmailService();
-            $bookingQuery = $conn->prepare("
-                SELECT b.*, r.roomName, rt.roomType, u.firstName, u.lastName, u.email
-                FROM bookings b
-                INNER JOIN rooms r ON b.roomID = r.roomID
-                INNER JOIN roomtypes rt ON r.roomTypeId = rt.roomTypeID
-                INNER JOIN users u ON b.userID = u.userID
-                WHERE b.bookingID = ?
-            ");
-            $bookingQuery->bind_param('i', $bookingID);
-            $bookingQuery->execute();
-            $bookingData = $bookingQuery->get_result()->fetch_assoc();
+            $bookingData = $bookingModel->getByIdWithDetails($bookingID);
             
             if ($bookingData && !empty($bookingData['email'])) {
                 $bookingData['customerName'] = trim($bookingData['firstName'] . ' ' . $bookingData['lastName']);
@@ -73,9 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $message = "Booking confirmed successfully!";
         $messageType = "success";
     } elseif ($action === 'cancel') {
-        $updateBooking = $conn->prepare("UPDATE bookings SET bookingStatus = 'cancelled', paymentStatus = 'refunded', updatedAt = NOW() WHERE bookingID = ?");
-        $updateBooking->bind_param("i", $bookingID);
-        $updateBooking->execute();
+        $bookingModel->cancel($bookingID);
         
         // Send SMS notification
         if (!empty($phoneNumber)) {
@@ -90,9 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $message = "Booking cancelled successfully!";
         $messageType = "warning";
     } elseif ($action === 'complete') {
-        $updateBooking = $conn->prepare("UPDATE bookings SET bookingStatus = 'completed', updatedAt = NOW() WHERE bookingID = ?");
-        $updateBooking->bind_param("i", $bookingID);
-        $updateBooking->execute();
+        $bookingModel->complete($bookingID);
         
         // Send SMS notification
         if (!empty($phoneNumber)) {
@@ -111,13 +95,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $newPaymentStatus = $_POST['newPaymentStatus'];
         
         // Validate status values
-        $validStatuses = ['pending', 'confirmed', 'cancelled', 'completed'];
-        $validPaymentStatuses = ['pending', 'paid', 'refunded'];
+        $validStatuses = [Booking::STATUS_PENDING, Booking::STATUS_CONFIRMED, Booking::STATUS_CANCELLED, Booking::STATUS_COMPLETED];
+        $validPaymentStatuses = [Booking::PAYMENT_PENDING, Booking::PAYMENT_PAID, Booking::PAYMENT_REFUNDED];
         
         if (in_array($newStatus, $validStatuses) && in_array($newPaymentStatus, $validPaymentStatuses)) {
-            $updateBooking = $conn->prepare("UPDATE bookings SET bookingStatus = ?, paymentStatus = ?, updatedAt = NOW() WHERE bookingID = ?");
-            $updateBooking->bind_param("ssi", $newStatus, $newPaymentStatus, $bookingID);
-            $updateBooking->execute();
+            $bookingModel->update($bookingID, [
+                'bookingStatus' => $newStatus,
+                'paymentStatus' => $newPaymentStatus,
+                'updatedAt' => date('Y-m-d H:i:s')
+            ]);
             
             $message = "Booking updated successfully!";
             $messageType = "success";
@@ -128,27 +114,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
+// Get bookings based on status filter
 $statusFilter = isset($_GET['status']) ? $_GET['status'] : 'all';
-$whereClause = "";
+
 if ($statusFilter !== 'all') {
-    $whereClause = "WHERE bookings.bookingStatus = '" . $conn->real_escape_string($statusFilter) . "'";
+    $bookingsData = $bookingModel->getByStatusWithDetails($statusFilter);
+} else {
+    $bookingsData = $bookingModel->getAllWithDetails();
 }
 
-$getBookings = "SELECT bookings.*, users.firstName, users.lastName, users.email as userEmail, 
-                rooms.roomName, rooms.imagePath, roomtypes.roomType 
-                FROM bookings 
-                INNER JOIN users ON bookings.userID = users.userID 
-                INNER JOIN rooms ON bookings.roomID = rooms.roomID 
-                INNER JOIN roomtypes ON rooms.roomTypeId = roomtypes.roomTypeID 
-                $whereClause
-                ORDER BY bookings.createdAt DESC";
-$bookingsResult = executeQuery($getBookings);
-
-$countAll = executeQuery("SELECT COUNT(*) as count FROM bookings")->fetch_assoc()['count'];
-$countPending = executeQuery("SELECT COUNT(*) as count FROM bookings WHERE bookingStatus = 'pending'")->fetch_assoc()['count'];
-$countConfirmed = executeQuery("SELECT COUNT(*) as count FROM bookings WHERE bookingStatus = 'confirmed'")->fetch_assoc()['count'];
-$countCancelled = executeQuery("SELECT COUNT(*) as count FROM bookings WHERE bookingStatus = 'cancelled'")->fetch_assoc()['count'];
-$countCompleted = executeQuery("SELECT COUNT(*) as count FROM bookings WHERE bookingStatus = 'completed'")->fetch_assoc()['count'];
+// Get counts for each status
+$countAll = $bookingModel->count();
+$countPending = $bookingModel->countBy('bookingStatus', Booking::STATUS_PENDING);
+$countConfirmed = $bookingModel->countBy('bookingStatus', Booking::STATUS_CONFIRMED);
+$countCancelled = $bookingModel->countBy('bookingStatus', Booking::STATUS_CANCELLED);
+$countCompleted = $bookingModel->countBy('bookingStatus', Booking::STATUS_COMPLETED);
 ?>
 <!doctype html>
 <html lang="en">
@@ -267,7 +247,7 @@ $countCompleted = executeQuery("SELECT COUNT(*) as count FROM bookings WHERE boo
                     <div class="col-12">
                         <div class="card shadow-sm border-0">
                             <div class="card-body">
-                                <?php if (mysqli_num_rows($bookingsResult) > 0): ?>
+                                <?php if (count($bookingsData) > 0): ?>
                                 <div class="table-responsive">
                                     <table class="table table-hover align-middle">
                                         <thead class="table-dark">
@@ -283,7 +263,7 @@ $countCompleted = executeQuery("SELECT COUNT(*) as count FROM bookings WHERE boo
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php while ($booking = mysqli_fetch_assoc($bookingsResult)): 
+                                            <?php foreach ($bookingsData as $booking): 
                                                 $statusBadgeClass = match($booking['bookingStatus']) {
                                                     'confirmed' => 'bg-success',
                                                     'pending' => 'bg-warning text-dark',
@@ -502,7 +482,7 @@ $countCompleted = executeQuery("SELECT COUNT(*) as count FROM bookings WHERE boo
                                                     </div>
                                                 </div>
                                             </div>
-                                            <?php endwhile; ?>
+                                            <?php endforeach; ?>
                                         </tbody>
                                     </table>
                                 </div>

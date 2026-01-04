@@ -2,6 +2,9 @@
 session_start();
 include '../../dbconnect/connect.php';
 
+// Include class autoloader
+require_once __DIR__ . '/../../classes/autoload.php';
+
 // Detect AJAX flag (sent by frontend as form field 'ajax')
 $isAjax = false;
 if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax']) && $_POST['ajax'] == '1') {
@@ -27,7 +30,7 @@ function handleRedirectOrJson($message, $status = 400, $redirectTo = '../rooms.p
     }
 }
 
-if (!isset($_SESSION['userID'])) {
+if (!Auth::isLoggedIn()) {
     if ($isAjax) {
         ajaxResponse(['success' => false, 'message' => 'Please login to book a room'], 401);
     }
@@ -35,8 +38,13 @@ if (!isset($_SESSION['userID'])) {
     exit();
 }
 
+// Initialize models
+$userModel = new User();
+$roomModel = new Room();
+$bookingModel = new Booking();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $userID = (int)$_SESSION['userID'];
+    $userID = Auth::getUserId();
     $roomID = (int)$_POST['roomID'];
 
     // Prefer posted first/last name when available; otherwise fetch from users table
@@ -46,17 +54,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $phoneNumber = isset($_POST['phoneNumber']) ? trim($_POST['phoneNumber']) : '';
 
     if ($firstName === '' || $lastName === '' || $email === '' || $phoneNumber === '') {
-        $stmt = $conn->prepare("SELECT firstName, lastName, email, phoneNumber FROM users WHERE userID = ?");
-        $stmt->bind_param('i', $userID);
-        $stmt->execute();
-        $res = $stmt->get_result();
-        if ($res && $row = $res->fetch_assoc()) {
-            if ($firstName === '') $firstName = $row['firstName'];
-            if ($lastName === '') $lastName = $row['lastName'];
-            if ($email === '') $email = $row['email'];
-            if ($phoneNumber === '') $phoneNumber = $row['phoneNumber'];
+        $userInfo = $userModel->find($userID);
+        if ($userInfo) {
+            if ($firstName === '') $firstName = $userInfo['firstName'];
+            if ($lastName === '') $lastName = $userInfo['lastName'];
+            if ($email === '') $email = $userInfo['email'];
+            if ($phoneNumber === '') $phoneNumber = $userInfo['phoneNumber'];
         }
-        $stmt->close();
     }
 
     $fullName = trim($firstName . ' ' . $lastName);
@@ -85,37 +89,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // For PayPal flow we should mark payment as pending until capture completes.
-    $paymentStatus = 'pending';
-    $checkAvailability = $conn->prepare("SELECT quantity FROM rooms WHERE roomID = ?");
-    $checkAvailability->bind_param("i", $roomID);
-    $checkAvailability->execute();
-    $roomResult = $checkAvailability->get_result();
-    $room = $roomResult->fetch_assoc();
+    $paymentStatus = Booking::PAYMENT_PENDING;
+    
+    // Check room availability
+    $room = $roomModel->find($roomID);
     if (!$room || $room['quantity'] < 1) {
         handleRedirectOrJson('Room is not available', 400);
     }
     
-    $checkOverlap = $conn->prepare("SELECT COUNT(*) as count FROM bookings 
-                                    WHERE roomID = ? 
-                                    AND bookingStatus NOT IN ('cancelled', 'completed')
-                                    AND ((checkInDate <= ? AND checkOutDate > ?) 
-                                    OR (checkInDate < ? AND checkOutDate >= ?)
-                                    OR (checkInDate >= ? AND checkOutDate <= ?))");
-    $checkOverlap->bind_param("issssss", $roomID, $checkOutDate, $checkInDate, $checkOutDate, $checkInDate, $checkInDate, $checkOutDate);
-    $checkOverlap->execute();
-    $overlapResult = $checkOverlap->get_result();
-    $overlap = $overlapResult->fetch_assoc();
-    
-    if ($overlap['count'] >= $room['quantity']) {
+    // Check for overlapping bookings using Room model
+    if (!$roomModel->isAvailable($roomID, $checkInDate, $checkOutDate)) {
         handleRedirectOrJson('Room is not available for the selected dates', 400);
     }
     
-    $insertBooking = $conn->prepare("INSERT INTO bookings (userID, roomID, fullName, email, phoneNumber, checkInDate, checkOutDate, numberOfGuests, totalPrice, paymentMethod, paymentStatus, bookingStatus, createdAt, updatedAt) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW(), NOW())");
-    $insertBooking->bind_param("iisssssisss", $userID, $roomID, $fullName, $email, $phoneNumber, $checkInDate, $checkOutDate, $numberOfGuests, $totalPrice, $paymentMethod, $paymentStatus);
+    // Create booking using Booking model
+    $bookingData = [
+        'userID' => $userID,
+        'roomID' => $roomID,
+        'fullName' => $fullName,
+        'email' => $email,
+        'phoneNumber' => $phoneNumber,
+        'checkInDate' => $checkInDate,
+        'checkOutDate' => $checkOutDate,
+        'numberOfGuests' => $numberOfGuests,
+        'totalPrice' => $totalPrice,
+        'paymentMethod' => $paymentMethod,
+        'paymentStatus' => $paymentStatus,
+        'bookingStatus' => Booking::STATUS_PENDING
+    ];
+    
+    $newBookingId = $bookingModel->createBooking($bookingData);
 
-    if ($insertBooking->execute()) {
-        $newBookingId = $conn->insert_id;
+    if ($newBookingId) {
         // If AJAX request, return JSON containing bookingID so frontend can continue to PayPal
         if (isset($_POST['ajax']) && $_POST['ajax'] == '1') {
             header('Content-Type: application/json');
@@ -133,7 +138,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         handleRedirectOrJson('Failed to submit booking. Please try again.', 500);
     }
-    $insertBooking->close();
     exit();
 } else {
     header("Location: ../rooms.php");

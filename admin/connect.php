@@ -1,18 +1,27 @@
 <?php
-$dbhost = "localhost";
-$dbuser = "root";
-$dbpass = "";
-$db = "travelMates";
+/**
+ * Admin Database Connection File
+ * 
+ * This file provides backward compatibility with existing code
+ * while using the new Database class internally.
+ */
+require_once __DIR__ . '/../dbconnect/load_env.php';
+require_once __DIR__ . '/../classes/Database.php';
 
-$conn = new mysqli($dbhost, $dbuser, $dbpass, $db) or die("Connect failed: %s\n" . $conn->error);
+// Get the Database singleton instance
+$db = Database::getInstance();
 
-if (!$conn) {
-    die("Connection Failed. " . mysqli_connect_error());
-    echo "can't connect to database";
-}
+// Backward compatibility: $conn still works as the mysqli connection
+$conn = $db->getConnection();
 
+/**
+ * Execute a raw SQL query (backward compatible function)
+ * 
+ * @param string $query SQL query to execute
+ * @return mysqli_result|bool
+ */
 function executeQuery($query)
 {
-    $conn = $GLOBALS['conn'];
-    return mysqli_query($conn, $query);
+    $db = Database::getInstance();
+    return $db->query($query);
 }

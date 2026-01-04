@@ -2,28 +2,27 @@
 session_start();
 include '../dbconnect/connect.php';
 
-if (!isset($_SESSION['userID'])) {
-    header("Location: login.php?error=Please login to view your bookings");
-    exit();
-}
+// Include class autoloader
+require_once __DIR__ . '/../classes/autoload.php';
 
-$userID = (int)$_SESSION['userID'];
+// Check if user is logged in
+Auth::requireLogin('login.php');
 
-$getBookings = $conn->prepare("SELECT bookings.*, rooms.roomName, rooms.imagePath, rooms.capacity, rooms.base_price, roomtypes.roomType 
-                FROM bookings 
-                INNER JOIN rooms ON bookings.roomID = rooms.roomID 
-                INNER JOIN roomtypes ON rooms.roomTypeId = roomtypes.roomTypeID 
-                WHERE bookings.userID = ? 
-                ORDER BY bookings.createdAt DESC");
-$getBookings->bind_param("i", $userID);
-$getBookings->execute();
-$bookingsResult = $getBookings->get_result();
+$userID = Auth::getUserId();
 
-function getBookingRoomFeatures($conn, $roomID) {
-    $query = $conn->prepare("SELECT features.featureName FROM features INNER JOIN roomfeatures ON features.featureId = roomfeatures.featureID WHERE roomfeatures.roomID = ?");
-    $query->bind_param("i", $roomID);
-    $query->execute();
-    return $query->get_result();
+// Initialize models
+$bookingModel = new Booking();
+$roomModel = new Room();
+
+// Get all bookings for this user
+$bookingsData = $bookingModel->getByUserWithDetails($userID);
+
+function getBookingRoomFeaturesArray($roomID, $roomModel = null) {
+    if ($roomModel === null) {
+        $roomModel = new Room();
+    }
+    $features = $roomModel->getFeatures($roomID);
+    return array_column($features, 'featureName');
 }
 ?>
 <!doctype html>
@@ -45,12 +44,12 @@ function getBookingRoomFeatures($conn, $roomID) {
     <?php include 'includes/navbar.php'; ?>
 
     <!-- Page Header -->
-    <div class="container-fluid bg-body-tertiary py-5">
+    <div class="container-fluid bg-body-tertiary" style="padding-top: 7rem; padding-bottom: 3rem;">
         <div class="container">
             <div class="row">
                 <div class="col-12 text-center">
                     <h1 class="fw-bold mb-2"><i class="bi bi-calendar-check me-2"></i>My Bookings</h1>
-                    <p class="text-muted">Welcome back, <?php echo htmlspecialchars($_SESSION['firstName'] ?? $_SESSION['givenName'] ?? $_SESSION['name'] ?? 'Guest'); ?>! Manage your reservations here.</p>
+                    <p class="text-muted">Welcome back, <?php echo htmlspecialchars(Auth::getDisplayName()); ?>! Manage your reservations here.</p>
                 </div>
             </div>
         </div>
@@ -82,14 +81,10 @@ function getBookingRoomFeatures($conn, $roomID) {
         <?php endif; ?>
 
         <!-- Bookings List -->
-        <?php if ($bookingsResult->num_rows > 0): ?>
+        <?php if (count($bookingsData) > 0): ?>
             <div class="row g-4">
-                <?php while ($booking = $bookingsResult->fetch_assoc()): 
-                    $featuresResult = getBookingRoomFeatures($conn, $booking['roomID']);
-                    $features = [];
-                    while ($feature = $featuresResult->fetch_assoc()) {
-                        $features[] = $feature['featureName'];
-                    }
+                <?php foreach ($bookingsData as $booking): 
+                    $features = getBookingRoomFeaturesArray($booking['roomID'], $roomModel);
                     
                     $checkIn = new DateTime($booking['checkInDate']);
                     $checkOut = new DateTime($booking['checkOutDate']);
@@ -350,7 +345,7 @@ function getBookingRoomFeatures($conn, $roomID) {
                 </div>
                 <?php endif; ?>
 
-                <?php endwhile; ?>
+                <?php endforeach; ?>
             </div>
         <?php else: ?>
             <!-- No Bookings -->

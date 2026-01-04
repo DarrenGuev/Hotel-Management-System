@@ -1,15 +1,17 @@
 <?php
 include 'dbconnect/connect.php';
-//   $getQuery = "SELECT * FROM students";
-//   $result = executeQuery($getQuery);
+
+// Include class autoloader
+require_once __DIR__ . '/classes/autoload.php';
 
 // Load recent customer feedbacks for the homepage
 $feedbackQuery = "SELECT f.userName AS username, f.comments AS userReview, f.rating, r.roomName, f.submittedAt FROM feedback f LEFT JOIN rooms r ON f.roomID = r.roomID ORDER BY f.submittedAt DESC LIMIT 8";
 $feedbackResult = $conn->query($feedbackQuery);
-if ($feedbackResult) {
-    $reviews = $feedbackResult;
-} else {
-    $reviews = null; // no feedback table or query failed
+$reviewsArray = [];
+if ($feedbackResult && $feedbackResult->num_rows > 0) {
+    while ($row = $feedbackResult->fetch_assoc()) {
+        $reviewsArray[] = $row;
+    }
 }
 ?>
 
@@ -178,13 +180,7 @@ if ($feedbackResult) {
                 <i class="bi bi-chevron-left"></i>
             </button>
             <div class="row flex-grow-1" id="reviewsContainer">
-                <?php if (isset($reviews) && $reviews->num_rows > 0): ?>
-                    <?php
-                    $reviewsArray = [];
-                    while ($row = mysqli_fetch_assoc($reviews)) {
-                        $reviewsArray[] = $row;
-                    }
-                    ?>
+                <?php if (count($reviewsArray) > 0): ?>
                     <script>
                         var allReviews = <?php echo json_encode($reviewsArray); ?>;
                         var currentPage = 0;

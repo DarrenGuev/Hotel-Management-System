@@ -2,9 +2,18 @@
 session_start();
 include '../connect.php';
 
+// Include class autoloader
+require_once __DIR__ . '/../../classes/autoload.php';
+
+// Require admin access
+Auth::requireAdmin('../admin.php');
+
+// Initialize User model
+$userModel = new User();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $userID = mysqli_real_escape_string($conn, $_POST['userID']);
-    $newRole = mysqli_real_escape_string($conn, $_POST['role']);
+    $userID = (int)$_POST['userID'];
+    $newRole = trim($_POST['role'] ?? '');
     
     // Validate role
     if ($newRole !== 'user' && $newRole !== 'admin') {
@@ -12,10 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     
-    // Update user role
-    $updateQuery = "UPDATE users SET role = '$newRole' WHERE userID = '$userID'";
-    
-    if (executeQuery($updateQuery)) {
+    // Update user role using model
+    if ($userModel->update($userID, ['role' => $newRole])) {
         header("Location: ../admin.php?success=User role updated successfully");
     } else {
         header("Location: ../admin.php?error=Failed to update user role");

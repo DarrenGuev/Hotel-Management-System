@@ -23,71 +23,29 @@ class SmsService
         $this->conn->set_charset('utf8mb4');
     }
 
-    /**
-     * Send SMS notification for booking approval
-     * 
-     * @param int $bookingId The booking ID
-     * @param string $phoneNumber The recipient's phone number
-     * @param string $customerName The customer's name
-     * @param string $checkInDate The check-in date
-     * @return array Response with success status
-     */
     public function sendBookingApprovalSms($bookingId, $phoneNumber, $customerName, $checkInDate)
     {
         $message = sprintf(SMS_TEMPLATE_BOOKING_APPROVED, $customerName, $bookingId, $checkInDate);
         return $this->sendAndLog($bookingId, $phoneNumber, $message, 'booking_approved');
     }
 
-    /**
-     * Send SMS notification for booking cancellation
-     * 
-     * @param int $bookingId The booking ID
-     * @param string $phoneNumber The recipient's phone number
-     * @param string $customerName The customer's name
-     * @return array Response with success status
-     */
     public function sendBookingCancelledSms($bookingId, $phoneNumber, $customerName)
     {
         $message = sprintf(SMS_TEMPLATE_BOOKING_CANCELLED, $customerName, $bookingId);
         return $this->sendAndLog($bookingId, $phoneNumber, $message, 'booking_cancelled');
     }
 
-    /**
-     * Send SMS notification for booking completion
-     * 
-     * @param int $bookingId The booking ID
-     * @param string $phoneNumber The recipient's phone number
-     * @param string $customerName The customer's name
-     * @return array Response with success status
-     */
     public function sendBookingCompletedSms($bookingId, $phoneNumber, $customerName)
     {
         $message = sprintf(SMS_TEMPLATE_BOOKING_COMPLETED, $customerName, $bookingId);
         return $this->sendAndLog($bookingId, $phoneNumber, $message, 'booking_completed');
     }
 
-    /**
-     * Send a custom SMS message
-     * 
-     * @param string $phoneNumber The recipient's phone number
-     * @param string $message The message content
-     * @param int|null $bookingId Optional booking ID
-     * @return array Response with success status
-     */
     public function sendCustomSms($phoneNumber, $message, $bookingId = null)
     {
         return $this->sendAndLog($bookingId, $phoneNumber, $message, 'custom');
     }
 
-    /**
-     * Send SMS and log the result
-     * 
-     * @param int|null $bookingId The booking ID
-     * @param string $phoneNumber The recipient's phone number
-     * @param string $message The message content
-     * @param string $messageType The type of message
-     * @return array Response with success status
-     */
     private function sendAndLog($bookingId, $phoneNumber, $message, $messageType)
     {
         $result = $this->smsGateway->sendSms($phoneNumber, $message);       // Send the SMS
@@ -105,18 +63,6 @@ class SmsService
         return $result;
     }
 
-    /**
-     * Log SMS message to database
-     * 
-     * @param int|null $bookingId The booking ID
-     * @param string $phoneNumber The phone number
-     * @param string $message The message content
-     * @param string $messageType The type of message
-     * @param string $status The message status
-     * @param string $direction Incoming or outgoing
-     * @param string $response The API response
-     * @return bool Success status
-     */
     public function logMessage($bookingId, $phoneNumber, $message, $messageType, $status, $direction, $response)
     {
         $stmt = $this->conn->prepare(
@@ -136,14 +82,6 @@ class SmsService
         return $result;
     }
 
-    /**
-     * Get all SMS logs with optional filtering
-     * 
-     * @param array $filters Optional filters (status, direction, date_from, date_to)
-     * @param int $limit Number of records to return
-     * @param int $offset Offset for pagination
-     * @return array Array of SMS logs
-     */
     public function getSmsLogs($filters = [], $limit = 50, $offset = 0)
     {
         $where = [];
@@ -205,11 +143,6 @@ class SmsService
         return $logs;
     }
 
-    /**
-     * Get SMS statistics
-     * 
-     * @return array Statistics array
-     */
     public function getStatistics()
     {
         $stats = [
@@ -253,12 +186,6 @@ class SmsService
         return $stats;
     }
 
-    /**
-     * Get total count of SMS logs with filters
-     * 
-     * @param array $filters Optional filters
-     * @return int Total count
-     */
     public function getTotalCount($filters = [])
     {
         $where = [];
@@ -294,12 +221,6 @@ class SmsService
         return (int)$row['count'];
     }
 
-    /**
-     * Delete old SMS logs
-     * 
-     * @param int $daysOld Delete logs older than this many days
-     * @return int Number of deleted records
-     */
     public function cleanupOldLogs($daysOld = 90)
     {
         $stmt = $this->conn->prepare("DELETE FROM sms_logs WHERE created_at < DATE_SUB(NOW(), INTERVAL ? DAY)");

@@ -16,11 +16,6 @@ class IprogSms
         $this->lastResponse = null;
     }
 
-    /**
-     * Validate the gateway connection
-     * 
-     * @return bool True if connection is valid
-     */
     public function validateConnection()
     {
         if (empty($this->apiToken) || $this->apiToken === 'your_api_token_here') {
@@ -36,13 +31,6 @@ class IprogSms
         return true;
     }
 
-    /**
-     * Send an SMS message
-     * 
-     * @param string $phoneNumber The recipient's phone number (format: 639XXXXXXXXX)
-     * @param string $message The message content
-     * @return array Response with success status and details
-     */
     public function sendSms($phoneNumber, $message)
     {
         // Validate connection first
@@ -137,12 +125,6 @@ class IprogSms
         ];
     }
 
-    /**
-     * Format phone number to IPROG SMS format (639XXXXXXXXX)
-     * 
-     * @param string $phoneNumber The phone number to format
-     * @return string Formatted phone number
-     */
     public function formatPhoneNumber($phoneNumber)
     {
         $phoneNumber = preg_replace('/[^\d+]/', '', $phoneNumber);
@@ -156,12 +138,6 @@ class IprogSms
         return $phoneNumber;
     }
 
-    /**
-     * Validate phone number format
-     * 
-     * @param string $phoneNumber The phone number to validate
-     * @return bool True if valid
-     */
     public function validatePhoneNumber($phoneNumber)
     {
         if (!preg_match('/^\d{10,15}$/', $phoneNumber)) {
@@ -171,21 +147,11 @@ class IprogSms
         return true;
     }
 
-    /**
-     * Get the last error message
-     * 
-     * @return string|null The last error message
-     */
     public function getLastError()
     {
         return $this->lastError;
     }
 
-    /**
-     * Get the last API response
-     * 
-     * @return string|null The last raw response
-     */
     public function getLastResponse()
     {
         return $this->lastResponse;

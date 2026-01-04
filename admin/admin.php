@@ -2,11 +2,11 @@
 session_start();
 include 'connect.php';
 
+// Include class autoloader
+require_once __DIR__ . '/../classes/autoload.php';
+
 // Check if user is admin
-if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../frontend/login.php?error=Access denied");
-    exit();
-}
+Auth::requireAdmin('../frontend/login.php');
 
 // Include SMS Service
 require_once '../integrations/sms/SmsService.php';
@@ -14,131 +14,87 @@ require_once '../integrations/sms/SmsService.php';
 // Include Email Service for booking receipts
 require_once '../integrations/gmail/EmailService.php';
 
+// Initialize models
+$bookingModel = new Booking();
+$userModel = new User();
+
 // Handle booking status updates
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bookingAction'])) {
     $bookingID = (int)$_POST['bookingID'];
     $action = $_POST['bookingAction'];
     
     // Get booking details for SMS
-    $getBookingDetails = $conn->prepare("SELECT b.phoneNumber, b.checkInDate, u.firstName, u.lastName 
-                                          FROM bookings b 
-                                          INNER JOIN users u ON b.userID = u.userID 
-                                          WHERE b.bookingID = ?");
-    $getBookingDetails->bind_param("i", $bookingID);
-    $getBookingDetails->execute();
-    $bookingDetails = $getBookingDetails->get_result()->fetch_assoc();
-    $phoneNumber = $bookingDetails['phoneNumber'] ?? '';
-    $checkInDate = $bookingDetails['checkInDate'] ?? '';
-    $customerName = trim(($bookingDetails['firstName'] ?? '') . ' ' . ($bookingDetails['lastName'] ?? ''));
-    
-    if ($action === 'confirm') {
-        $updateBooking = $conn->prepare("UPDATE bookings SET bookingStatus = 'confirmed', updatedAt = NOW() WHERE bookingID = ?");
-        $updateBooking->bind_param("i", $bookingID);
-        if ($updateBooking->execute()) {
-            // Send SMS notification
-            if (!empty($phoneNumber)) {
-                try {
-                    $smsService = new SmsService();
-                    $smsService->sendBookingApprovalSms($bookingID, $phoneNumber, $customerName, $checkInDate);
-                } catch (Exception $e) {
-                    error_log('SMS Error: ' . $e->getMessage());
-                }
-            }
-            
-            // Send email receipt automatically
-            try {
-                $emailService = new EmailService();
-                $bookingQuery = $conn->prepare("
-                    SELECT b.*, r.roomName, rt.roomType, u.firstName, u.lastName, u.email
-                    FROM bookings b
-                    INNER JOIN rooms r ON b.roomID = r.roomID
-                    INNER JOIN roomtypes rt ON r.roomTypeId = rt.roomTypeID
-                    INNER JOIN users u ON b.userID = u.userID
-                    WHERE b.bookingID = ?
-                ");
-                $bookingQuery->bind_param('i', $bookingID);
-                $bookingQuery->execute();
-                $bookingData = $bookingQuery->get_result()->fetch_assoc();
-                
-                if ($bookingData && !empty($bookingData['email'])) {
-                    $bookingData['customerName'] = trim($bookingData['firstName'] . ' ' . $bookingData['lastName']);
-                    $emailResult = $emailService->sendBookingReceipt($bookingData);
-                    if (!$emailResult['success']) {
-                        error_log('Email Receipt Error for Booking #' . $bookingID . ': ' . ($emailResult['error'] ?? 'Unknown error'));
+    $bookingDetails = $bookingModel->getById($bookingID);
+    if ($bookingDetails) {
+        // Get user details
+        $bookingUser = $userModel->find($bookingDetails['userID']);
+        $phoneNumber = $bookingDetails['phoneNumber'] ?? '';
+        $checkInDate = $bookingDetails['checkInDate'] ?? '';
+        $customerName = trim(($bookingUser['firstName'] ?? '') . ' ' . ($bookingUser['lastName'] ?? ''));
+        
+        if ($action === 'confirm') {
+            if ($bookingModel->confirm($bookingID)) {
+                // Send SMS notification
+                if (!empty($phoneNumber)) {
+                    try {
+                        $smsService = new SmsService();
+                        $smsService->sendBookingApprovalSms($bookingID, $phoneNumber, $customerName, $checkInDate);
+                    } catch (Exception $e) {
+                        error_log('SMS Error: ' . $e->getMessage());
                     }
                 }
-            } catch (Exception $e) {
-                error_log('Email Service Error: ' . $e->getMessage());
-            }
-            
-            header("Location: admin.php?success=Booking confirmed successfully!");
-            exit();
-        }
-    } elseif ($action === 'cancel') {
-        $updateBooking = $conn->prepare("UPDATE bookings SET bookingStatus = 'cancelled', paymentStatus = 'refunded', updatedAt = NOW() WHERE bookingID = ?");
-        $updateBooking->bind_param("i", $bookingID);
-        if ($updateBooking->execute()) {
-            // Send SMS notification
-            if (!empty($phoneNumber)) {
+                
+                // Send email receipt automatically
                 try {
-                    $smsService = new SmsService();
-                    $smsService->sendBookingCancelledSms($bookingID, $phoneNumber, $customerName);
+                    $emailService = new EmailService();
+                    $bookingData = $bookingModel->getByIdWithDetails($bookingID);
+                    
+                    if ($bookingData && !empty($bookingData['email'])) {
+                        $bookingData['customerName'] = trim($bookingData['firstName'] . ' ' . $bookingData['lastName']);
+                        $emailResult = $emailService->sendBookingReceipt($bookingData);
+                        if (!$emailResult['success']) {
+                            error_log('Email Receipt Error for Booking #' . $bookingID . ': ' . ($emailResult['error'] ?? 'Unknown error'));
+                        }
+                    }
                 } catch (Exception $e) {
-                    error_log('SMS Error: ' . $e->getMessage());
+                    error_log('Email Service Error: ' . $e->getMessage());
                 }
+                
+                header("Location: admin.php?success=Booking confirmed successfully!");
+                exit();
             }
-            header("Location: admin.php?success=Booking cancelled successfully!");
-            exit();
+        } elseif ($action === 'cancel') {
+            if ($bookingModel->cancel($bookingID)) {
+                // Send SMS notification
+                if (!empty($phoneNumber)) {
+                    try {
+                        $smsService = new SmsService();
+                        $smsService->sendBookingCancelledSms($bookingID, $phoneNumber, $customerName);
+                    } catch (Exception $e) {
+                        error_log('SMS Error: ' . $e->getMessage());
+                    }
+                }
+                header("Location: admin.php?success=Booking cancelled successfully!");
+                exit();
+            }
         }
     }
 }
 
-$getUsersQuery = "SELECT * FROM users WHERE role = 'user' ORDER BY created_at DESC";
-$usersResult = executeQuery($getUsersQuery);
-$customersData = [];
-while ($user = mysqli_fetch_assoc($usersResult)) {
-    $customersData[] = $user;
-}
+// Fetch customers (users with role 'user')
+$customersData = $userModel->getAllCustomers();
 
-$getAllBookings = "SELECT bookings.*, rooms.roomName, roomtypes.roomType, users.firstName, users.lastName, users.email AS userEmail 
-                    FROM bookings INNER JOIN rooms ON bookings.roomID = rooms.roomID INNER JOIN roomtypes ON rooms.roomTypeId = roomtypes.roomTypeID
-                    INNER JOIN users ON bookings.userID = users.userID ORDER BY bookings.createdAt DESC";
-$allBookingsResult = executeQuery($getAllBookings);
+// Fetch all bookings with details
+$allBookingsData = $bookingModel->getAllWithDetails();
 
-$allBookingsData = [];
-while ($booking = mysqli_fetch_assoc($allBookingsResult)) {
-    $allBookingsData[] = $booking;
-}
+// Fetch confirmed bookings (confirmed + completed)
+$confirmedBookingsData = $bookingModel->getConfirmedBookings();
 
-$getConfirmedBookings = "SELECT bookings.*, rooms.roomName, roomtypes.roomType, users.firstName, users.lastName, users.email AS userEmail 
-                        FROM bookings INNER JOIN rooms ON bookings.roomID = rooms.roomID INNER JOIN roomtypes ON rooms.roomTypeId = roomtypes.roomTypeID
-                        INNER JOIN users ON bookings.userID = users.userID WHERE bookings.bookingStatus IN ('confirmed', 'completed')ORDER BY bookings.createdAt DESC";
-$confirmedBookingsResult = executeQuery($getConfirmedBookings);
+// Fetch pending bookings
+$pendingBookingsData = $bookingModel->getPendingBookings();
 
-$confirmedBookingsData = [];
-while ($booking = mysqli_fetch_assoc($confirmedBookingsResult)) {
-    $confirmedBookingsData[] = $booking;
-}
-
-$getPendingBookings = "SELECT bookings.*, rooms.roomName, roomtypes.roomType, users.firstName, users.lastName, users.email AS userEmail 
-                        FROM bookings INNER JOIN rooms ON bookings.roomID = rooms.roomID INNER JOIN roomtypes ON rooms.roomTypeId = roomtypes.roomTypeID
-                        INNER JOIN users ON bookings.userID = users.userID WHERE bookings.bookingStatus = 'pending' ORDER BY bookings.createdAt DESC";
-$pendingBookingsResult = executeQuery($getPendingBookings);
-
-$pendingBookingsData = [];
-while ($booking = mysqli_fetch_assoc($pendingBookingsResult)) {
-    $pendingBookingsData[] = $booking;
-}
-
-$getCompletedBookings = "SELECT bookings.*, rooms.roomName, roomtypes.roomType, users.firstName, users.lastName, users.email AS userEmail 
-                        FROM bookings INNER JOIN rooms ON bookings.roomID = rooms.roomID INNER JOIN roomtypes ON rooms.roomTypeId = roomtypes.roomTypeID
-                        INNER JOIN users ON bookings.userID = users.userID WHERE bookings.bookingStatus = 'completed' ORDER BY bookings.createdAt DESC";
-$completedBookingsResult = executeQuery($getCompletedBookings);
-
-$completedBookingsData = [];
-while ($booking = mysqli_fetch_assoc($completedBookingsResult)) {
-    $completedBookingsData[] = $booking;
-}
+// Fetch completed bookings
+$completedBookingsData = $bookingModel->getCompletedBookings();
 
 $countAllBookings = count($allBookingsData);
 $countCustomers = count($customersData);
@@ -177,7 +133,7 @@ $countCompleted = count($completedBookingsData);
                 <!-- Page Header -->
                 <div class="page-header">
                     <h2>Admin Dashboard</h2>
-                    <p>Welcome back, <?php echo htmlspecialchars($_SESSION['firstName'] ?? 'Admin'); ?>!</p>
+                    <p>Welcome back, <?php echo htmlspecialchars(Auth::getCurrentUserName()); ?>!</p>
                 </div>
 
                 <!-- Alert Messages -->

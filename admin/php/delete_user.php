@@ -2,22 +2,28 @@
 session_start();
 include '../connect.php';
 
+// Include class autoloader
+require_once __DIR__ . '/../../classes/autoload.php';
+
+// Require admin access
+Auth::requireAdmin('../admin.php');
+
+// Initialize User model
+$userModel = new User();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $userID = mysqli_real_escape_string($conn, $_POST['userID']);
+    $userID = (int)$_POST['userID'];
     
-    // Prevent deleting admin users (optional safety check)
-    $checkQuery = "SELECT role FROM users WHERE userID = '$userID'";
-    $result = executeQuery($checkQuery);
+    // Check if user exists
+    $user = $userModel->find($userID);
     
-    if (mysqli_num_rows($result) === 0) {
+    if (!$user) {
         header("Location: ../admin.php?error=User not found");
         exit();
     }
     
-    // Delete user
-    $deleteQuery = "DELETE FROM users WHERE userID = '$userID'";
-    
-    if (executeQuery($deleteQuery)) {
+    // Delete user using model
+    if ($userModel->delete($userID)) {
         header("Location: ../admin.php?success=User deleted successfully");
     } else {
         header("Location: ../admin.php?error=Failed to delete user");
