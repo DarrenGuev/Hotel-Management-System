@@ -2,13 +2,10 @@
 session_start();
 include '../connect.php';
 
-// Include class autoloader
 require_once __DIR__ . '/../../classes/autoload.php';
 
-// Require admin access
 Auth::requireAdmin('../../frontend/login.php');
 
-// Initialize models
 $bookingModel = new Booking();
 $userModel = new User();
 
@@ -60,11 +57,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $bookingData = $bookingModel->getByIdWithDetails($bookingID);
                         
                         if ($bookingData && !empty($bookingData['email'])) {
-                            $bookingData['customerName'] = trim($bookingData['firstName'] . ' ' . $bookingData['lastName']);
-                            $emailResult = $emailService->sendBookingReceipt($bookingData);
-                            if (!$emailResult['success']) {
-                                error_log('Email Receipt Error for Booking #' . $bookingID . ': ' . ($emailResult['error'] ?? 'Unknown error'));
-                            }
+                            $customerName = trim($bookingData['firstName'] . ' ' . $bookingData['lastName']);
+                            $subject = "Booking Confirmation - TravelMates Hotel";
+                            
+                            $body = "
+                            <html>
+                            <body style='font-family: Arial, sans-serif;'>
+                                <h2>Booking Confirmation</h2>
+                                <p>Dear {$customerName},</p>
+                                <p>Your booking has been confirmed. Here are your booking details:</p>
+                                <table style='border-collapse: collapse; width: 100%;'>
+                                    <tr><td style='padding: 8px; border: 1px solid #ddd;'><strong>Booking ID:</strong></td><td style='padding: 8px; border: 1px solid #ddd;'>#{$bookingData['bookingID']}</td></tr>
+                                    <tr><td style='padding: 8px; border: 1px solid #ddd;'><strong>Room:</strong></td><td style='padding: 8px; border: 1px solid #ddd;'>{$bookingData['roomName']}</td></tr>
+                                    <tr><td style='padding: 8px; border: 1px solid #ddd;'><strong>Check-in:</strong></td><td style='padding: 8px; border: 1px solid #ddd;'>{$bookingData['checkInDate']}</td></tr>
+                                    <tr><td style='padding: 8px; border: 1px solid #ddd;'><strong>Check-out:</strong></td><td style='padding: 8px; border: 1px solid #ddd;'>{$bookingData['checkOutDate']}</td></tr>
+                                    <tr><td style='padding: 8px; border: 1px solid #ddd;'><strong>Total Amount:</strong></td><td style='padding: 8px; border: 1px solid #ddd;'>₱" . number_format($bookingData['totalAmount'], 2) . "</td></tr>
+                                </table>
+                                <p>Thank you for choosing TravelMates Hotel!</p>
+                                <p>Best regards,<br>TravelMates Hotel Team</p>
+                            </body>
+                            </html>
+                            ";
+                            
+                            $emailService->sendEmail($bookingData['email'], $subject, $body);
                         }
                     } catch (Exception $emailEx) {
                         error_log('Email Service Error: ' . $emailEx->getMessage());

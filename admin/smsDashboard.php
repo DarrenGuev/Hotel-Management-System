@@ -1,22 +1,14 @@
 <?php
 session_start();
-include 'connect.php';
-
-// Include class autoloader
+include __DIR__ . '/../dbconnect/connect.php';
 require_once __DIR__ . '/../classes/autoload.php';
-
-// Require admin access
 Auth::requireAdmin('../frontend/login.php');
-
 require_once '../integrations/sms/SmsService.php';
 
-// Initialize models
 $bookingModel = new Booking();
-
 $smsService = new SmsService();
 $stats = $smsService->getStatistics();
 
-// Handle manual SMS sending
 $alertMessage = null;
 $alertType = null;
 

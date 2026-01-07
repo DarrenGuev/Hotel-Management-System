@@ -1,9 +1,8 @@
 <?php
 require_once __DIR__ . '/Model.php';
 
-/**
- * User Model - Handles all user-related database operations
- */
+//User Model - Handles all user-related database operations
+
 class User extends Model
 {
     protected string $table = 'users';

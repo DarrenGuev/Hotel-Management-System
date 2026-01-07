@@ -1,19 +1,14 @@
 <?php
-/**
- * Rooms Management Page
- * Refactored to use OOP model classes
- */
+require_once __DIR__ . '/../dbconnect/connect.php';
 require_once __DIR__ . '/../classes/autoload.php';
 
 Auth::startSession();
 Auth::requireAdmin('../frontend/login.php');
 
-// Initialize models
 $roomModel = new Room();
 $roomTypeModel = new RoomType();
 $featureModel = new Feature();
 
-// Initialize image upload helper
 $imageUpload = new ImageUpload('assets/');
 
 if (isset($_POST['add_room'])) {

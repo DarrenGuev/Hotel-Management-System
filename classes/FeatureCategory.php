@@ -1,9 +1,8 @@
 <?php
 require_once __DIR__ . '/Model.php';
 
-/**
- * FeatureCategory Model - Handles feature category database operations
- */
+//FeatureCategory Model - Handles feature category database operations
+
 class FeatureCategory extends Model
 {
     protected string $table = 'featureCategories';

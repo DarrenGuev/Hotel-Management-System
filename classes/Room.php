@@ -1,9 +1,8 @@
 <?php
 require_once __DIR__ . '/Model.php';
 
-/**
- * Room Model - Handles all room-related database operations
- */
+//Room Model - Handles all room-related database operations
+
 class Room extends Model
 {
     protected string $table = 'rooms';
@@ -140,7 +139,6 @@ class Room extends Model
         
         return true;
     }
-
     public function countByType(int $roomTypeId): int
     {
         return $this->countBy('roomTypeId', $roomTypeId);

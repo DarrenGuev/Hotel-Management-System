@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'connect.php';
+include __DIR__ . '/../dbconnect/connect.php';
 
 // Include class autoloader
 require_once __DIR__ . '/../classes/autoload.php';
