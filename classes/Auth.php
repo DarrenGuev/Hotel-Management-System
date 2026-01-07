@@ -1,7 +1,5 @@
 <?php
-/**
- * Auth Class - Handles authentication and session management
- */
+//Auth Class - Handles authentication and session management
 class Auth
 {
     public static function startSession(): void

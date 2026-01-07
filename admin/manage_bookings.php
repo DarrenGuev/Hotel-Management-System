@@ -1,21 +1,14 @@
 <?php
 session_start();
-include 'connect.php';
-
-// Include class autoloader
+include __DIR__ . '/../dbconnect/connect.php';
 require_once __DIR__ . '/../classes/autoload.php';
 
-// Require admin access
 Auth::requireAdmin('../frontend/login.php');
 
-// Initialize models
 $bookingModel = new Booking();
 $userModel = new User();
 
-// Include SMS Service
 require_once '../integrations/sms/SmsService.php';
-
-// Include Email Service for booking receipts
 require_once '../integrations/gmail/EmailService.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {

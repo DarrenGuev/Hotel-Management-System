@@ -1,9 +1,8 @@
 <?php
 require_once __DIR__ . '/Model.php';
 
-/**
- * RoomType Model - Handles room type database operations
- */
+//RoomType Model - Handles room type database operations
+
 class RoomType extends Model
 {
     protected string $table = 'roomTypes';

@@ -1,9 +1,8 @@
 <?php
 require_once __DIR__ . '/Model.php';
 
-/**
- * Feature Model - Handles room feature database operations
- */
+//Feature Model - Handles room feature database operations
+
 class Feature extends Model
 {
     protected string $table = 'features';

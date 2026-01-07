@@ -1,7 +1,7 @@
 <?php
-/**
- * ImageUpload Class - Handles file uploads for room images
- */
+
+//ImageUpload Class - Handles file uploads for room images
+
 class ImageUpload
 {
     private string $targetFolder;

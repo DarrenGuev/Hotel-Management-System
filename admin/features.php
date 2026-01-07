@@ -1,14 +1,8 @@
 <?php
-/**
- * Features Management Page
- * Refactored to use OOP model classes
- */
 require_once __DIR__ . '/../classes/autoload.php';
-
 Auth::startSession();
 Auth::requireAdmin('../frontend/login.php');
 
-// Initialize models
 $featureModel = new Feature();
 $categoryModel = new FeatureCategory();
 

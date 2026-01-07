@@ -1,8 +1,6 @@
 <?php
+session_start();
 include '../dbconnect/connect.php';
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 
 // Include class autoloader
 require_once __DIR__ . '/../classes/autoload.php';

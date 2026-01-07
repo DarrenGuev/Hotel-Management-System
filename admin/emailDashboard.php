@@ -6,7 +6,7 @@
  */
 
 session_start();
-include 'connect.php';
+include __DIR__ . '/../dbconnect/connect.php';
 
 // Check if user is admin
 if (!isset($_SESSION['userID']) || $_SESSION['role'] !== 'admin') {

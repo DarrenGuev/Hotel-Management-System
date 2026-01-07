@@ -1,9 +1,8 @@
 <?php
 require_once __DIR__ . '/Model.php';
 
-/**
- * Booking Model - Handles all booking-related database operations
- */
+//Booking Model - Handles all booking-related database operations
+
 class Booking extends Model
 {
     protected string $table = 'bookings';

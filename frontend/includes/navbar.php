@@ -1,7 +1,4 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 $isLoggedIn = isset($_SESSION['userID']);
 $username = $isLoggedIn ? $_SESSION['username'] : '';
 $userRole = $isLoggedIn && isset($_SESSION['role']) ? $_SESSION['role'] : '';

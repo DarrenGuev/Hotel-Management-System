@@ -1,12 +1,9 @@
 <?php
 include '../connect.php';
-
-// Include class autoloader
 require_once __DIR__ . '/../../classes/autoload.php';
 
 header('Content-Type: application/json');
 
-// Initialize Feature model
 $featureModel = new Feature();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

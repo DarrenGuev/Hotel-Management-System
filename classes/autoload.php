@@ -1,9 +1,8 @@
 <?php
-/**
- * Autoloader for class files
- * 
- * Automatically loads class files when they are instantiated.
- */
+
+//Autoloader for class files
+//Automatically loads class files when they are instantiated.
+
 spl_autoload_register(function ($className) {
     $classFile = __DIR__ . '/' . $className . '.php';
     

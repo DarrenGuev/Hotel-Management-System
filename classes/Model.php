@@ -1,12 +1,8 @@
 <?php
 require_once __DIR__ . '/Database.php';
 
-/**
- * Abstract Model class - Base class for all models
- * 
- * Provides common database operations and utilities
- * that all model classes can inherit.
- */
+//Abstract Model class - Base class for all models
+//Provides common database operations and utilities that all model classes can inherit.
 abstract class Model
 {
     protected Database $db;
