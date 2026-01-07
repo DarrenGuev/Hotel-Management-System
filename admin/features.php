@@ -142,7 +142,7 @@ $categoryList = $categoryModel->getAllOrdered();
                             
                             foreach ($categoryList as $cat) { 
                                 $catName = $cat['categoryName'];
-                                $count = isset($categoriesWithCount[$catName]) ? $categoriesWithCount[$catName] : 0;
+                                $count = $categoriesWithCount[$catName] ?? 0;
                             ?>
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link" data-category="<?php echo htmlspecialchars($catName, ENT_QUOTES); ?>" type="button" role="tab" onclick="filterFeatures(this.getAttribute('data-category'))">
@@ -354,7 +354,7 @@ $categoryList = $categoryModel->getAllOrdered();
                     <div class="list-group">
                         <?php 
                         // Fetch all categories with feature counts using models
-                        $catListForModal = $featureCategoryModel->getAll('categoryName');
+                        $catListForModal = $categoryModel->getAll('categoryName');
                         // Count features per category
                         $featureCounts = [];
                         foreach ($allFeaturesList as $feat) {

@@ -210,39 +210,44 @@ $countCompleted = count($completedBookingsData);
                     <div class="card-header">
                         <ul class="nav nav-tabs card-header-tabs" id="adminTabs">
                             <li class="nav-item">
-                                <button class="nav-link active" id="tab-reservations" data-table="reservations" onclick="switchTable('reservations')">
-                                    <i class="bi bi-calendar-check me-1"></i>All Reservations
-                                </button>
+                                <a class="nav-link active" id="tab-reservations" href="#" onclick="switchTable('reservations'); return false;">Reservations</a>
                             </li>
                             <li class="nav-item">
-                                <button class="nav-link" id="tab-customers" data-table="customers" onclick="switchTable('customers')">
-                                    <i class="bi bi-people me-1"></i>Customers
-                                </button>
+                                <a class="nav-link" id="tab-customers" href="#" onclick="switchTable('customers'); return false;">Customers</a>
                             </li>
                             <li class="nav-item">
-                                <button class="nav-link" id="tab-confirmed" data-table="confirmed" onclick="switchTable('confirmed')">
-                                    <i class="bi bi-check-circle me-1"></i>Confirmed
-                                </button>
+                                <a class="nav-link" id="tab-confirmed" href="#" onclick="switchTable('confirmed'); return false;">Confirmed</a>
                             </li>
                             <li class="nav-item">
-                                <button class="nav-link" id="tab-pending" data-table="pending" onclick="switchTable('pending')">
-                                    <i class="bi bi-clock me-1"></i>Pending
-                                </button>
+                                <a class="nav-link" id="tab-pending" href="#" onclick="switchTable('pending'); return false;">Pending</a>
                             </li>
                             <li class="nav-item">
-                                <button class="nav-link" id="tab-completed" data-table="completed" onclick="switchTable('completed')">
-                                    <i class="bi bi-flag me-1"></i>Completed
-                                </button>
+                                <a class="nav-link" id="tab-completed" href="#" onclick="switchTable('completed'); return false;">Completed</a>
                             </li>
                         </ul>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body position-relative">
+                        <!-- Table Loader (Hidden by default) -->
+                        <div id="table-loader" class="d-none position-absolute top-0 start-0 w-100 h-100 justify-content-center align-items-center" 
+                             style="background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(3px); z-index: 10; border-radius: inherit;">
+                            <div class="text-center">
+                                <div class="spinner-border text-warning" role="status" style="width: 3rem; height: 3rem;">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-3 text-white fw-semibold">Loading...</p>
+                            </div>
+                        </div>
+
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle" id="dataTable">
+                            <table class="table table-hover align-middle">
                                 <thead class="table-dark">
-                                    <tr id="tableHeaders"></tr>
+                                    <tr id="tableHeaders">
+                                        <!-- Headers will be populated by JS -->
+                                    </tr>
                                 </thead>
-                                <tbody id="tableBody"></tbody>
+                                <tbody id="tableBody">
+                                    <!-- Data will be populated by JS -->
+                                </tbody>
                             </table>
                         </div>
                     </div>
@@ -481,28 +486,48 @@ $countCompleted = count($completedBookingsData);
         };
 
         function switchTable(tableType) {
-            const config = tableConfigs[tableType];
-            if (!config) return;
-            document.getElementById('tableHeaders').innerHTML = config.headers.map(h => `<th>${h}</th>`).join('');
-            const data = config.getData();
-            if (data.length > 0) {
-                document.getElementById('tableBody').innerHTML = data.map((item, index) => config.renderRow(item, index)).join('');
-            } else {
-                document.getElementById('tableBody').innerHTML = `
-                    <tr>
-                        <td colspan="${config.headers.length}" class="text-center py-4">
-                            <i class="bi bi-inbox display-4 text-muted"></i>
-                            <p class="text-muted mt-2">No data found</p>
-                        </td>
-                    </tr>
-                `;
-            }
+            // Show loader
+            const loader = document.getElementById('table-loader');
+            loader.classList.remove('d-none');
+            loader.classList.add('d-flex');
 
-            document.querySelectorAll('.stat-card').forEach(card => card.classList.remove('active'));
-            document.querySelector(`.stat-card[data-table="${tableType}"]`)?.classList.add('active');
+            // Use setTimeout to simulate loading and allow the loader to render
+            setTimeout(() => {
+                const config = tableConfigs[tableType];
+                if (!config) {
+                    loader.classList.add('d-none');
+                    loader.classList.remove('d-flex');
+                    return;
+                }
 
-            document.querySelectorAll('#adminTabs .nav-link').forEach(tab => tab.classList.remove('active'));
-            document.getElementById('tab-' + tableType)?.classList.add('active');
+                document.getElementById('tableHeaders').innerHTML = config.headers.map(h => `<th>${h}</th>`).join('');
+                const data = config.getData();
+                if (data.length > 0) {
+                    document.getElementById('tableBody').innerHTML = data.map((item, index) => config.renderRow(item, index)).join('');
+                } else {
+                    document.getElementById('tableBody').innerHTML = `
+                        <tr>
+                            <td colspan="${config.headers.length}" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                    <h5>No Data Found</h5>
+                                    <p class="mb-0">There are no records to display in this section.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                document.querySelectorAll('.stat-card').forEach(card => card.classList.remove('active'));
+                document.querySelector(`.stat-card[data-table="${tableType}"]`)?.classList.add('active');
+
+                document.querySelectorAll('#adminTabs .nav-link').forEach(tab => tab.classList.remove('active'));
+                document.getElementById('tab-' + tableType)?.classList.add('active');
+
+                // Hide loader
+                loader.classList.remove('d-flex');
+                loader.classList.add('d-none');
+            }, 300); // Adjust timeout as needed
         }
         document.addEventListener('DOMContentLoaded', () => switchTable('reservations'));
     </script>
