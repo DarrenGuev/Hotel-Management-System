@@ -97,6 +97,13 @@
                                 <div class="d-flex flex-column h-100 justify-content-center">
                                     <h2 class="fs-3 fw-semibold text-white text-center mb-4">Register</h2>
 
+                                    <?php if (isset($_GET['error'])): ?>
+                                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                            <?php echo htmlspecialchars($_GET['error']); ?>
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                        </div>
+                                    <?php endif; ?>
+
                                     <form action="php/register_process.php" method="POST" class="needs-validation"
                                         novalidate>
                                         <div class="row">

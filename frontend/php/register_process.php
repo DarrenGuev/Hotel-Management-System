@@ -45,13 +45,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'role' => 'user'
     ];
     
-    $userID = $userModel->register($userData);
+    $result = $userModel->register($userData);
     
-    if ($userID) {
+    if ($result['success']) {
         header("Location: ../login.php?success=Registration successful! Please login.");
         exit();
     } else {
-        header("Location: ../register.php?error=Registration failed. Please try again.");
+        $errorMsg = urlencode($result['message']);
+        header("Location: ../register.php?error=" . $errorMsg);
         exit();
     }
 } else {
